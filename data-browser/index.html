@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marin Data Browser</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        iframe {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // Get the current path without the /marin/data_browser prefix
+        var basePath = '/marin/data_browser';
+        var currentPath = window.location.pathname + window.location.search;
+        var relativePath = currentPath.startsWith(basePath)
+            ? currentPath.slice(basePath.length)
+            : '';
+
+        // Set up the iframe with the initial path
+        var baseUrl = 'https://marin-data-browser-748532799086.us-central1.run.app';
+        var iframe = document.createElement('iframe');
+        iframe.title = 'Marin Data Browser';
+        iframe.src = baseUrl + relativePath;
+
+        // Listen for route changes from the iframe
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'ROUTE_CHANGE') {
+                // Update the browser URL without reloading the page
+                var newUrl = basePath + event.data.path;
+                window.history.pushState({path: event.data.path}, '', newUrl);
+            }
+        });
+
+        // Handle browser back/forward buttons. Here,
+        // the iframe should be updated to the new path.
+        window.addEventListener('popstate', (event) => {
+            var currentPath = window.location.pathname + window.location.search;
+            var relativePath = currentPath.startsWith(basePath)
+                ? currentPath.slice(basePath.length)
+                : '';
+            iframe.src = baseUrl + relativePath;
+        });
+
+        document.body.appendChild(iframe);
+    </script>
+</body>
+</html>
