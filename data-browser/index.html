@@ -21,8 +21,8 @@
 </head>
 <body>
     <script>
-        // Get the current path without the /marin/data_browser prefix
-        var basePath = '/marin/data_browser';
+        // Get the current path without the /data-browser prefix
+        var basePath = '/data-browser';
         var currentPath = window.location.pathname + window.location.search;
         var relativePath = currentPath.startsWith(basePath)
             ? currentPath.slice(basePath.length)
