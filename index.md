@@ -9,11 +9,12 @@ evaluation...there is a lot to do!
 
 You can find us at:
 
-- [GitHub](https://github.com/marin-community/marin)
-- [Discord](https://discord.gg/J9CTk7pqcM)
-- [Documentation](https://marin.readthedocs.io/en/latest/)
-- [WandB](https://wandb.ai/marin-community)
-- [HuggingFace](https://huggingface.co/marin-community)
+- [GitHub](https://github.com/marin-community/marin): where the code for reproducing all experiments live
+- [Discord](https://discord.gg/J9CTk7pqcM): come hang out with us, ask questions, and coordinate on research directions
+- [Documentation](https://marin.readthedocs.io/en/latest/): where you can find tutorials and explanations
+- [DeepWiki](https://deepwiki.com/marin-community/marin): automatically generated Wiki with an integrated chatbot
+- [HuggingFace](https://huggingface.co/marin-community): where to find our datasets and models
+- [WandB](https://wandb.ai/marin-community): where to find our training runs
 
 Want to jump in?  [Install](https://marin.readthedocs.io/en/latest/tutorials/getting-started/) the Marin code and
 [run your first experiment](https://marin.readthedocs.io/en/latest/tutorials/first-experiment/)!
