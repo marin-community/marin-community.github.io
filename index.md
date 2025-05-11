@@ -7,7 +7,7 @@ We invite anyone who shares our vision of open science and open-source to join a
 whether you want to try out a new architecture, training algorithm, dataset,
 evaluation...there is a lot to do!
 
-You can find us at:
+Find us here:
 
 - [GitHub](https://github.com/marin-community/marin): where the code for reproducing all experiments live
 - [Discord](https://discord.gg/J9CTk7pqcM): come hang out with us, ask questions, and coordinate on research directions
@@ -18,6 +18,12 @@ You can find us at:
 
 Want to jump in?  [Install](https://marin.readthedocs.io/en/latest/tutorials/getting-started/) the Marin code and
 [run your first experiment](https://marin.readthedocs.io/en/latest/tutorials/first-experiment/)!
+
+## Experiments
+
+Building a foundation model requires countless experiments trying out endless variants of algorithms and datasets.
+All the experiments we're doing are captured as [GitHub issues](https://github.com/marin-community/marin/issues?q=is%3Aissue%20label%3Aexperiment).
+Here is a [summary](https://marin.readthedocs.io/en/latest/reports/) to get the lay of the land.
 
 ## Speedrun 🏃
 
