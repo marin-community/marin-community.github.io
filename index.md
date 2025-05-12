@@ -16,7 +16,7 @@ Find us here:
 - [HuggingFace](https://huggingface.co/marin-community): where to find our datasets and models
 - [WandB](https://wandb.ai/marin-community): where to find our training runs
 
-Want to jump in?  [Install](https://marin.readthedocs.io/en/latest/tutorials/getting-started/) the Marin code and
+Want to jump in?  [Install](https://marin.readthedocs.io/en/latest/tutorials/installation/) the Marin code and
 [run your first experiment](https://marin.readthedocs.io/en/latest/tutorials/first-experiment/)!
 
 ## Experiments
