@@ -1,6 +1,6 @@
 # Marin
 
-Marin is an open community for building foundation models---together.
+Marin is an open lab for building foundation models---together.
 We're training powerful models from scratch, and sharing and programmatically documenting every step:
 the code, the data, the experiments, the mistakes...all in real-time.
 We invite anyone who shares our vision of open science and open-source to join and contribute,
