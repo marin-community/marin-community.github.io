@@ -1,4 +1,4 @@
 theme: jekyll-theme-minimal
 title: Marin
-description: Open development of foundation models
+description: Open development of foundation models.
 permalink: /blog/:year/:month/:day/:title/
