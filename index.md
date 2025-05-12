@@ -28,9 +28,10 @@ Here is a [summary](https://marin.readthedocs.io/en/latest/reports/) to get the 
 ## Speedrun 🏃
 
 Have a new architecture or training procedure that's more efficient?
-Participate in our speedrun competition (inspired by the [nanogpt speedrun](https://github.com/KellerJordan/modded-nanogpt?tab=readme-ov-file#world-record-history))
-and create the fastest method to train a model to a certain loss!
-Get started [here](https://marin.readthedocs.io/en/latest/how-to-guides/submitting-speedrun/).
+Participate in the [Marin speedrun](https://marin.community/speedrun) competition
+(inspired by the [nanogpt speedrun](https://github.com/KellerJordan/modded-nanogpt?tab=readme-ov-file#world-record-history))
+and create the fastest method to train a model to a certain quality!
+Get started [here](https://marin.readthedocs.io/en/latest/tutorials/submitting-speedrun/).
 
 ## Datashop 🛠️
 
