@@ -18,26 +18,26 @@ All the experiments we're doing are captured as [GitHub issues](https://github.c
 Here's the lifecycle of an [experiment](https://marin.readthedocs.io/en/latest/explanations/experiments/):
 1. A GitHub **issue** is created to preregister the experiment (hypotheses, goal).
 2. A **pull request** is created with **code** that reproduces the experiment.
-3. Execution produces an DAG (from data to evals), which can be visualized on an **experiment** page along with a **WandB** report.
+3. Code defines a provenance graph which is **executed**; results are summarized in a **WandB** report.
 
 Some examples:
 1. Experiment 934: How does z-loss impact loss?<br>
    [[issue](https://github.com/marin-community/marin/issues/935),
     [PR](https://github.com/marin-community/marin/pull/941),
     [code](https://github.com/marin-community/marin/blob/main/experiments/exp934_zloss.py),
-    [experiment](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2Fexp934_zloss-68c8ed.json),
+    [execution](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2Fexp934_zloss-68c8ed.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/ZLoss-vs-Not-1-4B--VmlldzoxMjEzMzA1NA)]
 2. Experiment 950: How does pretraining learning rate impact SFT?<br>
    [[issue](https://github.com/marin-community/marin/issues/950),
     [PR](https://github.com/marin-community/marin/pull/952),
     [code](https://github.com/marin-community/marin/blob/main/experiments/exp950_sft_amenability.py),
-    [experiment](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2Fexp950_sft_amenability-050465.json),
+    [execution](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2Fexp950_sft_amenability-050465.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/How-does-Learning-Rate-Schedule-Impact-SFT---VmlldzoxMjgyNDkyOQ)]
 3. Experiment 163: Is BERT a better quality filter than fastText?<br>
    [[issue](https://github.com/marin-community/marin/issues/163),
     [PR](https://github.com/marin-community/marin/pull/1298),
     [code](https://github.com/marin-community/marin/blob/main/experiments/exp163_bert.py),
-    [experiment](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp163_bert-d29862.json),
+    [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp163_bert-d29862.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/Experiment-163-Fasttext-vs-BERT--VmlldzoxMjgyOTk0OQ)]
 
 ## Models 🌐
@@ -46,18 +46,18 @@ We trained some models in Marin:
 1. [Marin-8B-Base (deeper-starling)](https://huggingface.co/marin-community/marin-8b-base)
    [[issue](https://github.com/marin-community/marin/issues/600),
     [code](https://github.com/marin-community/marin/blob/main/experiments/tootsie/exp600_tootsie.py),
-    [experiment](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp600_tootsie-1f6fa2.json),
+    [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp600_tootsie-1f6fa2.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/Tootsie-8B---VmlldzoxMTY3MzU3OA)]:
     Beats Llama 3.1 8B base on 14/19 standard benchmarks!
     Read more in our [retrospective](TODO).
 2. [Marin-8B-Instruct (deeper-starling-05-15)](https://huggingface.co/marin-community/marin-8b-instruct)
-   [[experiment](https://marin.community/data-browser/experiment/?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2FexpPH_starling_sft-d4db6c.json)]:
+   [[execution](https://marin.community/data-browser/experiment/?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2FexpPH_starling_sft-d4db6c.json)]:
    Try it out on
    [Together AI](https://www.together.ai/models/marin-8b-instruct) and
    [Hugging Face](https://huggingface.co/spaces/WillHeld/marin-8b-instruct-ChatUI)!
 3. Marin-32B-Base
    [[issue](https://github.com/marin-community/marin/issues/1295),
-    [experiment](http://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp859_big_tootsies-e9092f.json)]:
+    [execution](http://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp859_big_tootsies-e9092f.json)]:
     It is still training!  You can watch it live on [WandB](https://wandb.ai/marin-community/marin/runs/llama-32b-tootsie-2?nw=nwuserdlwh)🍿!
 
 ## Speedrun 🏃
@@ -75,12 +75,11 @@ Get started [here](https://marin.readthedocs.io/en/latest/tutorials/submitting-s
 Want to add new capabilities to the Marin models?
 Visit our [datashop](https://marin.readthedocs.io/en/latest/tutorials/datashop/), where you can upload a dataset or craft a prompt to curate a relevant dataset for your task.
 
-Example:
-1. Use Llama 3 70B to filter for mathematical educational data (like [FineMath](https://huggingface.co/datasets/HuggingFaceTB/finemath)).<br>
+For example, we used Llama 3 70B to filter for mathematical educational data (like [FineMath](https://huggingface.co/datasets/HuggingFaceTB/finemath)).
    [[issue](https://github.com/marin-community/marin/issues/963),
     [PR](https://github.com/marin-community/marin/pull/1135),
     [code](https://github.com/marin-community/marin/blob/91b86a710664bed75c61e109c740852c4dcf60ad/experiments/exp963_cascade_finemath.py),
-    [experiment](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-east1%2Fexperiments%2Fexp963_cascade_finemath-fa55e6.json)]
+    [execution](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-east1%2Fexperiments%2Fexp963_cascade_finemath-fa55e6.json)]
 
 ## Acknowledgements
 
