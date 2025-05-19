@@ -127,8 +127,8 @@ On **14 out of 19 standard base model evals (MMLU, HellaSwag, GPQA, etc.), Marin
 but one must always be careful about interpreting evals due to [train-test overlap](https://github.com/marin-community/marin/issues/1321) and the non-trivial impact of prompting differences.
 
 We also performed supervised fine-tuning (SFT) of Marin 8B Base for ~5B tokens to produce [Marin 8B Instruct (deeper-starling-05-15)](https://huggingface.co/marin-community/marin-8b-instruct/tree/deeper-starling-05-15).
-This model outperforms OLMo 2 on standard instruct model evals, but still fall short of [Llama 3.1 fine-tuned on Tulu](https://arxiv.org/abs/2411.15124)---see [full results table](https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/#sft-evals).
-Considering that we have not yet done any reinforcement learning from feedback (RLHF), not even DPO,
+This model outperforms OLMo 2 on standard instruct model evals, but still fall short of [Llama 3.1 Tulu](https://arxiv.org/abs/2411.15124)---see [full results table](https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/#sft-evals).
+Considering that, unlike Llama 3.1 Tulu, we have not yet done any reinforcement learning from feedback (RLHF), not even DPO,
 we are optimistic that we can still improve the instruct model substantially.
 
 But don't take our word for it---try out these models yourself!
@@ -181,7 +181,7 @@ More specifically:
 2. We then prompt an LM (e.g., Llama 3 70B) to classify a subset of documents.
 3. We use the (document, adherence to your criterion) examples produced by the LM to train a linear or BERT classifier.
 4. We then run this classifier on all the documents and choose the ones that are classified positive beyond some threshold ([selected examples](https://marin.community/data-browser/view/?paths=%5B%22gs%3A%2F%2Fmarin-us-east1%2Fdocuments%2Fquality_filtering%2Fdatashop%2Fdatashop-dclm-pretraining-subset-finemath-cascade-phase-2-f42d44%2Flocal-shard_0_of_10%2Fshard_00000000_processed.jsonl.zst%22%5D)) (negatives are just drawn from the background dataset).
-5. Once you have the dataset, you can fine-tune a model on it!
+5. Once you have the dataset, you can fine-tune a model on it! Or you can run a controlled [annealing experiment](https://marin.readthedocs.io/en/latest/tutorials/annealing-experiment/) to evaluate it for inclusion during midtraining.
 
 See the full
 [execution](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-east1%2Fexperiments%2Fexp963_cascade_finemath-fa55e6.json)
@@ -205,6 +205,7 @@ This is the beginning of the Marin journey.
 There is so much to do: we'd like to
 [try efficient linear attention architectures](https://github.com/marin-community/marin/issues/1313),
 [add long context support](https://github.com/marin-community/marin/issues/1314),
+improve performance on other domains like [legal reasoning](https://github.com/marin-community/marin/issues/1267),
 support more languages, support multimodality, enhance reasoning with RL-based
 post-training, and you might have ideas that we haven't thought of.
 Come join us ([Discord](https://discord.gg/J9CTk7pqcM), [GitHub](https://github.com/marin-community/marin/))
@@ -231,6 +232,7 @@ Zhou for their contributions to the project.
 - We would also like to thank the many people, including members of the Stanford
 AI Lab and Stanford NLP group, who have given advice and contributed valuable
 discussions.
+- We would also like to thank [Weights And Biases](https://wandb.ai/site/) for logging our many, many experiments.
 - Finally, we would like to give a big shoutout to the open-source community,
 without which Marin would simply be impossible.  Organizations such as
 [EleutherAI](https://www.eleuther.ai/),
