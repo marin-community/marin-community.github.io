@@ -224,8 +224,8 @@ Yash Katariya, and Skye Wanderman-Milne, and Allen Wang from the TPU team helped
 us make good use of our TPU allocation.
 - The Anyscale team, especially Robert Nishihara and Richard Liaw, helped us
 with Ray, which Marin builds on.
-- This work originated from the Stanford Center for Research on Foundation
-Models (CRFM) and the Human-Centered AI Institute (HAI).  We are grateful for
+- This work originated from the [Stanford Center for Research on Foundation
+Models (CRFM)](https://crfm.stanford.edu) and the [Human-Centered AI Institute (HAI)](https://hai.stanford.edu/).  We are grateful for
 their support and fostering the belief that academia has an important role to
 play in the era of industrialized AI.
 - We would like to thank Matthew Ding, Kevin Klyman, Russell Power, and Cathy
