@@ -51,6 +51,12 @@ Some examples:
     [code](https://github.com/marin-community/marin/blob/main/experiments/exp1183_olmoe.py),
     [execution](https://marin.community/data-browser/experiment/?path=gs%3A%2F%2Fmarin-us-west4%2Fexperiments%2Fexp1183_olmoe-f9d291.json),
     [WandB](https://api.wandb.ai/links/marin-community/qi3u8nx7)]
+6. Experiment 702: How should you train on rare task-relevant data?<br>
+   [[issue](https://github.com/marin-community/marin/issues/702),
+    [PR](https://github.com/marin-community/marin/pull/1297),
+    [code](https://github.com/marin-community/marin/tree/main/experiments/two_stage),
+    [execution](https://marin.community/data-browser/view/?paths=%5B%22gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2Fjoint_ptft-3b3709.json%22%5D),
+    [WandB](https://wandb.ai/stanford-mercury/suhas-two-stage/reports/Two-stage-training-main-results-5-18---VmlldzoxMjgzNTg3MA?accessToken=2mbamb7vwfbaj8205ga8yojvyg471v3jkftrcwinp7vl4lnqfan3exsg7qs3scnx)]
 
 ## Models 🌐
 
