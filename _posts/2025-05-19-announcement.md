@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Introducing Marin: An Open Lab"
+title: "Introducing Marin: An Open Lab for Building Foundation Models"
 authors:
 - David Hall
 - Ahmed Ahmed, Chris Chou, Abhinav Garg, Rohith Kuditipudi, Will Held, Nikil Ravi, Herumb Shandilya, Jason Wang
