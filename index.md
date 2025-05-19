@@ -85,7 +85,7 @@ Participate in the [Marin speedrun](https://marin.community/speedrun) competitio
 (inspired by the [nanogpt speedrun](https://github.com/KellerJordan/modded-nanogpt?tab=readme-ov-file#world-record-history)),
 pick your compute budget,
 and create the fastest method to train a model to a certain quality!
-Here's an [example submission](https://github.com/marin-community/marin/blob/main/experiments/speedrun/llama_75m_fineweb_edu_adamax/llama_75m_fineweb_edu_adamax.py).
+Here's an [example submission](https://github.com/marin-community/marin/blob/main/experiments/speedrun/llama_75m_adamax/llama_75m_adamax.py).
 We will offer free compute to scale up top performers.
 Get started [here](https://marin.readthedocs.io/en/latest/tutorials/submitting-speedrun/).
 
