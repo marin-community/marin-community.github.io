@@ -7,6 +7,8 @@ We invite anyone who shares our vision of open science and open-source to join a
 whether you want to try out a new architecture, training algorithm, dataset,
 evaluation...there is a lot to do!
 
+News (2025-05-19): Read our [announcement](/blog/2025/05/19/announcement/)!
+
 Want to jump in?  [Install](https://marin.readthedocs.io/en/latest/tutorials/installation/) the Marin code and
 [run your first experiment](https://marin.readthedocs.io/en/latest/tutorials/first-experiment/)!
 
@@ -59,7 +61,7 @@ We trained some models in Marin:
 2. [Marin-8B-Instruct (deeper-starling-05-15)](https://huggingface.co/marin-community/marin-8b-instruct)
    [[execution](https://marin.community/data-browser/experiment/?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2FexpPH_starling_sft-d4db6c.json)]:
    Try it out on
-   [Together AI](https://www.together.ai/models/marin-8b-instruct) and
+   [Together AI](https://api.together.ai/playground/v2/chat/marin-community/marin-8b-instruct) and
    [Hugging Face](https://huggingface.co/spaces/WillHeld/marin-8b-instruct-ChatUI)!
 3. Marin-32B-Base
    [[issue](https://github.com/marin-community/marin/issues/1295),

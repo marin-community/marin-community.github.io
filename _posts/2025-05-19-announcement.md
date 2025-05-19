@@ -133,7 +133,7 @@ we are optimistic that we can still improve the instruct model substantially.
 
 But don't take our word for it---try out these models yourself!
 You can download both from [Hugging Face](https://huggingface.co/marin-community) or
-try out Marin 8B Instruct at [Together AI](https://api.together.xyz/playground/v2/chat/marin-community/marin-8b-instruct).
+try out Marin 8B Instruct at [Together AI](https://api.together.ai/playground/v2/chat/marin-community/marin-8b-instruct).
 Please provide feedback either by submitting a [GitHub issue](https://github.com/marin-community/marin/issues/new/choose) or posting in our [Discord](https://discord.gg/J9CTk7pqcM).
 Or in the spirit of true open-source, you can try fixing it yourself at our [Datashop](https://marin.readthedocs.io/en/latest/tutorials/datashop/).
 
@@ -194,7 +194,7 @@ of the FineMath replication experiment.
 
 The future of AI should be open-source in the strongest sense: researchers and developers alike
 should be able to not just use AI, but to contribute directly back to it.
-We have built Marin, an open lab, that provides the infrastructure to allow this to happen.
+We have built Marin, an open lab, that provides the infrastructure to help make this happen.
 Of course training strong foundation models requires significant resources,
 and building communities is hard.
 Nonetheless, we must try.
@@ -208,7 +208,7 @@ There is so much to do: we'd like to
 [add long context support](https://github.com/marin-community/marin/issues/1314),
 improve performance on other domains like [legal reasoning](https://github.com/marin-community/marin/issues/1267),
 support more languages, support multimodality, enhance reasoning with RL-based
-post-training, and you might have ideas that we haven't thought of.
+post-training, and all the ideas you have that we haven't thought of.
 Come join us ([Discord](https://discord.gg/J9CTk7pqcM), [GitHub](https://github.com/marin-community/marin/))
 and let us deepen our scientific understanding and build the best models together!
 
@@ -224,14 +224,13 @@ Yash Katariya, and Skye Wanderman-Milne, and Allen Wang from the TPU team helped
 us make good use of our TPU allocation.
 - The Anyscale team, especially Robert Nishihara and Richard Liaw, helped us
 with Ray, which Marin builds on.
+- We would like to thank Matthew Ding, Kevin Klyman, Russell Power, and Cathy
+Zhou for their contributions to the project.
 - This work originated from the [Stanford Center for Research on Foundation
 Models (CRFM)](https://crfm.stanford.edu) and the [Human-Centered AI Institute (HAI)](https://hai.stanford.edu/).  We are grateful for
 their support and fostering the belief that academia has an important role to
 play in the era of industrialized AI.
-- We would like to thank Matthew Ding, Kevin Klyman, Russell Power, and Cathy
-Zhou for their contributions to the project.
-- We would also like to thank the many people, including members of the Stanford
-AI Lab and Stanford NLP group, who have given advice and contributed valuable
+- We would also like to thank the many people, including members of the [Stanford AI Lab](https://ai.stanford.edu/) and [Stanford NLP group](https://nlp.stanford.edu/), who have given advice and contributed valuable
 discussions.
 - We would also like to thank [Weights And Biases](https://wandb.ai/site/) for logging our many, many experiments.
 - Finally, we would like to give a big shoutout to the open-source community,
