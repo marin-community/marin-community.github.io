@@ -20,7 +20,7 @@ We have open-weight models (e.g., Llama, DeepSeek, Gemma), sometimes mistakenly 
 but the code and data (recipe) used to produce the model are not released.
 There has been a movement over the last few years to build [open-source](https://opensource.org/ai/open-source-ai-definition) models.
 [Eleuther AI](https://www.eleuther.ai/),
-[Allen Institute for AI](https://allenai.org/),
+[Allen Institute for AI (AI2)](https://allenai.org/),
 [Hugging Face](https://huggingface.co/),
 [BigScience](https://bigscience.huggingface.co/),
 [BigCode](https://www.bigcode-project.org/),
@@ -189,32 +189,61 @@ of the FineMath replication experiment.
 
 ![Datashop]({{ site.baseurl }}/assets/images/posts/announcement-datashop-diagram.png)
 
-## Future
+## Final remarks
 
 The future of AI should be open-source in the strongest sense: researchers and developers alike
 should be able to not just use AI, but to contribute directly back to it.
-We have built Marin, the infrastructure, to allow this to happen.
-Of course training foundation models requires significant resources,
+We have built Marin, an open lab, that provides the infrastructure to allow this to happen.
+Of course training strong foundation models requires significant resources,
 and building communities is hard.
 Nonetheless, we must try.
 We have benefited greatly from an open Internet,
-open-source software, Wikipedia, and many assets in the public domain,
-and at one point these were also crazy ideas that were more likely to fail than to succeed.
+open-source software, Wikipedia, and many assets in the public domain.
+At one point, these were also crazy ideas that were more likely to fail than to succeed.
 
 This is the beginning of the Marin journey.
 There is so much to do: we'd like to
 [try efficient linear attention architectures](https://github.com/marin-community/marin/issues/1313),
 [add long context support](https://github.com/marin-community/marin/issues/1314),
-support more languages, support multimodality, enhance reasoning with RL-based post-training, and much more.
-Come join us and let us deepen our scientific understanding and build the best models together!
+support more languages, support multimodality, enhance reasoning with RL-based
+post-training, and you might have ideas that we haven't thought of.
+Come join us ([Discord](https://discord.gg/J9CTk7pqcM), [GitHub](https://github.com/marin-community/marin/))
+and let us deepen our scientific understanding and build the best models together!
 
 # Acknowledgements
 
-So many people and organizations supported Marin, to whom we are greatly indebted:
-- First, we would like to thank Zak Stone and the [Google TPU Research Cloud (TRC)](https://sites.research.google/trc/) team.  Nearly all of the compute used for Marin comes from TRC.  This project might not have even gotten started without their support.
-- The Google JAX team, especially Roy Frostig, Sharad Vikram, Matthew Johnson, Yash Katariya, and Skye Wanderman-Milne, and Allen Wang from the TPU team helped us make good use of our TPUs.
-- The Anyscale team, especially Robert Nishihara and Richard Liaw, helped us with Ray, which Marin builds on.
-- This work originated from the Stanford Center for Research on Foundation Models (CRFM) and the Human-Centered AI Institute (HAI). We are grateful for the their support and fostering the belief that academia has an important role to play in the era of foundation models.
-- We would like to thank Matthew Ding, Kevin Klyman, Russell Power, and Cathy Zhou for their contributions to the project.
-- We would also like to thank the many people, including members of the Stanford AI Lab and Stanford NLP group, who have given advice and contributed valuable discussions.
-- Finally, we would like to give a big shoutout to the open-source community, without which Marin would simply be impossible.  Organizations such as [EleutherAI](https://www.eleuther.ai/), [Hugging Face](https://huggingface.co), [Allen Institute for AI (AI2)](https://allenai.org/), [LLM360](https://www.llm360.ai/), and [MAP-Neo](https://map-neo.github.io/), and many others, have been hugely inspirational in paving the way towards truly open-source foundation models.  They have released tools and datasets that have directly benefited Marin, and we can only hope to give back to the community through our efforts.
+So many people and organizations have supported Marin, to whom we are greatly indebted:
+- First, we would like to thank Zak Stone and the [Google TPU Research Cloud
+(TRC)](https://sites.research.google/trc/) team.  Nearly all of the compute used
+for Marin comes from TRC.  This project might not have even gotten started
+without their support.
+- The Google JAX team, especially Roy Frostig, Sharad Vikram, Matthew Johnson,
+Yash Katariya, and Skye Wanderman-Milne, and Allen Wang from the TPU team helped
+us make good use of our TPU allocation.
+- The Anyscale team, especially Robert Nishihara and Richard Liaw, helped us
+with Ray, which Marin builds on.
+- This work originated from the Stanford Center for Research on Foundation
+Models (CRFM) and the Human-Centered AI Institute (HAI).  We are grateful for
+their support and fostering the belief that academia has an important role to
+play in the era of industrialized AI.
+- We would like to thank Matthew Ding, Kevin Klyman, Russell Power, and Cathy
+Zhou for their contributions to the project.
+- We would also like to thank the many people, including members of the Stanford
+AI Lab and Stanford NLP group, who have given advice and contributed valuable
+discussions.
+- Finally, we would like to give a big shoutout to the open-source community,
+without which Marin would simply be impossible.  Organizations such as
+[EleutherAI](https://www.eleuther.ai/),
+[Allen Institute for AI (AI2)](https://allenai.org/),
+[Hugging Face](https://huggingface.co),
+[BigScience](https://bigscience.huggingface.co/),
+[BigCode](https://www.bigcode-project.org/),
+[DataComp-LM](https://www.datacomp.ai/dclm/),
+[MAP-Neo](https://map-neo.github.io/),
+[LLM360](https://www.llm360.ai/),
+[Together AI](https://www.together.ai/),
+[NVIDIA](https://www.nvidia.com/),
+and many others, have been hugely inspirational in paving the way towards truly
+open-source foundation models.  They have released tools and datasets that have
+directly benefited Marin, and we can only hope to give back to the community
+through our efforts.
