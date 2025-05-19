@@ -39,7 +39,7 @@ Some examples:
     [code](https://github.com/marin-community/marin/blob/main/experiments/exp163_bert.py),
     [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp163_bert-d29862.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/Experiment-163-Fasttext-vs-BERT--VmlldzoxMjgyOTk0OQ)]
-4. Experiment 1290: Fantastic Pretraining Optimizers And Where to Find Them.<br>
+4. Experiment 1290: Which optimizers actually outperform AdamW?<br>
    [[issue](https://github.com/marin-community/marin/issues/1290),
     [PR](https://github.com/marin-community/marin/pull/1293),
     [code](https://github.com/WhenWen/marin/tree/kaiyue/optimizers/marin/optimizer_sweep)
