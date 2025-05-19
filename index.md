@@ -91,5 +91,4 @@ For example, we used Llama 3 70B to filter for mathematical educational data (li
 ## Acknowledgements
 
 Marin wouldn't be possible without the generous support of the [Google TPU Research Cloud program](https://sites.research.google/trc/about/).
-We also benefit immensely from the broader open ecosystem, who have released numerous tools and datasets, including
-[AI2](https://allenai.org), [Hugging Face](https://huggingface.co/), [NVIDIA](https://www.nvidia.com/en-us/research/), etc.
+We also benefit immensely from the broader open ecosystem, who have released numerous tools and datasets.
