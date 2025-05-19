@@ -10,16 +10,15 @@ date: 2025-05-19
 categories: blog
 ---
 
-Open-source *software* is a marvelous success story:
+Open-source *software* is a success story:
 It powers the world's digital infrastructure.
 It allows anyone in the world to contribute based on merit.
 It leads to greater innovation, collaboration, and security.
 
-In contrast, truly open-source AI is lagging behind.
+Open-source AI is not there yet.
 We have open-weight models (e.g., Llama, DeepSeek, Gemma), sometimes mistakenly called open-source models,
 but the code and data (recipe) used to produce the model are not released.
 There has been a movement over the last few years to build [open-source](https://opensource.org/ai/open-source-ai-definition) models.
-For the last few years, we have been inspired by the efforts of
 [Eleuther AI](https://www.eleuther.ai/),
 [Allen Institute for AI](https://allenai.org/),
 [Hugging Face](https://huggingface.co/),
@@ -27,11 +26,14 @@ For the last few years, we have been inspired by the efforts of
 [BigCode](https://www.bigcode-project.org/),
 [DataComp-LM](https://www.datacomp.ai/dclm/),
 [MAP-Neo](https://map-neo.github.io/),
-[LLM360](https://www.llm360.ai/).
-These teams not only release the model weights,
-but also the code and data used to produce the model,
-so that others can build their own models.
-Marin wouldn't exist without this vibrant open-source ecosystem.
+[LLM360](https://www.llm360.ai/),
+[Together AI](https://www.together.ai/),
+[NVIDIA](https://www.nvidia.com/),
+and others have taken the path (so far) less traveled.
+These teams not only have released model weights,
+but also the code and data recipe used to produce the model.
+These assets have enabled others (including Marin!) to build their own models
+and push forward innovation.
 
 ![Marin]({{ site.baseurl }}/assets/images/posts/announcement-open.png)
 
@@ -39,22 +41,25 @@ We would like to go one step further.  In open-source software, it is easy for
 anyone to download the code, extend it, and contribute back to the community.
 This is because over the last two decades, the community has developed mature
 tools: versioned code hosting (e.g., GitHub), continuous integration, and
-governance strategies.  Such infrastructure doesn't exist for the development of
+governance strategies.  Such infrastructure doesn't exist yet for the development of
 foundation models.  You can't train locally, and you can't just log into someone
-else's H100 cluster.
+else's GPU or TPU cluster.
 
-### A new form of openness
+## A new form of openness
 
-Marin is an **open lab**, a lab in which the research and development of models
-is completely transparent.  We leverage GitHub to organize the open lab's
-efforts, drawing as much infrastructure as we can from open-source software.
+Marin is an **open lab**, in which the research and development of models
+is completely transparent from day 1 (that's today).  We leverage GitHub to organize the open lab's
+efforts, piggybacking off of tools and processes developed for open-source software.
 Here's how it works:
 
-1. GitHub issues are used to track experiments (on the wishlist, currently running, or completed)---see an [example](https://github.com/marin-community/marin/issues/1183).
-These GitHub issues serve as form of mini-[preregistration](https://en.wikipedia.org/wiki/Preregistration_(science)),
+1. Each **experiment** (whether it be on the wishlist, currently running, or
+completed) is tracked by a **GitHub issue**---see an
+[example](https://github.com/marin-community/marin/issues/1183).  These GitHub
+issues serve as form of
+mini-[preregistration](https://en.wikipedia.org/wiki/Preregistration_(science)),
 which declares the hypotheses and goals upfront.
 
-2. If you want to run an experiment, you submit a pull request (PR) with what concretely needs to be executed.
+2. To run an experiment, someone (anyone) submits a pull request (PR) specifying what concretely needs to be run.
 Not only does the [Marin codebase](https://github.com/marin-community/marin/)
 contain our training and data processing code, **experiments are also declared
 in code** (see [an
@@ -62,23 +67,25 @@ example](https://github.com/marin-community/marin/blob/main/experiments/exp1183_
 
 3. The PR can be reviewed by anyone (in the spirit of
 [OpenReview](https://openreview.net/) for papers).
-The community can have a lively debate about experimental design.
-Because it's code, everything is there.
+The community can have a lively debate about experimental design, bikeshed details, whatever.
+Because the actual code is available, one can drill down into as much detail as one wants.
 
-4. Once the PR is approved, the experiment will be launched.
- You can see the execution live
+4. Once the PR is approved, the experiment is launched.
+ Anyone can watch the execution live
 ([example](https://marin.community/data-browser/experiment/?path=gs%3A%2F%2Fmarin-us-west4%2Fexperiments%2Fexp1183_olmoe-f9d291.json)),
-with links to [WandB](https://wandb.ai/marin-community/marin/reports/MoE-vs-Dense-1b--VmlldzoxMjgzMzI4OQ).
+which has links to [WandB](https://wandb.ai/marin-community/marin/reports/MoE-vs-Dense-1b--VmlldzoxMjgzMzI4OQ).
+Any analysis and insights are collected back into the GitHub issue.
 
 This is a new way to do research that's more scientific and more inclusive.
-All mistakes (and we all make them) and negative results are in the open and normalized.
+We normalize making mistakes (which we all make---see [all the things we messed up on our 8B run](https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/)).
+Any negative results are in the open.
 There is no cherry picking.
-There is no incomplete specifications.
+There is no ambiguity about what was run.
 Everything is reproducible, declared in code, and open to the community to see.
 
 ![Marin]({{ site.baseurl }}/assets/images/posts/announcement-flow.png)
 
-### Experiments and models
+## Experiments and models
 
 Having built the infrastructure for the open lab, what do we use it for?  We are
 driven by the fundamental research question: **how do we build the best model
@@ -89,52 +96,57 @@ There is both a tension and synergy between scientific understanding and
 engineering the best model.  This is reflected in a bifurcation in our
 experiments:
 
-1. We performed **controlled** small-scale ablation experiments that aimed to
-understand one small piece of the puzzle.  For example, we investigated
+1. We performed **controlled** small-scale ablation experiments to
+understand one small piece of the puzzle at a time.  For example, we investigated
 different [architectures](https://github.com/marin-community/marin/issues/1183),
 [optimizers](https://github.com/marin-community/marin/issues/1290), [quality
 classifiers](https://github.com/marin-community/marin/issues/1290),
 [regularization methods](https://github.com/marin-community/marin/issues/935),
 and so on.  We built new datasets using improved [HTML to
 text](https://marin.readthedocs.io/en/latest/reports/markdownified-datasets/)
-and started doing crawling.  We fit [scaling laws](https://github.com/marin-community/marin/issues/780).
-These experiments have the ethos of the [Stanford Building Language Models from Scratch (CS336)](https://cs336.stanford.edu) class,
-which tries to take everything apart.
+and started doing [crawling](https://github.com/marin-community/marin/issues/968).  We fit [scaling laws](https://github.com/marin-community/marin/issues/780).
+These experiments have the ethos of the [Stanford Language Modeling from Scratch (CS336)](https://cs336.stanford.edu) class,
+in which we study every component of the language modeling pipeline.
 
-2. We performed a few **YOLO** runs which eventually led to our best models.  We
+2. We also performed a few **YOLO** runs which eventually led to our best models.  We
 documented our journey in the [Marin 8B
 retrospective](https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/),
 which is reminiscent of the [OPT
-logbook](https://github.com/facebookresearch/metaseq/blob/main/projects/OPT/chronicles/OPT175B_Logbook.pdf),
-though thankfully we didn't have to deal with as many hardware issues.  There
-were bugs along the way, new revelations about datasets, learning rates,
-regularization, but we just adjusted our training and kept on going.  Once in a
-while, we would be mystified and peel off to do controlled experiments
-([example](https://github.com/marin-community/marin/issues/950)).
+logbook](https://github.com/facebookresearch/metaseq/blob/main/projects/OPT/chronicles/OPT175B_Logbook.pdf)
+(though our TPUs were nice and thankfully we didn't have to deal with all those hardware issues).
+In these YOLO runs, we encountered bugs along the way
+and discovered new revelations about datasets, learning rates,
+regularization...but we just adjusted our training and kept on going.
+Once in a while, we would peel off to do a controlled experiment
+([example](https://github.com/marin-community/marin/issues/950)),
+which then informed us how to continue.
 
 In the end, we ended up training [Marin 8B Base (deeper-starling)](https://huggingface.co/marin-community/marin-8b-base/tree/deeper-starling),
-with a Llama architecture (dense Transformer) for 12.7T tokens (see the [full execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp600_tootsie-4699e2.json)).
-On **14 out of 19 standard benchmarks (MMLU, HellaSwag, GPQA, etc.), Marin 8B Base outperforms Llama 3.1 8B Base** (see [full results](https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/#base-model-results)).
+with a Llama architecture (dense Transformer) for 12.7T tokens (see the [full reproducible execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp600_tootsie-4699e2.json)!).
+On **14 out of 19 standard base model evals (MMLU, HellaSwag, GPQA, etc.), Marin 8B Base outperforms Llama 3.1 8B Base** (see [full results table](https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/#base-model-results)),
+but one must always be careful about interpreting evals due to [train-test overlap](https://github.com/marin-community/marin/issues/1321) and the non-trivial impact of prompting differences.
 
 We also performed supervised fine-tuning (SFT) of Marin 8B Base for ~5B tokens to produce [Marin 8B Instruct (deeper-starling-05-15)](https://huggingface.co/marin-community/marin-8b-instruct/tree/deeper-starling-05-15).
-We outperform OLMo 2, but still fall short of [Llama 3.1 fine-tuned on Tulu](https://arxiv.org/abs/2411.15124)---see [results](https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/#sft-evals) here.
-Considering that we have only done SFT and not yet done any reinforcement learning from feedback (RLHF),
-we are optimistic that we can improve the instruct model substantially.
+This model outperforms OLMo 2 on standard instruct model evals, but still fall short of [Llama 3.1 fine-tuned on Tulu](https://arxiv.org/abs/2411.15124)---see [full results table](https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/#sft-evals).
+Considering that we have not yet done any reinforcement learning from feedback (RLHF), not even DPO,
+we are optimistic that we can still improve the instruct model substantially.
 
 But don't take our word for it---try out these models yourself!
 You can download them from Hugging Face or use the [Together API](https://www.together.ai/models/marin-8b-instruct).
 Please provide feedback either by submitting a [GitHub issue](https://github.com/marin-community/marin/issues/new/choose) or posting in our [Discord](https://discord.gg/J9CTk7pqcM).
-Or you can try fixing it yourself at our [Datashop](https://marin.readthedocs.io/en/latest/tutorials/datashop/).
+Or in the spirit of true open-source, you can try fixing it yourself at our [Datashop](https://marin.readthedocs.io/en/latest/tutorials/datashop/).
 
 ## Speedrun for the AI researcher 🏃
 
-As an open-source project, anyone can contribute in any way to Marin.
-However, to add structure to these contributions, we lean on **leaderboards**.
-Most AI leaderboards are about benchmarking the final model, system, or product.
-However, since we want to incentivize algorithmic innovation,
-we must set up the leaderboard appropriately.
+![Marin]({{ site.baseurl }}/assets/images/posts/announcement-speedrun.png)
 
-Here, we take inspiration from the [nanogpt speedrun](https://github.com/KellerJordan/modded-nanogpt?tab=readme-ov-file#world-record-history),
+As an open-source project, anyone can contribute in any way to Marin.
+However, to add structure to these contributions, we lean on **leaderboards**,
+which have a long history of driving progress in AI.
+Most AI leaderboards are about benchmarking a final model, system, or product.
+However, we want to incentivize algorithmic innovation.
+
+We take inspiration from the [nanogpt speedrun](https://github.com/KellerJordan/modded-nanogpt?tab=readme-ov-file#world-record-history),
 which solicited submissions from the community to "train a neural network to ≤3.28 validation loss on FineWeb using 8x NVIDIA H100s";
 the current record is just under 3 minutes.
 However, it is well known that some ideas work well only at small scales, so it's not clear which of these ideas matter at larger scale.
