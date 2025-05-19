@@ -146,42 +146,46 @@ which have a long history of driving progress in AI.
 Most AI leaderboards are about benchmarking a final model, system, or product.
 However, we want to incentivize algorithmic innovation.
 
-We take inspiration from the [nanogpt speedrun](https://github.com/KellerJordan/modded-nanogpt?tab=readme-ov-file#world-record-history),
-which solicited submissions from the community to "train a neural network to ≤3.28 validation loss on FineWeb using 8x NVIDIA H100s";
-the current record is just under 3 minutes.
+We draw inspiration from the [nanogpt speedrun](https://github.com/KellerJordan/modded-nanogpt?tab=readme-ov-file#world-record-history),
+which solicits submissions from the community to "train a neural network to ≤3.28 validation loss on FineWeb using 8x NVIDIA H100s" in the shortest time.
+Progress has been incredible: in the span of a year, the training time has dropped from 5.8 hours to just under 3 minutes.
+
 However, it is well known that some ideas work well only at small scales, so it's not clear which of these ideas matter at larger scale.
-The [Marin Speedrun](https://marin.community/speedrun/) differs in one key way: It accepts submissions for multiple compute budgets.
-This allows people to come in with whatever compute budget is available to them.
-We also encourage people to try a scaling suite of different compute budgets,
-so that we will eventually be able to assess a method based on how well it scales (what is the slope?)
+The [Marin Speedrun](https://marin.community/speedrun/) accepts submissions at multiple compute budgets.
+This allows researchers to participate at whatever compute budget is available to them.
+We also encourage using a scaling suite of different compute budgets,
+so that can fit scaling laws and assess a method based on how well it scales (what is the slope?)
 rather than how good it is at any one scale.
 
-While the dataset is fixed, you are encouraged to try out new architectures, optimizers, etc.
-Initially, you will be required to use your own compute.
-However, capacity permitting, we will offer those who have submitted promising methods free compute to scale.
+You are encouraged to try out new architectures, optimizers, and even data filtering strategies.
+For the initial submission, participants will use their own compute and report the metrics (in a pull request along with the code).
+Over time, we will offer promising submissions free compute to scale up.
 
-Look at this [example submission](https://github.com/marin-community/marin/blob/main/experiments/speedrun/llama_75m_fineweb_edu_adamax/llama_75m_fineweb_edu_adamax.py)
-and get started [here](https://marin.readthedocs.io/en/latest/tutorials/submitting-speedrun/)!
+Check out this [example submission](https://github.com/marin-community/marin/blob/main/experiments/speedrun/llama_75m_adamax/llama_75m_adamax.py)
+and get started with this [tutorial](https://marin.readthedocs.io/en/latest/tutorials/submitting-speedrun/)!
 
 ## Datashop for the domain expert 🛠️
 
-Language models can in principle do anything, but in practice they have holes (especially for an 8B model).
-The most effective way to fill these holes is to curate relevant data.
-We have set up [Datashop](https://marin.readthedocs.io/en/latest/tutorials/datashop/),
-where you can upload a dataset or craft a prompt to curate a relevant dataset for your task.
-Like before, you must write down your experiment fully in Python,
-so that it can be reviewed.
+Language models can in principle do anything, but in practice they have holes.
+An effective way to fill these holes is to curate relevant data.
+We have set up [Datashop](https://marin.readthedocs.io/en/latest/tutorials/datashop/) to do this.
+Suppose you would like the Marin 8B model to improve its capabilities along some dimension (e.g., chemistry).
+Using Datashop, you can upload a dataset or craft a prompt that usings an existing LM to curate a relevant dataset.
+As before, the proposed experiment codified in Python, submitted as a pull request,
+reviewed, and then executed live.
 Here is an [example](https://github.com/marin-community/marin/issues/963) of how Datashop can be used.
-Datashop is a great way for domain experts, who might not necessarily have AI background,
+Datashop is a great way for domain experts, who might not necessarily have the AI infrastructure setup
 to contribute to making the model better.
 More specifically:
-1. You specify a prompt describing the type of data you want to select (e.g., [FineMath example](https://github.com/marin-community/marin/blob/91b86a710664bed75c61e109c740852c4dcf60ad/experiments/exp963_cascade_finemath.py#L13)).
-2. We then prompt an LM (e.g., Llama 3 70B) to classify a modest number of documents.
-3. We use the documents that the LM deems adhering to your criterion as positive examples to train a fast linear or BERT classifier.
-4. We then run this classifier on the entire dataset to choose the final set of documents ([examples](https://marin.community/data-browser/view/?paths=%5B%22gs%3A%2F%2Fmarin-us-east1%2Fdocuments%2Fquality_filtering%2Fdatashop%2Fdatashop-dclm-pretraining-subset-finemath-cascade-phase-2-f42d44%2Flocal-shard_0_of_10%2Fshard_00000000_processed.jsonl.zst%22%5D)) (negatives are just drawn from the background dataset).
-5. Once you have the dataset, you can train a model on it!
+1. You specify a prompt describing the type of data you want to obtain (e.g., [FineMath prompt](https://github.com/marin-community/marin/blob/91b86a710664bed75c61e109c740852c4dcf60ad/experiments/exp963_cascade_finemath.py#L13)).
+2. We then prompt an LM (e.g., Llama 3 70B) to classify a subset of documents.
+3. We use the (document, adherence to your criterion) examples produced by the LM to train a linear or BERT classifier.
+4. We then run this classifier on all the documents and choose the ones that are classified positive beyond some threshold ([selected examples](https://marin.community/data-browser/view/?paths=%5B%22gs%3A%2F%2Fmarin-us-east1%2Fdocuments%2Fquality_filtering%2Fdatashop%2Fdatashop-dclm-pretraining-subset-finemath-cascade-phase-2-f42d44%2Flocal-shard_0_of_10%2Fshard_00000000_processed.jsonl.zst%22%5D)) (negatives are just drawn from the background dataset).
+5. Once you have the dataset, you can fine-tune a model on it!
 
-See the full [execution](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-east1%2Fexperiments%2Fexp963_cascade_finemath-fa55e6.json).
+See the full
+[execution](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-east1%2Fexperiments%2Fexp963_cascade_finemath-fa55e6.json)
+of the FineMath replication experiment.
 
 ![Datashop]({{ site.baseurl }}/assets/images/posts/announcement-datashop-diagram.png)
 
