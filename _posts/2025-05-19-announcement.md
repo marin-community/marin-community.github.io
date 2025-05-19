@@ -171,7 +171,7 @@ An effective way to fill these holes is to curate relevant data.
 We have set up [Datashop](https://marin.readthedocs.io/en/latest/tutorials/datashop/) to do this.
 Suppose you would like the Marin 8B model to improve its capabilities along some dimension (e.g., chemistry).
 Using Datashop, you can upload a dataset or craft a prompt that usings an existing LM to curate a relevant dataset.
-As before, the proposed experiment codified in Python, submitted as a pull request,
+As before, the proposed experiment is codified in Python, submitted as a pull request,
 reviewed, and then executed live.
 Here is an [example](https://github.com/marin-community/marin/issues/963) of how Datashop can be used.
 Datashop is a great way for domain experts, who might not necessarily have the AI infrastructure setup
