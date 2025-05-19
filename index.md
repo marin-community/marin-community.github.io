@@ -45,6 +45,12 @@ Some examples:
     [code](https://github.com/WhenWen/marin/tree/kaiyue/optimizers/marin/optimizer_sweep),
     [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-eu-west4/experiments/exp725_adamwsweep_520M_1-e70fba.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/Fantastic-Optimizers-and-Where-to-Find-Them--VmlldzoxMjgzMzQ2NQ)]
+5. Experiment 1183: Are MoEs really better than dense models?<br>
+   [[issue](https://github.com/marin-community/marin/issues/1183),
+    [PR](https://github.com/marin-community/marin/pull/1270),
+    [code](https://github.com/marin-community/marin/blob/main/experiments/exp1183_olmoe.py),
+    [execution](https://marin.community/data-browser/experiment/?path=gs%3A%2F%2Fmarin-us-west4%2Fexperiments%2Fexp1183_olmoe-f9d291.json),
+    [WandB](https://api.wandb.ai/links/marin-community/qi3u8nx7)]
 
 ## Models 🌐
 
