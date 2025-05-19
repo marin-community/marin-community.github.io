@@ -132,7 +132,8 @@ Considering that, unlike Llama 3.1 Tulu, we have not yet done any reinforcement 
 we are optimistic that we can still improve the instruct model substantially.
 
 But don't take our word for it---try out these models yourself!
-You can download them from Hugging Face or use the [Together API](https://www.together.ai/models/marin-8b-instruct).
+You can download both from [Hugging Face](https://huggingface.co/marin-community) or
+try out Marin 8B Instruct at [Together AI](https://api.together.xyz/playground/v2/chat/marin-community/marin-8b-instruct).
 Please provide feedback either by submitting a [GitHub issue](https://github.com/marin-community/marin/issues/new/choose) or posting in our [Discord](https://discord.gg/J9CTk7pqcM).
 Or in the spirit of true open-source, you can try fixing it yourself at our [Datashop](https://marin.readthedocs.io/en/latest/tutorials/datashop/).
 
