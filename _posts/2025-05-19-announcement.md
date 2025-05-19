@@ -232,6 +232,7 @@ their support and fostering the belief that academia has an important role to
 play in the era of industrialized AI.
 - We would also like to thank the many people, including members of the [Stanford AI Lab](https://ai.stanford.edu/) and [Stanford NLP group](https://nlp.stanford.edu/), who have given advice and contributed valuable
 discussions.
+- Thanks to the Together AI team for [hosting](https://api.together.ai/playground/v2/chat/marin-community/marin-8b-instruct) the Marin 8B Instruct model.
 - We would also like to thank [Weights And Biases](https://wandb.ai/site/) for logging our many, many experiments.
 - Finally, we would like to give a big shoutout to the open-source community,
 without which Marin would simply be impossible.  Organizations such as
