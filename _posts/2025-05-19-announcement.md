@@ -3,7 +3,7 @@ layout: post
 title: "Introducing Marin: An Open Lab"
 authors:
 - David Hall
-- Ahmed Ahmed, Chris Chou, Abhinav Garg, Rohith Kuditipudi, Will Held, Nikil Ravi, Herumb Shandilya, Jason Wang 
+- Ahmed Ahmed, Chris Chou, Abhinav Garg, Rohith Kuditipudi, Will Held, Nikil Ravi, Herumb Shandilya, Jason Wang
 - Jason Bolton, Siddharth Karamcheti, Suhas Kotha, Tony Lee, Nelson Liu, Joel Niklaus, Ashwin Ramaswami, Kamyar Salahi, Kaiyue Wen, Chi Heem Wong, Sherry Yang, Ivan Zhou
 - Percy Liang
 date: 2025-05-19
@@ -13,7 +13,7 @@ categories: blog
 Open-source *software* is a marvelous success story:
 It powers the world's digital infrastructure.
 It allows anyone in the world to contribute based on merit.
-It leads to to greater innovation, collaboration, and security.
+It leads to greater innovation, collaboration, and security.
 
 In contrast, truly open-source AI is lagging behind.
 We have open-weight models (e.g., Llama, DeepSeek, Gemma), sometimes mistakenly called open-source models,
@@ -46,7 +46,7 @@ else's H100 cluster.
 ### A new form of openness
 
 Marin is an **open lab**, a lab in which the research and development of models
-is completely transparent.  We leverage GitHub to organize the open lab’s
+is completely transparent.  We leverage GitHub to organize the open lab's
 efforts, drawing as much infrastructure as we can from open-source software.
 Here's how it works:
 
@@ -65,7 +65,7 @@ example](https://github.com/marin-community/marin/blob/main/experiments/exp1183_
 The community can have a lively debate about experimental design.
 Because it's code, everything is there.
 
-4. Once the PR is approved, the the experiment will be launched.
+4. Once the PR is approved, the experiment will be launched.
  You can see the execution live
 ([example](https://marin.community/data-browser/experiment/?path=gs%3A%2F%2Fmarin-us-west4%2Fexperiments%2Fexp1183_olmoe-f9d291.json)),
 with links to [WandB](https://wandb.ai/marin-community/marin/reports/MoE-vs-Dense-1b--VmlldzoxMjgzMzI4OQ).
@@ -98,7 +98,7 @@ classifiers](https://github.com/marin-community/marin/issues/1290),
 and so on.  We built new datasets using improved [HTML to
 text](https://marin.readthedocs.io/en/latest/reports/markdownified-datasets/)
 and started doing crawling.  We fit [scaling laws](https://github.com/marin-community/marin/issues/780).
-These experiments have ethos of the [Stanford Building Language Models from Scratch (CS336)](cs336.stanford.edu) class,
+These experiments have the ethos of the [Stanford Building Language Models from Scratch (CS336)](https://cs336.stanford.edu) class,
 which tries to take everything apart.
 
 2. We performed a few **YOLO** runs which eventually led to our best models.  We
@@ -118,7 +118,7 @@ On **14 out of 19 standard benchmarks (MMLU, HellaSwag, GPQA, etc.), Marin 8B Ba
 
 We also performed supervised fine-tuning (SFT) of Marin 8B Base for ~5B tokens to produce [Marin 8B Instruct (deeper-starling-05-15)](https://huggingface.co/marin-community/marin-8b-instruct/tree/deeper-starling-05-15).
 We outperform OLMo 2, but still fall short of [Llama 3.1 fine-tuned on Tulu](https://arxiv.org/abs/2411.15124)---see [results](https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/#sft-evals) here.
-Considering that we have only done SFT not yet done any reinforcement learning from feedback (RLHF),
+Considering that we have only done SFT and not yet done any reinforcement learning from feedback (RLHF),
 we are optimistic that we can improve the instruct model substantially.
 
 But don't take our word for it---try out these models yourself!
