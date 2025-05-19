@@ -58,7 +58,7 @@ We trained some models in Marin:
 1. [Marin-8B-Base (deeper-starling)](https://huggingface.co/marin-community/marin-8b-base)
    [[issue](https://github.com/marin-community/marin/issues/600),
     [code](https://github.com/marin-community/marin/blob/main/experiments/tootsie/exp600_tootsie.py),
-    [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp600_tootsie-1f6fa2.json),
+    [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp600_tootsie-4699e2.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/Tootsie-8B---VmlldzoxMTY3MzU3OA)]:
     Beats Llama 3.1 8B base on 14/19 standard benchmarks!
     Read more in our [retrospective](TODO).
