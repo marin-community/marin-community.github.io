@@ -21,7 +21,7 @@ Here's the lifecycle of an [experiment](https://marin.readthedocs.io/en/latest/e
 3. Code defines a provenance graph which is **executed**; results are summarized in a **WandB** report.
 
 Some examples:
-1. Experiment 934: How does z-loss impact loss?<br>
+1. Experiment 935: How does z-loss impact loss?<br>
    [[issue](https://github.com/marin-community/marin/issues/935),
     [PR](https://github.com/marin-community/marin/pull/941),
     [code](https://github.com/marin-community/marin/blob/main/experiments/exp934_zloss.py),
