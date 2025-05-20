@@ -3,7 +3,7 @@ layout: post
 title: "Introducing Marin: An Open Lab for Building Foundation Models"
 authors:
 - David Hall
-- Ahmed Ahmed, Chris Chou, Abhinav Garg, Rohith Kuditipudi, Will Held, Nikil Ravi, Herumb Shandilya, Jason Wang
+- Ahmed Ahmed, Christopher Chou, Abhinav Garg, Rohith Kuditipudi, Will Held, Nikil Ravi, Herumb Shandilya, Jason Wang
 - Jason Bolton, Siddharth Karamcheti, Suhas Kotha, Tony Lee, Nelson Liu, Joel Niklaus, Ashwin Ramaswami, Kamyar Salahi, Kaiyue Wen, Chi Heem Wong, Sherry Yang, Ivan Zhou
 - Percy Liang
 date: 2025-05-19
@@ -171,7 +171,7 @@ Language models can in principle do anything, but in practice they have holes.
 An effective way to fill these holes is to curate relevant data.
 We have set up [Datashop](https://marin.readthedocs.io/en/latest/tutorials/datashop/) to do this.
 Suppose you would like the Marin 8B model to improve its capabilities along some dimension (e.g., chemistry).
-Using Datashop, you can upload a dataset or craft a prompt that usings an existing LM to curate a relevant dataset.
+Using Datashop, you can upload a dataset or craft a prompt that uses an existing LM to curate a relevant dataset.
 As before, the proposed experiment is codified in Python, submitted as a pull request,
 reviewed, and then executed live.
 Here is an [example](https://github.com/marin-community/marin/issues/963) of how Datashop can be used.
