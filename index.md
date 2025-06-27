@@ -77,7 +77,7 @@ We trained some models in Marin:
 3. Marin-32B-Base
    [[issue](https://github.com/marin-community/marin/issues/1295),
     [execution](http://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp859_big_tootsies-e9092f.json)]:
-    It is still training!  You can watch it live on [WandB](https://wandb.ai/marin-community/marin/runs/llama-32b-tootsie-2?nw=nwuserdlwh)🍿!
+    It is still training!  You can watch it live on [WandB](https://wandb.ai/marin-community/marin/reports/Marin-32B-WIP--VmlldzoxMzM3OTExOA)🍿!
 
 ## Speedrun 🏃
 
