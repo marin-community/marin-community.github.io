@@ -7,10 +7,12 @@ We invite anyone who shares our vision of open science and open-source to join a
 whether you want to try out a new architecture, training algorithm, dataset,
 evaluation...there is a lot to do!
 
-News (2025-05-19): Read our [announcement](/blog/2025/05/19/announcement/)!
+To learn more about the vision, read our [launch announcement](/blog/2025/05/19/announcement/).
 
 Want to jump in?  [Install](https://marin.readthedocs.io/en/latest/tutorials/installation/) the Marin code and
 [run your first experiment](https://marin.readthedocs.io/en/latest/tutorials/first-experiment/)!
+
+Want to stay up to date?  Join our [Discord](https://discord.gg/J9CTk7pqcM) or our [mailing list](https://groups.google.com/u/0/g/marin-community/).
 
 ## Experiments 🧪
 
