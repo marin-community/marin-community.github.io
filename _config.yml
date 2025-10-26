@@ -1,6 +1,6 @@
 theme: jekyll-theme-minimal
 repository: marin-community/marin-community.github.io
 title: Marin
-logo: assets/images/logo.webp
+logo: assets/images/marin-logo.svg
 permalink: /blog/:year/:month/:day/:title/
 future: true
