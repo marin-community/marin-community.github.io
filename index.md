@@ -79,7 +79,7 @@ We trained some models in Marin:
 3. Marin-32B-Base
    [[issue](https://github.com/marin-community/marin/issues/1295),
     [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp1529_32b_mantis_cooldown-c6f4b0.json)
-   New best open source base model! On par with Gemma 3 27PT (for English base model evals)
+   New best open source base model! On par with Gemma 3 27B PT (for English base model evals)
    Read more in our [retrospective](https://marin.readthedocs.io/en/latest/reports/marin-32b-retro/).
    
 
