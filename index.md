@@ -78,8 +78,10 @@ We trained some models in Marin:
    [Together AI](https://api.together.ai/playground/v2/chat/marin-community/marin-8b-instruct)!
 3. Marin-32B-Base
    [[issue](https://github.com/marin-community/marin/issues/1295),
-    [execution](http://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp859_big_tootsies-e9092f.json)]:
-    It is still training!  You can watch it live on [WandB](https://wandb.ai/marin-community/marin/reports/Marin-32B-WIP--VmlldzoxMzM3OTExOA)🍿!
+    [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp1529_32b_mantis_cooldown-c6f4b0.json)
+   New best open source base model! On par with Gemma 3 27B PT (for English base model evals)
+   Read more in our [retrospective](https://marin.readthedocs.io/en/latest/reports/marin-32b-retro/).
+   
 
 ## Speedrun 🏃
 
