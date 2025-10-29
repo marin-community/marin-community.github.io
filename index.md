@@ -78,10 +78,11 @@ We trained some models in Marin:
    [Together AI](https://api.together.ai/playground/v2/chat/marin-community/marin-8b-instruct)!
 3. Marin-32B-Base
    [[issue](https://github.com/marin-community/marin/issues/1295),
-    [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp1529_32b_mantis_cooldown-c6f4b0.json)
-   New best open source base model! On par with Gemma 3 27B PT (for English base model evals)
+    [code](https://github.com/marin-community/marin/blob/main/experiments/tootsie/exp1529_32b_mantis_cooldown.py),
+    [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp1529_32b_mantis_cooldown-c6f4b0.json)]:
+   Beats OLMo 2 32B Base on 14/19 standard benchmarks (making it the best open-source model as of Oct 29, 2025),
+   and is close to Gemma 3 27B PT and Qwen 2.5 32B Base (the best comparably-sized open-weight models).
    Read more in our [retrospective](https://marin.readthedocs.io/en/latest/reports/marin-32b-retro/).
-   
 
 ## Speedrun 🏃
 
