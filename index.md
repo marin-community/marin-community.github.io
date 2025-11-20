@@ -15,7 +15,7 @@ Want to jump in? We will help you [set up Marin](https://marin.readthedocs.io/en
    target="_blank"
    rel="noopener"
    style="display:inline-block;padding:0.85rem 1.75rem;background:#3662e3;color:#fff;border-radius:999px;font-weight:600;text-decoration:none;">
-Submit an Experiment
+Create a Submission
 </a>
 
 Want to stay up to date? Join our [Discord](https://discord.gg/J9CTk7pqcM) or our [mailing list](https://groups.google.com/u/0/g/marin-community/).
