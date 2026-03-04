@@ -28,37 +28,37 @@ Some examples:
 1. Experiment 935: How does z-loss impact loss?<br>
    [[issue](https://github.com/marin-community/marin/issues/935),
     [PR](https://github.com/marin-community/marin/pull/941),
-    [code](https://github.com/marin-community/marin/blob/68c8ed/experiments/exp934_zloss.py),
+    [code](https://github.com/marin-community/marin/blob/ef74efc1dc771c7b2704b252ae1b664375e2ef28/experiments/exp934_zloss.py),
     [execution](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2Fexp934_zloss-68c8ed.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/ZLoss-vs-Not-1-4B--VmlldzoxMjEzMzA1NA)]
 2. Experiment 950: How does pretraining learning rate impact SFT?<br>
    [[issue](https://github.com/marin-community/marin/issues/950),
     [PR](https://github.com/marin-community/marin/pull/952),
-    [code](https://github.com/marin-community/marin/blob/050465/experiments/exp950_sft_amenability.py),
+    [code](https://github.com/marin-community/marin/blob/66bf426298be7635712bb88939aa0d9210f74574/experiments/exp950_sft_amenability.py),
     [execution](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2Fexp950_sft_amenability-050465.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/How-does-Learning-Rate-Schedule-Impact-SFT---VmlldzoxMjgyNDkyOQ)]
 3. Experiment 163: Is BERT a better quality filter than fastText?<br>
    [[issue](https://github.com/marin-community/marin/issues/163),
     [PR](https://github.com/marin-community/marin/pull/1298),
-    [code](https://github.com/marin-community/marin/blob/d29862/experiments/exp163_bert.py),
+    [code](https://github.com/marin-community/marin/blob/43172b00d07e41ca52e5b7a99c556d0f45e35c34/experiments/exp163_bert.py),
     [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp163_bert-d29862.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/Experiment-163-Fasttext-vs-BERT--VmlldzoxMjgyOTk0OQ)]
 4. Experiment 1290: Which optimizers actually outperform AdamW?<br>
    [[issue](https://github.com/marin-community/marin/issues/1290),
     [PR](https://github.com/marin-community/marin/pull/1293),
-    [code](https://github.com/WhenWen/marin/tree/kaiyue/optimizers/marin/optimizer_sweep),
+    [code](https://github.com/marin-community/marin/tree/f464fee2b6b88c04f47c32d5d2b386759fe993f3/marin/optimizer_sweep),
     [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-eu-west4/experiments/exp725_adamwsweep_520M_1-e70fba.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/Fantastic-Optimizers-and-Where-to-Find-Them--VmlldzoxMjgzMzQ2NQ)]
 5. Experiment 1183: Are MoEs really better than dense models?<br>
    [[issue](https://github.com/marin-community/marin/issues/1183),
     [PR](https://github.com/marin-community/marin/pull/1270),
-    [code](https://github.com/marin-community/marin/blob/f9d291/experiments/exp1183_olmoe.py),
+    [code](https://github.com/marin-community/marin/blob/be9976c96190cabfbfc7c81ec26e9856c1e88758/experiments/exp1183_olmoe.py),
     [execution](https://marin.community/data-browser/experiment/?path=gs%3A%2F%2Fmarin-us-west4%2Fexperiments%2Fexp1183_olmoe-f9d291.json),
     [WandB](https://api.wandb.ai/links/marin-community/qi3u8nx7)]
 6. Experiment 702: How should you train on rare task-relevant data?<br>
    [[issue](https://github.com/marin-community/marin/issues/702),
     [PR](https://github.com/marin-community/marin/pull/1297),
-    [code](https://github.com/marin-community/marin/tree/main/experiments/two_stage),
+    [code](https://github.com/marin-community/marin/tree/bfbc4492aefe50291829e2ceebf1b3b94186da9c/experiments/two_stage),
     [execution](https://marin.community/data-browser/view/?paths=%5B%22gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2Fjoint_ptft-3b3709.json%22%5D),
     [WandB](https://wandb.ai/stanford-mercury/suhas-two-stage/reports/Two-stage-training-main-results-5-18---VmlldzoxMjgzNTg3MA?accessToken=2mbamb7vwfbaj8205ga8yojvyg471v3jkftrcwinp7vl4lnqfan3exsg7qs3scnx)]
 
