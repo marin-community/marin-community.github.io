@@ -9,6 +9,11 @@ evaluation...there is a lot to do!
 
 To learn more about the vision, read our [launch announcement](/blog/2025/05/19/announcement/).
 
+## Blog
+
+- [Async RL from Scratch on TPUs](/blog/2026/03/06/async-rl-from-scratch/)
+- [Introducing Marin: An Open Lab for Building Foundation Models](/blog/2025/05/19/announcement/)
+
 Want to jump in?  [Install](https://marin.readthedocs.io/en/latest/tutorials/installation/) the Marin code and
 [run your first experiment](https://marin.readthedocs.io/en/latest/tutorials/first-experiment/)!
 
