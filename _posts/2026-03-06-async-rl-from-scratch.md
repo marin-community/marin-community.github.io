@@ -134,7 +134,7 @@ Unfortunately, the AIME has only 30 questions, making evaluation extremely noisy
 Training Qwen 2.5 7B on [DeepMath-103K](https://huggingface.co/datasets/PRIME-RL/DeepMath-103K) showed steady Pass@16 gains (reaching 0.40) but Pass@1 remained near zero after 40 steps ([PR #2441](https://github.com/marin-community/marin/pull/2441)).
 Our hypothesis is that longer training may help---Pass@1 is noisier and harder than Pass@16, so there may be a threshold the model needs to surpass in Pass@16 before we see stable improvement in Pass@1.
 
-![AIME25 RL training results]({{ site.baseurl }}/assets/images/posts/async-rl-from-scratch/deepmath_103k.jpg)
+![AIME25 RL training results]({{ site.baseurl }}/assets/images/posts/async-rl-from-scratch/deepmath_103k.png)
 
 <p style="text-align: center;"><em>AIME25 training: Pass@16 steadily improves to 0.40, but Pass@1 remains far from the 0.175 target due to high evaluation variance.</em></p>
 
@@ -142,14 +142,12 @@ Our hypothesis is that longer training may help---Pass@1 is noisier and harder t
 
 While math is an excellent playground for testing RL, code is the domain that brings the most productivity to the real world and also brings much more complexity from the real world to our RL environments. One important lesson learned while expanding Marin RL to code is to always double-check the verifier logic. Our initial accuracy was falsely ~100% because the evaluation environment executed test scripts without invoking the validation function.
 
-![Code-R1 reproduced: HumanEval+ improved from 0.80 to 0.84]({{ site.baseurl }}/assets/images/posts/async-rl-from-scratch/code_r1_fluke.jpg)
-
 After fixing the eval, we reproduced Code-R1's results [[10]](#ref10) by training Qwen 2.5 7B Instruct with RL on 2K LeetCode questions ([PR #2286](https://github.com/marin-community/marin/pull/2286)).
-HumanEval+ improved from 0.80 to 0.84 in 264 steps, closely matching Code-R1's reported 0.848 ([wandb run](https://wandb.ai/marin-community/marin_post_training/runs/qwen2.5-7bi-1m-code-r1-lr=5e-7-20260112-231710-rollout-0)). One remaining issue is we observe pass@1 started to destablize after 240 steps. This is likely because we omitted the kl divergence used in Code-R1 [[10]](#ref10).
+HumanEval+ improved from 0.80 to 0.84 in 264 steps, closely matching Code-R1's reported 0.848 ([wandb run](https://wandb.ai/marin-community/marin_post_training/runs/qwen2.5-7bi-1m-code-r1-lr=5e-7-20260112-231710-rollout-0)). One remaining issue is we observe pass@1 started to destabilize after 240 steps. This is likely because we omitted the KL divergence used in Code-R1 [[10]](#ref10).
 
-![Code-R1 reproduced: HumanEval+ improved from 0.80 to 0.84]({{ site.baseurl }}/assets/images/posts/async-rl-from-scratch/code_r1.png)
+![Code-R1: bugged vs fixed eval on HumanEval+]({{ site.baseurl }}/assets/images/posts/async-rl-from-scratch/code_r1_combined.png)
 
-<p style="text-align: center;"><em>Code-R1 reproduction results. Marin closely matches the original paper's improvements on HumanEval+ after 264 steps.</em></p>
+<p style="text-align: center;"><em>Left: bugged verifier falsely showed ~100% accuracy. Right: after fixing the eval, HumanEval+ Pass@1 improves from 0.80 to 0.84, closely matching Code-R1's reported 0.848 (dashed line). Pass@1 destabilizes after ~240 steps.</em></p>
 
 ## What's next
 
