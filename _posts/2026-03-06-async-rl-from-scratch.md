@@ -38,11 +38,6 @@ We therefore decided to build our own Async RL pipeline from scratch. Over four 
 
 Before building anything new, we established baselines using [Tinker](https://github.com/marin-community/marin/issues/2016), a LoRA-based RL system running on GPU. Thankfully the folks at Thinking Machines did their due diligence and found LoRA matched full-tuning, so even though we weren't using LoRA we knew matching their results should lead us to a reasonable baseline [[8]](#ref8).
 
-One early finding: **model choice matters more than algorithm tuning**.
-Llama 1B completely failed GSM8K (0.04 accuracy after 200 steps) but solved addition perfectly.
-Meanwhile, Llama 8B Instruct jumped from 0.69 to 0.80 on GSM8K in a single step and improved from 0.26 to 0.51 on MATH in 180 steps.
-This gave us confidence to focus engineering effort on the 8B model.
-
 ## Sync RL: verifying correctness against the baseline
 
 Our first milestone was matching Tinker's results with Marin's own synchronous RL pipeline. Tinker exposes an importance-sampling policy-gradient loss that corrects for mismatch between the policy used to sample responses and the one used to train on them.
@@ -52,15 +47,13 @@ We began with Llama 3.2 1B. We found it performed well on synthetic tasks, but q
 
 Both Tinker and Marin's Sync RL converged to ~0.43 accuracy on MATH, though Marin took about 2x longer (80 steps vs. Tinker's 35 steps to reach 0.4).
 
-Our hypothesis is that the convergence gap came down to differences in early exploration behavior:
-Tinker's loss started 4x higher and was far more volatile, leading to more aggressive early exploration that helped the model learn the response format sooner (see the [entropy plot](https://wandb.ai/marin-community/marin_post_training/reports/Reproducing-Tinker-MATH-RL-baseline-in-Marin--VmlldzoxNTEzNDg3Nw) in our WandB report).
-Other contributing factors likely included different learning rate requirements for LoRA vs. full fine-tuning, and a potentially larger mismatch in sample/train log-probability divergence since we use vLLM for inference and JAX for training [[9]](#ref9). The 2x slower convergence could honestly be due to unknown engineering differences between the two implementations that we didn't have time to fully investigate.
+We hypothesize that the convergence gap is largely because full fine-tuning disrupted the model's format-following ability more than LoRA did. Marin's format accuracy started at just 0.47 and took ~80 steps to reach 0.80, suggesting the model spent significant training budget re-learning to produce correctly formatted responses before it could focus on improving math reasoning. LoRA's low-rank updates preserve the base model's existing capabilities, likely allowing Tinker to focus on math reasoning from the start (see the [WandB report](https://wandb.ai/marin-community/marin_post_training/reports/Reproducing-Tinker-MATH-RL-baseline-in-Marin--VmlldzoxNTEzNDg3Nw) for detailed training curves). Other contributing factors likely included a potentially larger sample/train log-probability divergence since we use vLLM for inference and JAX for training [[9]](#ref9).
 
 Still, this was a major milestone: reproducible RL training on TPU, confirmed across 3 independent runs.
 
-![Marin Sync RL matches Tinker test accuracy but converges 2x slower]({{ site.baseurl }}/assets/images/posts/async-rl-from-scratch/tinker.png)
+![Tinker vs Marin comparison: test accuracy, format accuracy, and entropy]({{ site.baseurl }}/assets/images/posts/async-rl-from-scratch/tinker_comparison.png)
 
-<p style="text-align: center;"><em>Marin Sync RL vs. Tinker on MATH-500. Both converge to ~0.43, but Tinker gets there in half the steps. (<a href="https://wandb.ai/marin-community/marin_post_training/reports/Reproducing-Tinker-MATH-RL-baseline-in-Marin--VmlldzoxNTEzNDg3Nw">WandB report</a>)</em></p>
+<p style="text-align: center;"><em>Tinker (LoRA) vs. Marin (Full FT) on MATH-500. Left: both converge to ~0.43 test accuracy, but Tinker crosses 0.40 at step 29 vs. Marin at step 81 (dashed vertical lines). Center: Marin's format accuracy starts at 0.47 and takes ~80 steps to reach 0.80 (dashed lines), suggesting full fine-tuning disrupted format-following. Right: entropy is similar between both runs, ruling out exploration differences as the cause. (<a href="https://wandb.ai/marin-community/marin_post_training/reports/Reproducing-Tinker-MATH-RL-baseline-in-Marin--VmlldzoxNTEzNDg3Nw">WandB report</a>)</em></p>
 
 ## Async RL: speeding up RL by decoupling training and inference
 
@@ -72,7 +65,7 @@ Synchronous RL was a good simple first step. Unfortunately, it is quite slow as 
 
 In December, we built an asynchronous pipeline where the trainer (Levanter) and actor (vLLM) run concurrently, with model weights synchronized via [Arrow Flight](https://arrow.apache.org/docs/format/Flight.html). This transition required solving several infrastructure challenges:
 
-- **Weight sync**: On-policy RL works best when the actor is sampling with weights close to the trainer's current policy, so we need to push updated weights to rollout workers frequently. At LLM scale this is hard because each sync moves tens of GB, and if it is too slow you either stall rollout generation waiting for fresh weights or keep sampling from stale policies.
+- **Weight sync**: On-policy RL typically assumes the actor is sampling with same weights as the trainer. For async RL the goal is then to push updated weights to rollout workers frequently so the generations remain as 'on-policy' as possible. At LLM scale this is hard because each sync moves tens of GB, and if it is too slow you either stall rollout generation waiting for fresh weights or keep sampling from stale policies.
     We were able to improve this by adding bfloat16 conversion ([PR #2388](https://github.com/marin-community/marin/pull/2388)), cutting transfer bandwidth in half from 32GB to 16GB and transfer time from 29s to 14s.
 - **In-flight updates**: In an async setup, the trainer wants to publish new weights frequently, but if the actor pauses to wait for every update then inference still becomes part of the critical path. That creates a bad tradeoff between stale policies and idle inference time. We fixed this by adding background weight-sync threads, so rollout workers wait only for the first weights and then continue sampling while newer weights are transferred and hot-reloaded in the background ([PR #2325](https://github.com/marin-community/marin/pull/2325)).
 
@@ -93,7 +86,7 @@ Despite our initial success, we noticed something was wrong as training progress
 
 ![Two async RL runs with identical configs diverged wildly]({{ site.baseurl }}/assets/images/posts/async-rl-from-scratch/async_divergence.png)
 
-<p style="text-align: center;"><em>2 async RL runs with identical configs diverged wildly after a few steps</em></p>
+<p style="text-align: center;"><em>Two identical async RL runs diverge on eval accuracy (left, red shaded region) while train accuracy remains indistinguishable (right). Bottom row shows EMA smoothing (α=0.7) to make the divergence clearer. The bug only affected sampling at inference time. (<a href="https://wandb.ai/marin-community/marin_post_training/reports/Async-RL-with-in-flight-updates-is-nondeterministic-with-vastly-different-test-results-and-policy-behavior-across-runs--VmlldzoxNTQzMzg5NA">WandB report</a>)</em></p>
 
 We systematically debugged the discrepancy, investigating the following culprits ([#2260](https://github.com/marin-community/marin/pull/2260)):
 
@@ -111,9 +104,15 @@ if top_k <= 0 or top_k >= vocab_size:
     top_k = 1  # BUG: forces greedy!
 ```
 
-vLLM's docs specify that `top_k=-1` means "consider all tokens," but this code converted `-1` to `1`, selecting only the highest-probability token regardless of temperature. We filed a bug report ([tpu-inference #1386](https://github.com/vllm-project/tpu-inference/issues/1386)) which suggested a fix that got merged.
+vLLM's docs specify that `top_k=-1` means "consider all tokens," but this code converted `-1` to `1`, selecting only the highest-probability token regardless of temperature. We filed a bug report ([tpu-inference #1386](https://github.com/vllm-project/tpu-inference/issues/1386)) and proposed a fix that got merged.
 
-This single bug explained the nondeterminism: tiny sampling differences under greedy sampling, amplified over dozens of RL steps, caused the runs to diverge. After merging all the async RL fixes, we confirmed that MATH-500 performance converged to a stable 0.46 (+/-0.02) ([GitHub comment](https://github.com/marin-community/marin/pull/2039#issuecomment-3764238643), [WandB run](https://wandb.ai/marin-community/marin_post_training/runs/llama-3.1-8bi-math-lr=2e-6-bs=1024-20260117-110441-rollout-0)).
+This bug explained the nondeterminism: under effective greedy sampling, tiny floating-point differences in logit ordering can break ties differently across runs, and these small deviations compound over dozens of RL steps. Separately, we also caught a [loss normalization regression](https://github.com/marin-community/marin/pull/2039#issuecomment-3764238643) where switching from global token normalization to per-example normalization in the DAPO loss caused a 13% accuracy drop---short responses were being overweighted relative to detailed reasoning chains.
+
+After fixing both issues, MATH-500 performance converged to a stable 0.46 (+/-0.02) over 186 steps ([WandB run](https://wandb.ai/marin-community/marin_post_training/runs/llama-3.1-8bi-math-lr=2e-6-bs=1024-20260117-110441-rollout-0)):
+
+![Post-fix async RL: stable convergence over 186 steps]({{ site.baseurl }}/assets/images/posts/async-rl-from-scratch/postfix_stability.png)
+
+<p style="text-align: center;"><em>After fixing the vLLM top-k bug and loss normalization regression, MATH-500 Pass@1 reaches 0.46 within 10 steps and remains stable (mean=0.45, ±2σ=0.028) over 186 steps of training.</em></p>
 
 ## Expanding to new models and benchmarks
 
@@ -128,10 +127,9 @@ After resolving these issues, we had both a working RL pipeline and support for 
 
 ### AIME25: harder math
 
-MATH-500 is becoming saturated for modern models, so we moved to AIME25---the benchmark used by OLMo 3, GLM 4.7, and DeepSeek.
-But AIME has only 30 questions, making evaluation extremely noisy: a single question difference shifts Pass@1 by 3%.
+MATH-500 was a good initial test bed to validate our pipeline, but it is becoming saturated for modern models. We thus moved to AIME---the benchmark used by OLMo 3, GLM 4.7, and DeepSeek.
 
-We addressed this by implementing a robust combinatorial Pass@k estimator (following the approach from Codex [[12]](#ref12), [lighteval](https://github.com/huggingface/lighteval), and DeepMath [[13]](#ref13)) and increasing the eval sample size K per task to 32 ([PR #2493](https://github.com/marin-community/marin/pull/2493)).
+Unfortunately, the AIME has only 30 questions, making evaluation extremely noisy: a single question difference shifts Pass@1 by 3%. We addressed this by implementing a robust combinatorial Pass@k estimator (following the approach from Codex [[12]](#ref12), [lighteval](https://github.com/huggingface/lighteval), and DeepMath [[13]](#ref13)) and increasing the eval sample size K per task to 32 ([PR #2493](https://github.com/marin-community/marin/pull/2493)).
 
 Training Qwen 2.5 7B on [DeepMath-103K](https://huggingface.co/datasets/PRIME-RL/DeepMath-103K) showed steady Pass@16 gains (reaching 0.40) but Pass@1 remained near zero after 40 steps ([PR #2441](https://github.com/marin-community/marin/pull/2441)).
 Our hypothesis is that longer training may help---Pass@1 is noisier and harder than Pass@16, so there may be a threshold the model needs to surpass in Pass@16 before we see stable improvement in Pass@1.
