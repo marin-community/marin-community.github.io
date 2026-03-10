@@ -36,15 +36,8 @@ We therefore decided to build our own Async RL pipeline from scratch. Over four 
 
 ## Establishing baselines with Tinker
 
-Before building anything new, we established baselines using [Tinker](https://github.com/marin-community/marin/issues/2016), a LoRA-based RL system running on GPU. Thankfully the folks at Thinking Machines did their due dilligence and found Lora matched full-tuning, so even though we weren't using Lora we knew matching their results should lead us to a reasonable baseline [[8]](#ref8)
+Before building anything new, we established baselines using [Tinker](https://github.com/marin-community/marin/issues/2016), a LoRA-based RL system running on GPU. Thankfully the folks at Thinking Machines did their due diligence and found LoRA matched full-tuning, so even though we weren't using LoRA we knew matching their results should lead us to a reasonable baseline [[8]](#ref8).
 
-We ran RL experiments over the following tasks:
-
-- synthethic addition [more clearly define what this task is]
-- GSM8K
-- MATH500
-
-(this is kind of obvious to RL practitioners and probably doesn't add much, we can just skip to interesting results)
 One early finding: **model choice matters more than algorithm tuning**.
 Llama 1B completely failed GSM8K (0.04 accuracy after 200 steps) but solved addition perfectly.
 Meanwhile, Llama 8B Instruct jumped from 0.69 to 0.80 on GSM8K in a single step and improved from 0.26 to 0.51 on MATH in 180 steps.
@@ -55,18 +48,15 @@ This gave us confidence to focus engineering effort on the 8B model.
 Our first milestone was matching Tinker's results with Marin's own synchronous RL pipeline. Tinker exposes an importance-sampling policy-gradient loss that corrects for mismatch between the policy used to sample responses and the one used to train on them.
 In practice, it samples several responses to the same prompt and reinforces the ones that do better than the others. We started from a similar objective in Marin, then moved to an RLOO-style loss with leave-one-out advantages.
 
-We began with Llama 3.2 1B. We found it performed well on the synthethic experiment, but quite poorly on GSM8k (0.04 accuracy after 200 steps). Meanwhile, Llama 8B Instruct jumped from 0.69 to 0.80 on GSM8K in a single step and improved from 0.26 to 0.51 on MATH in 180 steps, so we focused our efforts on Llama 3.1 8B where we could expand substantial gains through RL.
+We began with Llama 3.2 1B. We found it performed well on synthetic tasks, but quite poorly on GSM8K (0.04 accuracy after 200 steps). Meanwhile, Llama 8B Instruct jumped from 0.69 to 0.80 on GSM8K in a single step and improved from 0.26 to 0.51 on MATH in 180 steps, so we focused our efforts on Llama 3.1 8B where we could see substantial gains through RL.
 
 Both Tinker and Marin's Sync RL converged to ~0.43 accuracy on MATH, though Marin took about 2x longer (80 steps vs. Tinker's 35 steps to reach 0.4).
 
-[[AMA: Do we have evidence / an experiment for this? Seems very speculative, we can say it's a hypothesis but is there an experiment we can link?]]
-The convergence gap came down to differences in early exploration behavior:
-Tinker's loss started 4x higher and was far more volatile, leading to more aggressive early exploration that helped the model learn the response format sooner.
+Our hypothesis is that the convergence gap came down to differences in early exploration behavior:
+Tinker's loss started 4x higher and was far more volatile, leading to more aggressive early exploration that helped the model learn the response format sooner (see the [entropy plot](https://wandb.ai/marin-community/marin_post_training/reports/Reproducing-Tinker-MATH-RL-baseline-in-Marin--VmlldzoxNTEzNDg3Nw) in our WandB report).
+Other contributing factors likely included different learning rate requirements for LoRA vs. full fine-tuning, and a potentially larger mismatch in sample/train log-probability divergence since we use vLLM for inference and JAX for training [[9]](#ref9). The 2x slower convergence could honestly be due to unknown engineering differences between the two implementations that we didn't have time to fully investigate.
 
-[[ AMA: I changed the mistmatch thing because tinker also acknowledges mismatch between inference and training but we probably have higher mistmatch because they figure out determinisitc generation. Also should lora vs full-tuning be a factor if we tuned our learning rate well?]]
-Other contributing factors likely included LoRA vs. full fine-tuning requiring different learning rates we had to do, and a potentially larger mismatch in sample/train log-probability divergence as we are using vllm for inference and JAX for training [[9]](#ref9).
-[[AMA: I took out 'deterministic' because we're still not exactly determinisitc due to mistmatch]]
-Still, this was a major milestone: a sucessful reproducible RL training on TPU, confirmed across 3 independent runs.
+Still, this was a major milestone: reproducible RL training on TPU, confirmed across 3 independent runs.
 
 ![Marin Sync RL matches Tinker test accuracy but converges 2x slower]({{ site.baseurl }}/assets/images/posts/async-rl-from-scratch/tinker.png)
 
@@ -82,12 +72,9 @@ Synchronous RL was a good simple first step. Unfortunately, it is quite slow as 
 
 In December, we built an asynchronous pipeline where the trainer (Levanter) and actor (vLLM) run concurrently, with model weights synchronized via [Arrow Flight](https://arrow.apache.org/docs/format/Flight.html). This transition required solving several infrastructure challenges:
 
-[AMA: Kevin are there more PRs for weight sync that show other issues we ran into? this is the part of the code I understand the least TBD so could use your help here]
 - **Weight sync**: On-policy RL works best when the actor is sampling with weights close to the trainer's current policy, so we need to push updated weights to rollout workers frequently. At LLM scale this is hard because each sync moves tens of GB, and if it is too slow you either stall rollout generation waiting for fresh weights or keep sampling from stale policies.
-    We were able to improve this by added bfloat16 conversion ([PR #2388](https://github.com/marin-community/marin/pull/2388)), cutting transfer bandwidth  in half from 32GB to 16GB and transfer time from 29s to 14s.
+    We were able to improve this by adding bfloat16 conversion ([PR #2388](https://github.com/marin-community/marin/pull/2388)), cutting transfer bandwidth in half from 32GB to 16GB and transfer time from 29s to 14s.
 - **In-flight updates**: In an async setup, the trainer wants to publish new weights frequently, but if the actor pauses to wait for every update then inference still becomes part of the critical path. That creates a bad tradeoff between stale policies and idle inference time. We fixed this by adding background weight-sync threads, so rollout workers wait only for the first weights and then continue sampling while newer weights are transferred and hot-reloaded in the background ([PR #2325](https://github.com/marin-community/marin/pull/2325)).
-[ AMA: this isn't really an RL thing... I would remove this it's more of an idiosyncracy of the fact we're using Ray which is crappy, we should take this out]
-- **Resource contention**: Coordinator actors deadlocked on CPU allocation---fixed by setting `num_cpus=0` ([PR #2350](https://github.com/marin-community/marin/pull/2350)).
 
 
 The result: async RL matched sync RL quality (0.26 to 0.50 on MATH-500 in 10 steps) with a **1.21x speedup**:
@@ -126,11 +113,7 @@ if top_k <= 0 or top_k >= vocab_size:
 
 vLLM's docs specify that `top_k=-1` means "consider all tokens," but this code converted `-1` to `1`, selecting only the highest-probability token regardless of temperature. We filed a bug report ([tpu-inference #1386](https://github.com/vllm-project/tpu-inference/issues/1386)) which suggested a fix that got merged.
 
-[AMA: do we have an example of the runs being stable after this? right now we're just saying 'trust me bro' would be nice to show a plot pre fix and post fix!]
-This single bug explained the nondeterminism: tiny sampling differences under greedy sampling, amplified over dozens of RL steps, caused the runs to diverge. 
-
-
-
+This single bug explained the nondeterminism: tiny sampling differences under greedy sampling, amplified over dozens of RL steps, caused the runs to diverge. After merging all the async RL fixes, we confirmed that MATH-500 performance converged to a stable 0.46 (+/-0.02) ([GitHub comment](https://github.com/marin-community/marin/pull/2039#issuecomment-3764238643), [WandB run](https://wandb.ai/marin-community/marin_post_training/runs/llama-3.1-8bi-math-lr=2e-6-bs=1024-20260117-110441-rollout-0)).
 
 ## Expanding to new models and benchmarks
 
@@ -151,8 +134,7 @@ But AIME has only 30 questions, making evaluation extremely noisy: a single ques
 We addressed this by implementing a robust combinatorial Pass@k estimator (following the approach from Codex [[12]](#ref12), [lighteval](https://github.com/huggingface/lighteval), and DeepMath [[13]](#ref13)) and increasing the eval sample size K per task to 32 ([PR #2493](https://github.com/marin-community/marin/pull/2493)).
 
 Training Qwen 2.5 7B on [DeepMath-103K](https://huggingface.co/datasets/PRIME-RL/DeepMath-103K) showed steady Pass@16 gains (reaching 0.40) but Pass@1 remained near zero after 40 steps ([PR #2441](https://github.com/marin-community/marin/pull/2441)).
-[AMA do we have more concrete metrics to back this up? we should be clear when we have a hypothesis / when we are conjecturing
-This suggests longer training may help---the model is learning but hasn't yet concentrated probability mass on correct solutions.
+Our hypothesis is that longer training may help---Pass@1 is noisier and harder than Pass@16, so there may be a threshold the model needs to surpass in Pass@16 before we see stable improvement in Pass@1.
 
 ![AIME25 RL training results]({{ site.baseurl }}/assets/images/posts/async-rl-from-scratch/deepmath_103k.jpg)
 
@@ -181,10 +163,10 @@ For now, we are shifting our focus from RL to SFT in preparation for the next Ma
 
 ## Five lessons from building an RL pipeline from scratch
 
-1. **Establish baselines first.** As much as we would have loved to zero-shot an Async RL pipeline, we are grateful for Tinker as the baselines saved weeks of debugging by helpiung us sanity check our Sync RL pipeline.
-2. **Base model choice > algorithm tuning.** Llama 1B failed GSM8K while Llama 8B solved it in 1 step. This highlights the importance of mid-training / pre-training which we will further explore
-3. **Reproduce before innovating.** Code-R1 and MATH baselines caught subtle environment and prompt bugs. [AMA This is kind of the same as point one]
-4. **Evaluation needs care.** AIME25's 30 questions require multi-seed evals and careful estimators [AMA say more about this, what were we doing before? how does the new estimator make things better] [we should add a note about different prompt formatters for math 500!].
+1. **Establish baselines first.** As much as we would have loved to zero-shot an Async RL pipeline, we are grateful for Tinker as the baselines saved weeks of debugging by helping us sanity check our Sync RL pipeline.
+2. **Base model choice > algorithm tuning.** Llama 1B failed GSM8K while Llama 8B solved it in 1 step. This highlights the importance of mid-training / pre-training which we will further explore.
+3. **Verify your environments end-to-end.** Code-R1 and MATH baselines caught subtle verifier and prompt bugs that would have silently corrupted results. For example, our initial code evaluator reported ~100% accuracy because it ran test scripts without invoking the validation function.
+4. **Evaluation needs care.** AIME25's 30 questions make evaluation extremely noisy---a single question shifts Pass@1 by 3%. We initially estimated Pass@k by naively subsampling k trials from a pool of 16, which has high variance for small k. Switching to a combinatorial estimator ([PR #2493](https://github.com/marin-community/marin/pull/2493)) that uses all 16 trials gave us much more stable measurements. We also found that different prompt formatters for MATH-500 can significantly affect results, so consistency matters.
 5. **Infrastructure is most of the battle.** The most performant RL algorithms today are quite simple iterations of the policy gradient. On the other hand, managing memory, logging, weight sync, and dependencies correctly and efficiently is a non-trivial systems challenge.
 
 ## Acknowledgements
