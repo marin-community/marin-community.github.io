@@ -252,3 +252,72 @@ and many others, have been hugely inspirational in paving the way towards truly
 open-source foundation models.  They have released tools and datasets that have
 directly benefited Marin, and we can only hope to give back to the community
 through our efforts.
+
+## Cite this post
+
+<div class="cite-block">
+  <button type="button" class="cite-copy" data-target="cite-bibtex" aria-label="Copy BibTeX to clipboard">Copy</button>
+<pre id="cite-bibtex"><code>@misc{hall2025marin,
+  title        = {Introducing {Marin}: An Open Lab for Building Foundation Models},
+  author       = {Hall, David and Ahmed, Ahmed and Chou, Christopher and Garg, Abhinav
+                  and Kuditipudi, Rohith and Held, Will and Ravi, Nikil and Shandilya, Herumb
+                  and Wang, Jason and Bolton, Jason and Karamcheti, Siddharth and Kotha, Suhas
+                  and Lee, Tony and Liu, Nelson and Niklaus, Joel and Ramaswami, Ashwin
+                  and Salahi, Kamyar and Wen, Kaiyue and Wong, Chi Heem and Yang, Sherry
+                  and Zhou, Ivan and Liang, Percy},
+  year         = {2025},
+  month        = may,
+  howpublished = {Marin Community Blog},
+  url          = {https://marin.community/blog/2025/05/19/announcement/},
+  note         = {Blog post}
+}</code></pre>
+</div>
+
+<style>
+.cite-block { position: relative; }
+.cite-block pre {
+  background: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 16px;
+  padding-top: 40px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.cite-block code { background: transparent; padding: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.cite-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #24292f;
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.cite-copy:hover { background: #f3f4f6; }
+.cite-copy.copied { background: #2da44e; color: #ffffff; border-color: #2da44e; }
+</style>
+
+<script>
+document.querySelectorAll('.cite-copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var target = document.getElementById(btn.dataset.target);
+    if (!target) return;
+    navigator.clipboard.writeText(target.innerText).then(function () {
+      var original = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(function () {
+        btn.textContent = original;
+        btn.classList.remove('copied');
+      }, 1500);
+    });
+  });
+});
+</script>
