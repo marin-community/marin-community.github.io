@@ -6,6 +6,30 @@ authors:
 - Ahmed Ahmed, Christopher Chou, Abhinav Garg, Rohith Kuditipudi, Will Held, Nikil Ravi, Herumb Shandilya, Jason Wang
 - Jason Bolton, Siddharth Karamcheti, Suhas Kotha, Tony Lee, Nelson Liu, Joel Niklaus, Ashwin Ramaswami, Kamyar Salahi, Kaiyue Wen, Chi Heem Wong, Sherry Yang, Ivan Zhou
 - Percy Liang
+scholar_authors:
+- "Hall, David"
+- "Ahmed, Ahmed"
+- "Chou, Christopher"
+- "Garg, Abhinav"
+- "Kuditipudi, Rohith"
+- "Held, Will"
+- "Ravi, Nikil"
+- "Shandilya, Herumb"
+- "Wang, Jason"
+- "Bolton, Jason"
+- "Karamcheti, Siddharth"
+- "Kotha, Suhas"
+- "Lee, Tony"
+- "Liu, Nelson"
+- "Niklaus, Joel"
+- "Ramaswami, Ashwin"
+- "Salahi, Kamyar"
+- "Wen, Kaiyue"
+- "Wong, Chi Heem"
+- "Yang, Sherry"
+- "Zhou, Ivan"
+- "Liang, Percy"
+pdf_url: /assets/papers/2025-05-19-marin-announcement.pdf
 date: 2025-05-19
 categories: blog
 ---

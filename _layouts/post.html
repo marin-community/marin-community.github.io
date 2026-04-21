@@ -11,6 +11,12 @@ layout: default
 {% endfor %}
 </p>
 
+{% if page.pdf_url %}
+<p style="text-align: center; margin: 20px 0;">
+  <a href="{{ page.pdf_url | relative_url }}">Download PDF</a>
+</p>
+{% endif %}
+
 <hr/>
 
 {{content}}
