@@ -24,6 +24,9 @@ Here's the lifecycle of an [experiment](https://marin.readthedocs.io/en/latest/e
 2. A **pull request** is created with **code** that reproduces the experiment.
 3. Code defines a provenance graph which is **executed**; results are summarized in a **WandB** report.
 
+We also publish reusable analysis views, including the
+[Perplexity Gap Dashboard](/analysis/perplexity-gap/).
+
 Some examples:
 1. Experiment 935: How does z-loss impact loss?<br>
    [[issue](https://github.com/marin-community/marin/issues/935),
