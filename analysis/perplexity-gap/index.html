@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Perplexity Gap Dashboard | Marin</title>
+  <meta name="description" content="Interactive view of Marin perplexity-gap reports across base, multilingual, long-tail, and follow-up eval slices.">
+  <link rel="canonical" href="https://marin.community/analysis/perplexity-gap/">
+  <link rel="stylesheet" href="./dashboard.css">
+</head>
+<body>
+<div class="shell">
+    <div class="hero">
+      <div>
+        <h1>Perplexity Gap Dashboard</h1>
+        <div class="sub">Completed Marin gap reports rendered as a single dashboard. This refresh is driven by the finalized coverage matrix, the 32B wave2 run, the Common Crawl + game/music delta runs, and the follow-up LM-eval/package/structured slices. Positive gap means Marin is worse than the comparator. Negative gap means Marin is better.</div>
+      </div>
+      <div class="meta">Generated 2026-04-27 08:33 UTC<br>Coverage matrix + wave2 + delta + follow-up summaries read directly from GCS</div>
+    </div>
+
+    <div class="layout">
+      <aside class="panel sidebar">
+        <h2>Comparisons</h2>
+        <div id="comparison-list" class="comparison-list"></div>
+      </aside>
+
+      <main class="panel content">
+        <div class="run-header">
+          <div>
+            <h3 id="run-title"></h3>
+            <p id="run-subtitle"></p>
+          </div>
+          <div class="chips">
+            <div class="chip" id="chip-model-a"></div>
+            <div class="chip" id="chip-model-b"></div>
+          </div>
+        </div>
+
+        <div class="cards" id="cards"></div>
+
+        <section class="spotlight-section">
+          <h2>Base Raw Spotlights</h2>
+          <div class="section-note">Specific Paloma and Uncheatable slices worth remembering from the finalized 8B base_raw coverage-matrix runs.</div>
+          <div id="spotlights" class="spotlight-grid"></div>
+        </section>
+
+        <section class="example-section">
+          <details open>
+            <summary class="section-heading"><span class="section-title">Example Documents</span></summary>
+            <div class="section-note">Compact preview windows centered on the highest-gap local span in each document. Warm highlights mean Marin is behind; cool highlights mean Marin is ahead.</div>
+            <div class="example-grid" id="examples"></div>
+          </details>
+        </section>
+
+        <div class="controls">
+          <div>
+            <div class="tabs" id="tabs"></div>
+            <div class="sorts" id="sorts" style="margin-top:8px;"></div>
+            <div class="toggle-row">
+              <label class="toggle">
+                <input id="toggle-multilingual" type="checkbox">
+                <span>Hide multilingual</span>
+              </label>
+            </div>
+          </div>
+          <input id="search" class="search" placeholder="Filter rows by name or corpus">
+        </div>
+
+        <div class="legend">
+          <div><span class="swatch" style="background:var(--good)"></span>Marin better</div>
+          <div><span class="swatch" style="background:var(--bad)"></span>Comparator better</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Corpus</th>
+              <th>Name</th>
+              <th>Gap</th>
+              <th>Bar</th>
+              <th>Bytes</th>
+              <th>Docs</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+
+        <div class="foot" id="foot"></div>
+      </main>
+    </div>
+  </div>
+<script type="module" src="./dashboard.js"></script>
+</body>
+</html>
