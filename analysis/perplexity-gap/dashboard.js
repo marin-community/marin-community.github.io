@@ -121,7 +121,55 @@ const SPOTLIGHTS = [
       delta: 'Common Crawl + game/music',
       followup: 'Follow-up slices',
       wave2: 'Wave 2 slices',
+      all_available: 'All available diagnostic slices',
     };
+
+    const CODE_TAKEAWAY_BUCKETS = [
+      {
+        label: 'SVG/XML markup',
+        matches: (name) =>
+          name.startsWith('raw_web_markup/svg_stack/') ||
+          name.startsWith('long_tail_ppl_runnable/web_markup_image_text/svg_stack'),
+      },
+      {
+        label: 'GitHub source',
+        matches: (name) => name.startsWith('uncheatable_eval/github'),
+      },
+      {
+        label: 'GH Archive events',
+        matches: (name) => name.startsWith('gh_archive_structured_output/'),
+      },
+      {
+        label: 'Programming-language mix',
+        matches: (name) => name === 'paloma/dolma_100_programing_languages',
+      },
+      {
+        label: 'Hardware / Verilog',
+        matches: (name) =>
+          name.startsWith('hardware_rtl/') ||
+          name.startsWith('long_tail_ppl_runnable/formal_hardware/'),
+      },
+      {
+        label: 'Package metadata',
+        matches: (name) => name.startsWith('package_metadata/npm_registry_metadata'),
+      },
+    ];
+
+    const CODE_TAG_EXACT_NAMES = new Set([
+      'source:svg_stack',
+      'formal_hardware',
+      'package_metadata',
+      'paloma/dolma_100_programing_languages',
+    ]);
+    const CODE_TAG_PREFIXES = [
+      'raw_web_markup/svg_stack',
+      'long_tail_ppl_runnable/web_markup_image_text/svg_stack',
+      'uncheatable_eval/github',
+      'gh_archive_structured_output',
+      'hardware_rtl',
+      'long_tail_ppl_runnable/formal_hardware',
+      'package_metadata/npm_registry_metadata',
+    ];
 
     const DATASET_ALIAS_PREFIXES = ['issue:', 'epic:', 'source:', 'surface:', 'split:', 'family:', 'task:', 'renderer:', 'seed_range:', 'crawl:'];
     const DATASET_WRAPPER_PREFIXES = ['long_tail_ppl/', 'long_tail_ppl_runnable/'];
@@ -149,10 +197,22 @@ const SPOTLIGHTS = [
       return `<div class="name-refs">${refs.map((ref) => `<a class="ref-link ${ref.kind}" href="${ref.url}" target="_blank" rel="noopener noreferrer">${ref.label}</a>`).join('')}</div>`;
     }
 
+    function isCodeSubsetName(name) {
+      return CODE_TAG_EXACT_NAMES.has(name) || CODE_TAG_PREFIXES.some((prefix) => name.startsWith(prefix));
+    }
+
+    function tagsHtml(tags) {
+      if (!tags?.length) return '';
+      return `<div class="name-tags">${tags.map((tag) => `<span class="row-tag ${tag}">${tag}</span>`).join('')}</div>`;
+    }
+
     function decorateRow(row) {
       const refs = [];
+      const tags = [];
       let displayName = row.name;
       const name = row.name;
+
+      if (isCodeSubsetName(name)) tags.push('code');
 
       if (row.corpus === 'Base raw') {
         pushRef(refs, 'issue #4961', issueUrl(4961), 'issue');
@@ -210,7 +270,8 @@ const SPOTLIGHTS = [
         (name === 'raw_web_markup' && row.corpus === 'Common Crawl + game/music') ||
         name === 'source:common_crawl' ||
         name.startsWith('crawl:') ||
-        name.startsWith('raw_web_markup/common_crawl_');
+        name.startsWith('raw_web_markup/common_crawl_') ||
+        name.startsWith('raw_web_markup/common_crawl/');
 
       if (isSvgRawWebRow) {
         pushRef(refs, 'issue #5056', issueUrl(5056), 'issue');
@@ -218,6 +279,7 @@ const SPOTLIGHTS = [
       }
       if (isCommonCrawlRow) {
         pushRef(refs, 'issue #5056', issueUrl(5056), 'issue');
+        pushRef(refs, 'issue #5192', issueUrl(5192), 'issue');
         pushRef(refs, 'Common Crawl', DATASET_LINKS.commonCrawl, 'dataset');
       }
 
@@ -291,6 +353,7 @@ const SPOTLIGHTS = [
       }
       if (name === 'diagnostic_logs' || name.startsWith('diagnostic_logs')) {
         pushRef(refs, 'issue #5093', issueUrl(5093), 'issue');
+        pushRef(refs, 'issue #5121', issueUrl(5121), 'issue');
         pushRef(refs, 'LogHub', DATASET_LINKS.loghub, 'dataset');
       }
       if (name === 'diff_patch' || name.startsWith('diff_patch')) {
@@ -311,6 +374,7 @@ const SPOTLIGHTS = [
         ...row,
         displayName,
         refs,
+        tags,
       };
     }
 
@@ -339,6 +403,7 @@ const SPOTLIGHTS = [
           direction,
           displayName: decorated.displayName,
           refs: decorated.refs,
+          tags: decorated.tags,
           exampleKey: [corpusLabel(run), row.dataset, row.shard, row.row_index, direction].join('|'),
         };
       });
@@ -487,12 +552,71 @@ const SPOTLIGHTS = [
       return new Intl.NumberFormat('en-US').format(value);
     }
 
+    function fmtBytes(value) {
+      if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)} MB`;
+      if (value >= 1_000) return `${(value / 1_000).toFixed(1)} KB`;
+      return `${fmtInt(value)} B`;
+    }
+
+    function weightedSummary(rows) {
+      const bytes = rows.reduce((sum, row) => sum + row.bytes, 0);
+      const documents = rows.reduce((sum, row) => sum + row.documents, 0);
+      const deltaBits = rows.reduce((sum, row) => sum + row.delta_bits, 0);
+      return {
+        bytes,
+        documents,
+        gap_bpb: bytes ? deltaBits / bytes : 0,
+      };
+    }
+
+    function codeRows(rows) {
+      return canonicalDatasetRows(rows.filter((row) => CODE_TAKEAWAY_BUCKETS.some((bucket) => bucket.matches(row.name))));
+    }
+
+    function renderCodeTakeaway(comparison) {
+      const node = byId('code-takeaway');
+      const rows = codeRows(comparison.rows.top_datasets);
+      if (!rows.length) {
+        node.hidden = true;
+        node.innerHTML = '';
+        return;
+      }
+      node.hidden = false;
+      const hasAllAvailableRun = comparison.runs.some((run) => run.kind === 'all_available');
+      const total = weightedSummary(rows);
+      const isBehind = total.gap_bpb >= 0;
+      const bucketCards = CODE_TAKEAWAY_BUCKETS.map((bucket) => {
+        const bucketRows = rows.filter((row) => bucket.matches(row.name));
+        if (!bucketRows.length) return '';
+        const summary = weightedSummary(bucketRows);
+        const cls = summary.gap_bpb >= 0 ? 'bad' : 'good';
+        return `<div class="bucket-card">
+          <div class="bucket-name">${bucket.label}</div>
+          <div class="bucket-gap ${cls}">${fmtGap(summary.gap_bpb)}</div>
+          <div class="bucket-meta">${fmtInt(bucketRows.length)} row(s) | ${fmtBytes(summary.bytes)} | ${fmtInt(summary.documents)} docs</div>
+        </div>`;
+      }).join('');
+      node.innerHTML = `
+        <div class="takeaway-top">
+          <div>
+            <div class="takeaway-label">Code / code-adjacent</div>
+            <div class="takeaway-value ${isBehind ? 'bad' : 'good'}">${fmtGap(total.gap_bpb)}</div>
+            <div class="takeaway-meta">${fmtInt(rows.length)} de-duplicated row(s) | ${fmtBytes(total.bytes)} | ${fmtInt(total.documents)} docs</div>
+          </div>
+          <p class="takeaway-copy">
+            Marin is ${isBehind ? 'still behind' : 'ahead'} on the focused code and code-adjacent subset for this comparison. ${hasAllAvailableRun ? 'In the 32B run, the largest gap is on SVG/XML markup;' : 'The largest gap is on SVG/XML markup;'} GitHub source and GH Archive structured-output rows are also comparator-favored, while hardware/Verilog is close to parity.
+          </p>
+        </div>
+        <div class="takeaway-buckets">${bucketCards}</div>`;
+    }
+
     function card(label, row, cls) {
       if (!row) return `<div class="card"><div class="label">${label}</div><div class="name">n/a</div></div>`;
       return `<div class="card">
         <div class="label">${label}</div>
         <div class="name">${row.displayName ?? row.name}</div>
         <div class="subname">${row.corpus}</div>
+        ${tagsHtml(row.tags)}
         ${refsHtml(row.refs ?? [])}
         <div class="value ${cls}">${fmtGap(row.gap_bpb)}</div>
       </div>`;
@@ -559,6 +683,7 @@ const SPOTLIGHTS = [
             <div class="example-metrics">
               <span class="example-chip">${example.corpus}</span>
               <span class="example-chip">${fmtInt(example.bytes)} bytes</span>
+              ${example.tags?.includes('code') ? '<span class="example-chip tag-code">code</span>' : ''}
               <span class="example-gap ${gapClass}">${fmtGap(example.gap_bpb)}</span>
             </div>
           </div>
@@ -616,7 +741,8 @@ const SPOTLIGHTS = [
         rows = out.filter((row) =>
           row.name.toLowerCase().includes(q) ||
           (row.displayName ?? row.name).toLowerCase().includes(q) ||
-          row.corpus.toLowerCase().includes(q)
+          row.corpus.toLowerCase().includes(q) ||
+          (row.tags ?? []).some((tag) => tag.toLowerCase().includes(q))
         );
       } else {
         rows = out;
@@ -644,7 +770,7 @@ const SPOTLIGHTS = [
         const fillClass = row.gap_bpb >= 0 ? 'positive' : 'negative';
         return `<tr>
           <td class="name">${row.corpus}</td>
-          <td class="name"><div class="name-main">${row.displayName ?? row.name}</div>${refsHtml(row.refs ?? [])}</td>
+          <td class="name"><div class="name-main">${row.displayName ?? row.name}</div>${tagsHtml(row.tags)}${refsHtml(row.refs ?? [])}</td>
           <td class="metric">${fmtGap(row.gap_bpb)}</td>
           <td class="barcell"><div class="bar-track"><div class="bar-fill ${fillClass}" style="width:${width}"></div></div></td>
           <td class="bytes">${fmtInt(row.bytes)}</td>
@@ -686,8 +812,8 @@ const SPOTLIGHTS = [
       renderComparisonList();
       renderTabs();
       renderSorts();
-      renderSpotlights();
       const comparison = COMPARISONS.find((entry) => entry.id === state.comparisonId);
+      renderSpotlights();
       const visibleCorpora = comparison.corpora.filter((corpus) => !state.hideMultilingual || corpus !== 'Multilingual raw');
       const visibleHeadlineRows = visibleRows(comparison.rows.headline_groups);
       const visiblePatternRows = visibleRows(comparison.rows.pattern_buckets);
@@ -701,6 +827,7 @@ const SPOTLIGHTS = [
         card('Worst pattern', extremeRow(visiblePatternRows, 'max'), 'bad'),
         card('Best pattern', extremeRow(visiblePatternRows, 'min'), 'good'),
       ].join('');
+      renderCodeTakeaway(comparison);
       renderExamples(comparison);
       const rows = sortedRows(visibleRows(comparison.rows[state.view]));
       renderRows(rows);
