@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Perplexity Gap Dashboard | Marin</title>
-  <meta name="description" content="Interactive view of Marin perplexity-gap reports across base, multilingual, long-tail, and follow-up eval slices.">
+  <meta name="description" content="Interactive view of Marin perplexity-gap reports across the 32B all-available diagnostic run, including focused code and code-adjacent takeaways.">
   <link rel="canonical" href="https://marin.community/analysis/perplexity-gap/">
   <link rel="stylesheet" href="./dashboard.css">
 </head>
@@ -13,9 +13,9 @@
     <div class="hero">
       <div>
         <h1>Perplexity Gap Dashboard</h1>
-        <div class="sub">Completed Marin gap reports rendered as a single dashboard. This refresh is driven by the finalized coverage matrix, the 32B wave2 run, the Common Crawl + game/music delta runs, and the follow-up LM-eval/package/structured slices. Positive gap means Marin is worse than the comparator. Negative gap means Marin is better.</div>
+        <div class="sub">Completed Marin gap reports rendered as a single dashboard. This refresh is driven by the 32B all-available diagnostic run, with the earlier 8B base, multilingual, long-tail, Common Crawl, game/music, and follow-up slices kept for reference. The 32B run still shows a focused code and code-adjacent deficit, especially on SVG/XML markup, GitHub source, and GH Archive rows. Positive gap means Marin is worse than the comparator. Negative gap means Marin is better.</div>
       </div>
-      <div class="meta">Generated 2026-04-27 08:33 UTC<br>Coverage matrix + wave2 + delta + follow-up summaries read directly from GCS</div>
+      <div class="meta">Generated 2026-05-07 16:17 UTC<br>32B all-available diagnostic summary + 8B reference summaries read directly from GCS</div>
     </div>
 
     <div class="layout">
@@ -38,8 +38,10 @@
 
         <div class="cards" id="cards"></div>
 
+        <section class="code-section" id="code-takeaway"></section>
+
         <section class="spotlight-section">
-          <h2>Base Raw Spotlights</h2>
+          <h2>8B Base Raw Spotlights</h2>
           <div class="section-note">Specific Paloma and Uncheatable slices worth remembering from the finalized 8B base_raw coverage-matrix runs.</div>
           <div id="spotlights" class="spotlight-grid"></div>
         </section>
