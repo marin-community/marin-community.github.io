@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "code.github_source",
+  "title": "GitHub Python and C++ span heatmap",
+  "description": "Source-code examples from the GitHub Python and C++ slices. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "code",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "uncheatable_eval/github_python",
+      "label": "github_python",
+      "row_index": 200,
+      "shard": "github_python_20250901to20250914_jsonl_gz",
+      "bytes": 1602,
+      "score_byte_start": 0,
+      "score_byte_end": 1602,
+      "marin_bpb": 0.3784,
+      "qwen_bpb": 0.1082,
+      "gap_bpb": 0.2703,
+      "payload": "examples/github_python-github_python_20250901to20250914_jsonl_gz-row-200.json"
+    },
+    {
+      "dataset": "uncheatable_eval/github_python",
+      "label": "github_python",
+      "row_index": 219,
+      "shard": "github_python_20250901to20250914_jsonl_gz",
+      "bytes": 5000,
+      "score_byte_start": 0,
+      "score_byte_end": 5000,
+      "marin_bpb": 0.5988,
+      "qwen_bpb": 0.6323,
+      "gap_bpb": -0.0335,
+      "payload": "examples/github_python-github_python_20250901to20250914_jsonl_gz-row-219.json"
+    },
+    {
+      "dataset": "uncheatable_eval/github_cpp",
+      "label": "github_cpp",
+      "row_index": 226,
+      "shard": "github_cpp_20250901to20250914_jsonl_gz",
+      "bytes": 1264,
+      "score_byte_start": 0,
+      "score_byte_end": 1264,
+      "marin_bpb": 0.4644,
+      "qwen_bpb": 0.0677,
+      "gap_bpb": 0.3967,
+      "payload": "examples/github_cpp-github_cpp_20250901to20250914_jsonl_gz-row-226.json"
+    },
+    {
+      "dataset": "uncheatable_eval/github_cpp",
+      "label": "github_cpp",
+      "row_index": 93,
+      "shard": "github_cpp_20250901to20250914_jsonl_gz",
+      "bytes": 1077,
+      "score_byte_start": 0,
+      "score_byte_end": 1077,
+      "marin_bpb": 0.2069,
+      "qwen_bpb": 0.3119,
+      "gap_bpb": -0.105,
+      "payload": "examples/github_cpp-github_cpp_20250901to20250914_jsonl_gz-row-93.json"
+    }
+  ]
+}

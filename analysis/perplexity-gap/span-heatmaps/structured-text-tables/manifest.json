@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "structured_text.tables",
+  "title": "tables span heatmap",
+  "description": "Table-oriented structured-text slices restored in v14. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "structured_text",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "structured_text/totto",
+      "label": "totto",
+      "row_index": 105,
+      "shard": "staged_jsonl_gz",
+      "bytes": 184,
+      "score_byte_start": 0,
+      "score_byte_end": 184,
+      "marin_bpb": 1.2501,
+      "qwen_bpb": 1.0695,
+      "gap_bpb": 0.1806,
+      "payload": "examples/totto-staged_jsonl_gz-row-105.json"
+    },
+    {
+      "dataset": "structured_text/totto",
+      "label": "totto",
+      "row_index": 114,
+      "shard": "staged_jsonl_gz",
+      "bytes": 1076,
+      "score_byte_start": 0,
+      "score_byte_end": 1076,
+      "marin_bpb": 0.6293,
+      "qwen_bpb": 1.0773,
+      "gap_bpb": -0.448,
+      "payload": "examples/totto-staged_jsonl_gz-row-114.json"
+    },
+    {
+      "dataset": "structured_text/wikitablequestions",
+      "label": "wikitablequestions",
+      "row_index": 121,
+      "shard": "staged_jsonl_gz",
+      "bytes": 1004,
+      "score_byte_start": 0,
+      "score_byte_end": 1004,
+      "marin_bpb": 1.4177,
+      "qwen_bpb": 1.1258,
+      "gap_bpb": 0.2919,
+      "payload": "examples/wikitablequestions-staged_jsonl_gz-row-121.json"
+    },
+    {
+      "dataset": "structured_text/wikitablequestions",
+      "label": "wikitablequestions",
+      "row_index": 25,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2902,
+      "score_byte_start": 0,
+      "score_byte_end": 2902,
+      "marin_bpb": 0.7331,
+      "qwen_bpb": 1.1676,
+      "gap_bpb": -0.4344,
+      "payload": "examples/wikitablequestions-staged_jsonl_gz-row-25.json"
+    },
+    {
+      "dataset": "structured_text/gittables",
+      "label": "gittables",
+      "row_index": 113,
+      "shard": "staged_jsonl_gz",
+      "bytes": 4617,
+      "score_byte_start": 0,
+      "score_byte_end": 4617,
+      "marin_bpb": 0.85,
+      "qwen_bpb": 0.4772,
+      "gap_bpb": 0.3728,
+      "payload": "examples/gittables-staged_jsonl_gz-row-113.json"
+    },
+    {
+      "dataset": "structured_text/gittables",
+      "label": "gittables",
+      "row_index": 128,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2883,
+      "score_byte_start": 0,
+      "score_byte_end": 2883,
+      "marin_bpb": 0.8791,
+      "qwen_bpb": 0.9746,
+      "gap_bpb": -0.0955,
+      "payload": "examples/gittables-staged_jsonl_gz-row-128.json"
+    }
+  ]
+}

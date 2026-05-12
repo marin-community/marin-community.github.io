@@ -1,8 +1,40 @@
-const response = await fetch('./data.json');
+const ASSET_VERSION = '20260511-v21-arrow-icl-results';
+const response = await fetch(`./data.json?v=${ASSET_VERSION}`);
 if (!response.ok) {
   throw new Error(`Failed to load dashboard data: ${response.status} ${response.statusText}`);
 }
 const DATA = await response.json();
+let SPAN_HEATMAP_INDEX = null;
+let DOCUMENT_SAMPLE_INDEX = null;
+const SPAN_HEATMAP_STATE = {
+  openSetIds: new Set(),
+  manifests: new Map(),
+  examples: new Map(),
+  loading: new Set(),
+  errors: new Map(),
+};
+const DOCUMENT_SAMPLE_STATE = {
+  openSetIds: new Set(),
+  payloads: new Map(),
+  loading: new Set(),
+  errors: new Map(),
+};
+try {
+  const heatmapResponse = await fetch(`./span-heatmaps/manifest.json?v=${ASSET_VERSION}`);
+  if (heatmapResponse.ok) {
+    SPAN_HEATMAP_INDEX = await heatmapResponse.json();
+  }
+} catch {
+  SPAN_HEATMAP_INDEX = null;
+}
+try {
+  const sampleResponse = await fetch(`./document-samples/manifest.json?v=${ASSET_VERSION}`);
+  if (sampleResponse.ok) {
+    DOCUMENT_SAMPLE_INDEX = await sampleResponse.json();
+  }
+} catch {
+  DOCUMENT_SAMPLE_INDEX = null;
+}
 
 const SPOTLIGHTS = [
       {
@@ -66,6 +98,12 @@ const SPOTLIGHTS = [
             }
       }
 ];
+
+    const primaryViews = [
+      { id: 'gaps', label: 'Gaps' },
+      { id: 'examples', label: 'Example Documents' },
+      { id: 'heatmaps', label: 'Span Heatmap Samples' },
+    ];
 
     const views = [
       { id: 'headline_groups', label: 'Corpus Groups' },
@@ -409,6 +447,15 @@ const SPOTLIGHTS = [
       });
     }
 
+    function topDocumentsForDirection(run, direction) {
+      const globalRows = run.top_documents?.[direction] ?? [];
+      const byDataset = run.top_documents_by_dataset?.[direction] ?? {};
+      return [
+        ...globalRows,
+        ...Object.values(byDataset).flat(),
+      ];
+    }
+
     function extremeRow(rows, mode) {
       if (!rows.length) return null;
       if (mode === 'max') return rows.reduce((best, row) => row.gap_bpb > best.gap_bpb ? row : best);
@@ -510,10 +557,10 @@ const SPOTLIGHTS = [
         const datasetRows = canonicalDatasetRows(comparison.runs.flatMap((run) => withCorpus(run, run.top_datasets)));
         const patternRows = comparison.runs.flatMap((run) => withCorpus(run, run.pattern_buckets));
         const positiveDocs = canonicalExampleRows(
-          comparison.runs.flatMap((run) => withCorpusDocuments(run, run.top_documents?.model_a_worse ?? [], 'model_a_worse'))
+          comparison.runs.flatMap((run) => withCorpusDocuments(run, topDocumentsForDirection(run, 'model_a_worse'), 'model_a_worse'))
         );
         const negativeDocs = canonicalExampleRows(
-          comparison.runs.flatMap((run) => withCorpusDocuments(run, run.top_documents?.model_b_worse ?? [], 'model_b_worse'))
+          comparison.runs.flatMap((run) => withCorpusDocuments(run, topDocumentsForDirection(run, 'model_b_worse'), 'model_b_worse'))
         );
         return {
           ...comparison,
@@ -539,9 +586,134 @@ const SPOTLIGHTS = [
 
     const COMPARISONS = buildComparisons(DATA.runs);
 
-    let state = { comparisonId: COMPARISONS[0].id, view: 'headline_groups', sort: 'abs', query: '', hideMultilingual: false };
+    let state = {
+      comparisonId: COMPARISONS[0].id,
+      section: 'gaps',
+      view: 'headline_groups',
+      sort: 'abs',
+      query: '',
+      hideMultilingual: false,
+      selectedHeatmapId: null,
+      selectedDocumentSetId: null,
+    };
+    let applyingHashState = false;
+    let pendingAnchorScrollId = null;
 
     const byId = (id) => document.getElementById(id);
+
+    function domAnchorId(prefix, value) {
+      return `${prefix}-${String(value ?? '').replace(/[^A-Za-z0-9_-]+/g, '-')}`;
+    }
+
+    function requestAnchorScroll(elementId) {
+      pendingAnchorScrollId = elementId;
+    }
+
+    function consumeAnchorScroll() {
+      if (!pendingAnchorScrollId) return;
+      const elementId = pendingAnchorScrollId;
+      pendingAnchorScrollId = null;
+      requestAnimationFrame(() => {
+        byId(elementId)?.scrollIntoView({ block: 'start' });
+      });
+    }
+
+    function validPrimarySection(value) {
+      return primaryViews.some((view) => view.id === value);
+    }
+
+    function validView(value) {
+      return views.some((view) => view.id === value);
+    }
+
+    function validSort(value) {
+      return sorts.some((sort) => sort.id === value);
+    }
+
+    function validComparison(value) {
+      return COMPARISONS.some((comparison) => comparison.id === value);
+    }
+
+    function validHeatmapSet(value) {
+      return Boolean(value) && (SPAN_HEATMAP_INDEX?.sets ?? []).some((setEntry) => setEntry.id === value);
+    }
+
+    function validDocumentSet(value) {
+      return Boolean(value) && (DOCUMENT_SAMPLE_INDEX?.sets ?? []).some((setEntry) => setEntry.id === value);
+    }
+
+    function readHashParams() {
+      const rawHash = window.location.hash.replace(/^#/, '');
+      return new URLSearchParams(rawHash.startsWith('!') ? rawHash.slice(1) : rawHash);
+    }
+
+    function applyHashState() {
+      const params = readHashParams();
+      const comparisonId = params.get('comparison');
+      if (validComparison(comparisonId)) state.comparisonId = comparisonId;
+
+      const section = params.get('tab') ?? params.get('section');
+      if (validPrimarySection(section)) state.section = section;
+
+      const view = params.get('view');
+      if (validView(view)) state.view = view;
+
+      const sort = params.get('sort');
+      if (validSort(sort)) state.sort = sort;
+
+      state.query = params.get('q') ?? '';
+      state.hideMultilingual = ['1', 'true', 'yes'].includes(String(params.get('hideMultilingual') ?? '').toLowerCase());
+
+      const heatmapId = params.get('heatmap');
+      if (validHeatmapSet(heatmapId)) {
+        state.section = 'heatmaps';
+        state.selectedHeatmapId = heatmapId;
+        SPAN_HEATMAP_STATE.openSetIds.clear();
+        SPAN_HEATMAP_STATE.openSetIds.add(heatmapId);
+        requestAnchorScroll(domAnchorId('heatmap', heatmapId));
+      }
+
+      const documentSetId = params.get('document') ?? params.get('sample');
+      if (validDocumentSet(documentSetId)) {
+        state.section = 'examples';
+        state.selectedDocumentSetId = documentSetId;
+        DOCUMENT_SAMPLE_STATE.openSetIds.clear();
+        DOCUMENT_SAMPLE_STATE.openSetIds.add(documentSetId);
+        requestAnchorScroll(domAnchorId('document-sample', documentSetId));
+      }
+    }
+
+    function buildHash() {
+      const params = new URLSearchParams();
+      if (state.comparisonId !== COMPARISONS[0].id) params.set('comparison', state.comparisonId);
+      if (state.section !== 'gaps' || state.selectedHeatmapId || state.selectedDocumentSetId) {
+        params.set('tab', state.section);
+      }
+      if (state.section === 'gaps') {
+        if (state.view !== 'headline_groups') params.set('view', state.view);
+        if (state.sort !== 'abs') params.set('sort', state.sort);
+        if (state.query) params.set('q', state.query);
+      }
+      if (state.hideMultilingual) params.set('hideMultilingual', '1');
+      if (state.section === 'heatmaps' && state.selectedHeatmapId) {
+        params.set('heatmap', state.selectedHeatmapId);
+      }
+      if (state.section === 'examples' && state.selectedDocumentSetId) {
+        params.set('document', state.selectedDocumentSetId);
+      }
+      const serialized = params.toString();
+      return serialized ? `#${serialized}` : '';
+    }
+
+    function syncHash() {
+      if (applyingHashState) return;
+      const nextHash = buildHash();
+      const nextUrl = `${window.location.pathname}${window.location.search}${nextHash}`;
+      const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (nextUrl !== currentUrl) {
+        window.history.replaceState(null, '', nextUrl);
+      }
+    }
 
     function fmtGap(value) {
       const sign = value >= 0 ? '+' : '';
@@ -694,21 +866,511 @@ const SPOTLIGHTS = [
       </div>`;
     }
 
-    function renderExamples(comparison) {
-      const visibleExample = (row) => !state.hideMultilingual || row.corpus !== 'Multilingual raw';
-      const losing = diversifiedExamples(comparison.exampleDocs.model_a_worse.filter(visibleExample), 4);
-      const winning = diversifiedExamples(comparison.exampleDocs.model_b_worse.filter(visibleExample), 4);
-      const column = (title, kicker, rows, tone) => `<div class="example-column ${tone}">
+    function heatmapGlyph(ch) {
+      if (ch === ' ') return '\u00b7';
+      if (ch === '\t') return '\u21e5';
+      if (ch === '\n') return '\u21b5';
+      return ch;
+    }
+
+    const HEATMAP_GAP_DEADBAND_BPB = 0.025;
+    const HEATMAP_LOW_LOSS_BPB = 0.025;
+
+    function heatmapEffectiveGap(gap, marin, qwen) {
+      if (Math.max(Math.abs(marin), Math.abs(qwen)) < HEATMAP_LOW_LOSS_BPB) return 0;
+      if (Math.abs(gap) < HEATMAP_GAP_DEADBAND_BPB) return 0;
+      return gap;
+    }
+
+    function heatmapAlpha(value, maxAbs) {
+      if (!maxAbs) return '0.00';
+      const visibleMagnitude = Math.max(0, Math.abs(value) - HEATMAP_GAP_DEADBAND_BPB);
+      const visibleMax = Math.max(HEATMAP_GAP_DEADBAND_BPB, maxAbs - HEATMAP_GAP_DEADBAND_BPB);
+      const magnitude = Math.min(1, visibleMagnitude / visibleMax);
+      return (0.10 + magnitude * 0.58).toFixed(2);
+    }
+
+    function heatmapCharHtml(example, chars, index, maxAbs, scoredRange) {
+      const ch = chars[index];
+      const gap = example.gap_bpb_by_char[index] ?? 0;
+      const marin = example.marin_bpb_by_char[index] ?? 0;
+      const qwen = example.qwen_bpb_by_char[index] ?? 0;
+      const effectiveGap = heatmapEffectiveGap(gap, marin, qwen);
+      const title = `Marin ${marin.toFixed(3)} bpb | Qwen ${qwen.toFixed(3)} bpb | gap ${fmtGap(gap)}`;
+      const lineBreak = ch === '\n' ? '\n' : '';
+      const glyph = escapeHtml(heatmapGlyph(ch));
+      const roleClass = index >= scoredRange.charStart && index < scoredRange.charEnd ? 'heatmap-char-target' : 'heatmap-char-input';
+      if (!effectiveGap) {
+        return `<span class="heatmap-char heatmap-char-neutral ${roleClass}" title="${escapeHtml(title)}">${glyph}</span>${lineBreak}`;
+      }
+      const hue = effectiveGap >= 0 ? 12 : 212;
+      const alpha = heatmapAlpha(effectiveGap, maxAbs);
+      return `<span class="heatmap-char ${roleClass}" title="${escapeHtml(title)}" style="background: hsla(${hue}, 92%, 58%, ${alpha})">${glyph}</span>${lineBreak}`;
+    }
+
+    const HEATMAP_TEXT_ENCODER = new TextEncoder();
+
+    function heatmapCharByteOffsets(text) {
+      const offsets = [0];
+      for (const ch of text) {
+        offsets.push(offsets[offsets.length - 1] + HEATMAP_TEXT_ENCODER.encode(ch).length);
+      }
+      return offsets;
+    }
+
+    function heatmapScoredCharRange(example) {
+      const offsets = heatmapCharByteOffsets(example.text);
+      const scoreStart = Number(example.score_byte_start ?? 0);
+      const scoreEnd = Number(example.score_byte_end ?? offsets[offsets.length - 1]);
+      let charStart = 0;
+      while (charStart < offsets.length - 1 && offsets[charStart + 1] <= scoreStart) charStart += 1;
+      let charEnd = charStart;
+      while (charEnd < offsets.length - 1 && offsets[charEnd] < scoreEnd) charEnd += 1;
+      return { offsets, charStart, charEnd, scoreStart, scoreEnd };
+    }
+
+    function heatmapTextHtml(example, maxAbs) {
+      const chars = Array.from(example.text);
+      const scoredRange = heatmapScoredCharRange(example);
+      let html = '';
+      for (let index = 0; index < chars.length; index += 1) {
+        html += heatmapCharHtml(example, chars, index, maxAbs, scoredRange);
+      }
+      return html;
+    }
+
+    function heatmapWeightedBpb(values, offsets, charStart, charEnd) {
+      let bytes = 0;
+      let weighted = 0;
+      for (let index = charStart; index < charEnd; index += 1) {
+        const charBytes = offsets[index + 1] - offsets[index];
+        bytes += charBytes;
+        weighted += charBytes * Number(values[index] ?? 0);
+      }
+      return bytes ? { bytes, bpb: weighted / bytes } : null;
+    }
+
+    function heatmapTargetSplit(example) {
+      const { offsets, charStart, charEnd } = heatmapScoredCharRange(example);
+      if (charStart >= charEnd) return null;
+      const firstEnd = Math.min(charStart + 1, charEnd);
+      const firstMarin = heatmapWeightedBpb(example.marin_bpb_by_char, offsets, charStart, firstEnd);
+      const firstQwen = heatmapWeightedBpb(example.qwen_bpb_by_char, offsets, charStart, firstEnd);
+      const restMarin = heatmapWeightedBpb(example.marin_bpb_by_char, offsets, firstEnd, charEnd);
+      const restQwen = heatmapWeightedBpb(example.qwen_bpb_by_char, offsets, firstEnd, charEnd);
+      const metric = (marin, qwen) => marin && qwen ? {
+        bytes: marin.bytes,
+        marin_bpb: marin.bpb,
+        qwen_bpb: qwen.bpb,
+        gap_bpb: marin.bpb - qwen.bpb,
+      } : null;
+      return { first: metric(firstMarin, firstQwen), rest: metric(restMarin, restQwen) };
+    }
+
+    function heatmapSplitMetric(label, metric) {
+      if (!metric) return '';
+      const gapClass = metric.gap_bpb >= 0 ? 'bad' : 'good';
+      const title = `${label}: ${fmtInt(metric.bytes)} byte${metric.bytes === 1 ? '' : 's'} | Marin ${metric.marin_bpb.toFixed(3)} bpb | Qwen ${metric.qwen_bpb.toFixed(3)} bpb`;
+      return `<span class="heatmap-metric ${gapClass}" title="${escapeHtml(title)}">${escapeHtml(label)} ${fmtGap(metric.gap_bpb)}</span>`;
+    }
+
+    function heatmapManifestBase(manifestPath) {
+      const parts = String(manifestPath ?? '').split('/');
+      parts.pop();
+      return `./span-heatmaps/${parts.length ? `${parts.join('/')}/` : ''}`;
+    }
+
+    async function loadSpanHeatmapSet(setEntry) {
+      const setId = setEntry.id;
+      if (SPAN_HEATMAP_STATE.examples.has(setId) || SPAN_HEATMAP_STATE.loading.has(setId)) return;
+      SPAN_HEATMAP_STATE.loading.add(setId);
+      SPAN_HEATMAP_STATE.errors.delete(setId);
+      render();
+      try {
+        let manifest = SPAN_HEATMAP_STATE.manifests.get(setId);
+        if (!manifest) {
+          const manifestResponse = await fetch(`./span-heatmaps/${setEntry.manifest}?v=${ASSET_VERSION}`);
+          if (!manifestResponse.ok) {
+            throw new Error(`Failed to load ${setEntry.manifest}: ${manifestResponse.status} ${manifestResponse.statusText}`);
+          }
+          manifest = await manifestResponse.json();
+          SPAN_HEATMAP_STATE.manifests.set(setId, manifest);
+        }
+        const basePath = heatmapManifestBase(setEntry.manifest);
+        const examples = await Promise.all(
+          manifest.examples.map(async (entry) => {
+            const response = await fetch(`${basePath}${entry.payload}?v=${ASSET_VERSION}`);
+            if (!response.ok) {
+              throw new Error(`Failed to load ${entry.payload}: ${response.status} ${response.statusText}`);
+            }
+            return response.json();
+          })
+        );
+        SPAN_HEATMAP_STATE.examples.set(setId, examples);
+      } catch (error) {
+        SPAN_HEATMAP_STATE.errors.set(setId, error instanceof Error ? error.message : String(error));
+      } finally {
+        SPAN_HEATMAP_STATE.loading.delete(setId);
+        render();
+      }
+    }
+
+    function heatmapPlaceholderCard(entry) {
+      const gapClass = entry.gap_bpb >= 0 ? 'bad' : 'good';
+      return `<div class="heatmap-card">
+        <div class="heatmap-top">
+          <div>
+            <div class="heatmap-name">${escapeHtml(entry.label)} row ${fmtInt(entry.row_index)}</div>
+            <div class="heatmap-metrics">
+              <span class="heatmap-metric">${fmtInt(entry.bytes)} bytes</span>
+              <span class="heatmap-metric">Marin ${entry.marin_bpb.toFixed(3)} bpb</span>
+              <span class="heatmap-metric">Qwen ${entry.qwen_bpb.toFixed(3)} bpb</span>
+              <span class="heatmap-metric ${gapClass}">${fmtGap(entry.gap_bpb)}</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function heatmapCard(example, maxAbs) {
+      const gapClass = example.gap_bpb >= 0 ? 'bad' : 'good';
+      const split = heatmapTargetSplit(example);
+      const chars = heatmapTextHtml(example, maxAbs);
+      return `<div class="heatmap-card">
+        <div class="heatmap-top">
+          <div>
+            <div class="heatmap-name">${escapeHtml(example.label)} row ${fmtInt(example.row_index)}</div>
+            <div class="heatmap-metrics">
+              <span class="heatmap-metric">${fmtInt(example.bytes)} bytes</span>
+              <span class="heatmap-metric">Marin ${example.marin_bpb.toFixed(3)} bpb</span>
+              <span class="heatmap-metric">Qwen ${example.qwen_bpb.toFixed(3)} bpb</span>
+              <span class="heatmap-metric ${gapClass}">${fmtGap(example.gap_bpb)}</span>
+              ${split ? heatmapSplitMetric('first char', split.first) : ''}
+              ${split ? heatmapSplitMetric('rest target', split.rest) : ''}
+            </div>
+          </div>
+        </div>
+        <div class="heatmap-text">${chars}</div>
+      </div>`;
+    }
+
+    function heatmapMaxAbs(loadedExamples) {
+      let maxAbs = HEATMAP_GAP_DEADBAND_BPB;
+      if (!loadedExamples) return maxAbs;
+      for (const example of loadedExamples) {
+        for (let index = 0; index < example.gap_bpb_by_char.length; index += 1) {
+          const marin = example.marin_bpb_by_char[index] ?? 0;
+          const qwen = example.qwen_bpb_by_char[index] ?? 0;
+          const effectiveGap = Math.abs(heatmapEffectiveGap(example.gap_bpb_by_char[index], marin, qwen));
+          if (effectiveGap > maxAbs) maxAbs = effectiveGap;
+        }
+      }
+      return maxAbs;
+    }
+
+    function renderHeatmapSet(setEntry) {
+      const setId = setEntry.id;
+      const isOpen = SPAN_HEATMAP_STATE.openSetIds.has(setId);
+      const loadedExamples = SPAN_HEATMAP_STATE.examples.get(setId);
+      const manifest = SPAN_HEATMAP_STATE.manifests.get(setId);
+      const loading = SPAN_HEATMAP_STATE.loading.has(setId);
+      const error = SPAN_HEATMAP_STATE.errors.get(setId);
+      const maxAbs = heatmapMaxAbs(loadedExamples);
+      const cards = loadedExamples
+        ? loadedExamples.map((example) => heatmapCard(example, maxAbs)).join('')
+        : (manifest?.examples ?? []).map(heatmapPlaceholderCard).join('');
+      const status = error
+        ? `<div class="example-empty">Could not load heatmap payload: ${escapeHtml(error)}</div>`
+        : (!loadedExamples ? `<div class="example-empty">${loading ? 'Loading heatmap samples...' : 'Open this corpus sample to lazily load its manifest and per-character payloads.'}</div>` : '');
+      const gapClass = setEntry.aggregate_gap_bpb >= 0 ? 'bad' : 'good';
+      return `<div class="heatmap-set ${isOpen ? 'open' : ''}" id="${escapeHtml(domAnchorId('heatmap', setId))}" data-heatmap-set-id="${escapeHtml(setId)}">
+        <button class="heatmap-set-summary" type="button" data-heatmap-set-id="${escapeHtml(setId)}" aria-expanded="${isOpen ? 'true' : 'false'}">
+          <span class="heatmap-set-title">${escapeHtml(setEntry.title)}</span>
+          <span class="heatmap-set-meta">
+            <span>${fmtInt(setEntry.example_count)} samples</span>
+            <span>${fmtBytes(setEntry.text_bytes)}</span>
+            <span class="${gapClass}">${fmtGap(setEntry.aggregate_gap_bpb)}</span>
+          </span>
+        </button>
+        ${isOpen ? `<div class="section-note">${escapeHtml(setEntry.description ?? '')}</div>
+        <div class="heatmap-panel">
+          <div class="heatmap-legend">
+            <div><span class="heatmap-swatch" style="background:hsla(212,92%,58%,0.55)"></span>Marin lower bpb</div>
+            <div><span class="heatmap-swatch" style="background:hsla(12,92%,58%,0.55)"></span>Qwen lower bpb</div>
+            <div>Near-zero loss or gap is left neutral.</div>
+            <div><span class="heatmap-target-legend">target</span> underlined scored target</div>
+            <div>Hover any character for per-character bpb.</div>
+          </div>
+          ${status}
+          <div class="heatmap-grid">${cards}</div>
+        </div>
+        ` : ''}
+      </div>`;
+    }
+
+    function renderSpanHeatmap(comparison) {
+      const node = byId('span-heatmap');
+      const setEntries = (SPAN_HEATMAP_INDEX?.sets ?? []).filter((setEntry) =>
+        comparison.model_a === setEntry.model_a && comparison.model_b === setEntry.model_b
+      );
+      if (!setEntries.length) {
+        node.hidden = true;
+        node.innerHTML = '';
+        return;
+      }
+      node.hidden = false;
+      node.innerHTML = `
+        <div class="section-heading"><span class="section-title">${escapeHtml(SPAN_HEATMAP_INDEX.title ?? 'Span heatmap samples')}</span></div>
+        <div class="section-note">${escapeHtml(SPAN_HEATMAP_INDEX.description ?? '')}</div>
+        <div class="heatmap-set-list">${setEntries.map(renderHeatmapSet).join('')}</div>`;
+      node.querySelectorAll('button[data-heatmap-set-id]').forEach((button) => {
+        button.onclick = () => {
+          const setId = button.dataset.heatmapSetId;
+          const setEntry = setEntries.find((entry) => entry.id === setId);
+          if (!setEntry) return;
+          if (SPAN_HEATMAP_STATE.openSetIds.has(setId)) {
+            SPAN_HEATMAP_STATE.openSetIds.delete(setId);
+            if (state.selectedHeatmapId === setId) state.selectedHeatmapId = null;
+            renderSpanHeatmap(comparison);
+          } else {
+            SPAN_HEATMAP_STATE.openSetIds.add(setId);
+            state.selectedHeatmapId = setId;
+            requestAnchorScroll(domAnchorId('heatmap', setId));
+            renderSpanHeatmap(comparison);
+            loadSpanHeatmapSet(setEntry);
+          }
+          syncHash();
+        };
+      });
+      setEntries
+        .filter((setEntry) =>
+          SPAN_HEATMAP_STATE.openSetIds.has(setEntry.id) &&
+          !SPAN_HEATMAP_STATE.examples.has(setEntry.id) &&
+          !SPAN_HEATMAP_STATE.loading.has(setEntry.id)
+        )
+        .forEach((setEntry) => setTimeout(() => loadSpanHeatmapSet(setEntry), 0));
+      consumeAnchorScroll();
+    }
+
+    function datasetSliceCardHtml(row) {
+      const gapClass = row.gap_bpb >= 0 ? 'bad' : 'good';
+      return `<div class="example-card">
+        <div class="example-top">
+          <div>
+            <div class="example-name">${row.displayName ?? row.name}</div>
+            <div class="example-metrics">
+              <span class="example-chip">${row.corpus}</span>
+              <span class="example-chip">${fmtBytes(row.bytes)}</span>
+              <span class="example-chip">${fmtInt(row.documents)} docs</span>
+              ${row.tags?.includes('code') ? '<span class="example-chip tag-code">code</span>' : ''}
+              <span class="example-gap ${gapClass}">${fmtGap(row.gap_bpb)}</span>
+            </div>
+          </div>
+        </div>
+        ${refsHtml(row.refs ?? [])}
+      </div>`;
+    }
+
+    function isMultilingualRow(row) {
+      const key = String(row.name ?? row.dataset ?? '').toLowerCase();
+      return row.corpus === 'Multilingual raw' || key === 'fineweb2_multilingual' || key.startsWith('fineweb2_multilingual/');
+    }
+
+    function fallbackExampleRows(comparison, direction, limit) {
+      const rows = visibleRows(comparison.rows.top_datasets);
+      const filtered = rows.filter((row) => direction === 'model_a_worse' ? row.gap_bpb > 0 : row.gap_bpb < 0);
+      filtered.sort((a, b) => direction === 'model_a_worse' ? b.gap_bpb - a.gap_bpb : a.gap_bpb - b.gap_bpb);
+      return filtered.slice(0, limit);
+    }
+
+    function documentSampleSetsForComparison(comparison) {
+      return (DOCUMENT_SAMPLE_INDEX?.sets ?? []).filter((setEntry) =>
+        setEntry.comparison_id === comparison.id ||
+        (comparison.model_a === setEntry.model_a && comparison.model_b === setEntry.model_b)
+      );
+    }
+
+    async function loadDocumentSampleSet(setEntry) {
+      const setId = setEntry.id;
+      if (DOCUMENT_SAMPLE_STATE.payloads.has(setId) || DOCUMENT_SAMPLE_STATE.loading.has(setId)) return;
+      DOCUMENT_SAMPLE_STATE.loading.add(setId);
+      DOCUMENT_SAMPLE_STATE.errors.delete(setId);
+      render();
+      try {
+        const response = await fetch(`./document-samples/${setEntry.payload}?v=${ASSET_VERSION}`);
+        if (!response.ok) {
+          throw new Error(`Failed to load ${setEntry.payload}: ${response.status} ${response.statusText}`);
+        }
+        DOCUMENT_SAMPLE_STATE.payloads.set(setId, await response.json());
+      } catch (error) {
+        DOCUMENT_SAMPLE_STATE.errors.set(setId, error instanceof Error ? error.message : String(error));
+      } finally {
+        DOCUMENT_SAMPLE_STATE.loading.delete(setId);
+        render();
+      }
+    }
+
+    function normalizeDocumentSample(row, setEntry, direction) {
+      const dataset = row.dataset ?? row.name ?? setEntry.title;
+      const corpus = row.corpus ?? setEntry.corpus ?? setEntry.title;
+      const gapBpb = row.gap_bpb ?? (
+        row.model_a_bpb != null && row.model_b_bpb != null ? row.model_a_bpb - row.model_b_bpb : 0
+      );
+      const decorated = decorateRow({
+        name: dataset,
+        corpus,
+        bytes: row.bytes ?? row.text_bytes ?? String(row.preview ?? '').length,
+        documents: 1,
+        delta_bits: row.delta_bits ?? gapBpb * (row.bytes ?? 0),
+        gap_bpb: gapBpb,
+        model_a_bpb: row.model_a_bpb,
+        model_b_bpb: row.model_b_bpb,
+      });
+      return {
+        ...row,
+        dataset,
+        corpus,
+        direction,
+        bytes: row.bytes ?? row.text_bytes ?? String(row.preview ?? '').length,
+        gap_bpb: gapBpb,
+        displayName: row.displayName ?? decorated.displayName,
+        refs: row.refs ?? decorated.refs,
+        tags: row.tags ?? decorated.tags,
+      };
+    }
+
+    function payloadRowsForDirection(payload, direction) {
+      const rows = [];
+      if (Array.isArray(payload.examples)) {
+        rows.push(...payload.examples.filter((row) => (row.direction ?? direction) === direction));
+      } else if (Array.isArray(payload.examples?.[direction])) {
+        rows.push(...payload.examples[direction]);
+      }
+      if (Array.isArray(payload.top_documents?.[direction])) {
+        rows.push(...payload.top_documents[direction]);
+      }
+      const byDataset = payload.top_documents_by_dataset?.[direction];
+      if (byDataset && typeof byDataset === 'object') {
+        rows.push(...Object.values(byDataset).flat());
+      }
+      return rows;
+    }
+
+    function normalizedPayloadExamples(payload, setEntry) {
+      const grouped = { model_a_worse: [], model_b_worse: [] };
+      for (const direction of Object.keys(grouped)) {
+        const seen = new Set();
+        grouped[direction] = payloadRowsForDirection(payload, direction)
+          .map((row) => normalizeDocumentSample(row, setEntry, row.direction ?? direction))
+          .filter((row) => {
+            const key = [row.direction, row.dataset, row.shard, row.row_index, row.preview].join('|');
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+      }
+      return grouped;
+    }
+
+    function exampleColumnsHtml(losing, winning, losingDocs, winningDocs) {
+      const visibleExample = (row) => !state.hideMultilingual || !isMultilingualRow(row);
+      const column = (title, kicker, rows, tone, cardHtml) => `<div class="example-column ${tone}">
         <div class="example-header">
           <div class="example-title">${title}</div>
           <div class="example-kicker">${kicker}</div>
         </div>
-        <div class="example-list">${rows.length ? rows.map(exampleCardHtml).join('') : '<div class="example-empty">No examples for the current filter.</div>'}</div>
+        <div class="example-list">${rows.length ? rows.map(cardHtml).join('') : '<div class="example-empty">No examples for the current filter.</div>'}</div>
       </div>`;
-      byId('examples').innerHTML = [
-        column('Marin Behind', 'largest local positive gaps', losing, 'bad'),
-        column('Marin Ahead', 'largest local negative gaps', winning, 'good'),
+      return [
+        column('Marin Behind', losingDocs ? 'largest local positive gaps' : 'highest positive dataset slices', losing.filter(visibleExample), 'bad', losingDocs ? exampleCardHtml : datasetSliceCardHtml),
+        column('Marin Ahead', winningDocs ? 'largest local negative gaps' : 'highest negative dataset slices', winning.filter(visibleExample), 'good', winningDocs ? exampleCardHtml : datasetSliceCardHtml),
       ].join('');
+    }
+
+    function renderFallbackExamples(comparison) {
+      const visibleExample = (row) => !state.hideMultilingual || !isMultilingualRow(row);
+      const losingDocs = diversifiedExamples(comparison.exampleDocs.model_a_worse.filter(visibleExample), 4);
+      const winningDocs = diversifiedExamples(comparison.exampleDocs.model_b_worse.filter(visibleExample), 4);
+      const losing = losingDocs.length ? losingDocs : fallbackExampleRows(comparison, 'model_a_worse', 4);
+      const winning = winningDocs.length ? winningDocs : fallbackExampleRows(comparison, 'model_b_worse', 4);
+      byId('examples').innerHTML = `<div class="example-grid">${exampleColumnsHtml(losing, winning, Boolean(losingDocs.length), Boolean(winningDocs.length))}</div>`;
+    }
+
+    function renderDocumentSampleSet(setEntry) {
+      const setId = setEntry.id;
+      const isOpen = DOCUMENT_SAMPLE_STATE.openSetIds.has(setId);
+      const payload = DOCUMENT_SAMPLE_STATE.payloads.get(setId);
+      const loading = DOCUMENT_SAMPLE_STATE.loading.has(setId);
+      const error = DOCUMENT_SAMPLE_STATE.errors.get(setId);
+      const gapClass = (setEntry.aggregate_gap_bpb ?? 0) >= 0 ? 'bad' : 'good';
+      let body = '';
+      if (isOpen) {
+        const status = error
+          ? `<div class="example-empty">Could not load document payload: ${escapeHtml(error)}</div>`
+          : (!payload ? `<div class="example-empty">${loading ? 'Loading document samples...' : 'Open this corpus sample to lazily load its document payload.'}</div>` : '');
+        const columns = payload
+          ? (() => {
+            const grouped = normalizedPayloadExamples(payload, setEntry);
+            const losing = diversifiedExamples(grouped.model_a_worse, 10);
+            const winning = diversifiedExamples(grouped.model_b_worse, 10);
+            return `<div class="example-grid">${exampleColumnsHtml(losing, winning, true, true)}</div>`;
+          })()
+          : '';
+        body = `<div class="document-set-body">
+          <div class="section-note">${escapeHtml(setEntry.description ?? '')}</div>
+          ${status}
+          ${columns}
+        </div>`;
+      }
+      return `<div class="document-set ${isOpen ? 'open' : ''}" id="${escapeHtml(domAnchorId('document-sample', setId))}" data-document-set-id="${escapeHtml(setId)}">
+        <button class="document-set-summary" type="button" data-document-set-id="${escapeHtml(setId)}" aria-expanded="${isOpen ? 'true' : 'false'}">
+          <span class="document-set-title">${escapeHtml(setEntry.title)}</span>
+          <span class="document-set-meta">
+            <span>${fmtInt(setEntry.example_count ?? 0)} samples</span>
+            <span>${fmtInt(setEntry.dataset_count ?? 0)} datasets</span>
+            ${setEntry.text_bytes ? `<span>${fmtBytes(setEntry.text_bytes)}</span>` : ''}
+            ${Number.isFinite(setEntry.aggregate_gap_bpb) ? `<span class="${gapClass}">${fmtGap(setEntry.aggregate_gap_bpb)}</span>` : ''}
+          </span>
+        </button>
+        ${body}
+      </div>`;
+    }
+
+    function renderDocumentSamples(comparison) {
+      const setEntries = documentSampleSetsForComparison(comparison);
+      const node = byId('examples');
+      if (!setEntries.length) {
+        renderFallbackExamples(comparison);
+        return;
+      }
+      node.innerHTML = setEntries.map(renderDocumentSampleSet).join('');
+      node.querySelectorAll('button[data-document-set-id]').forEach((button) => {
+        button.onclick = () => {
+          const setId = button.dataset.documentSetId;
+          const setEntry = setEntries.find((entry) => entry.id === setId);
+          if (!setEntry) return;
+          if (DOCUMENT_SAMPLE_STATE.openSetIds.has(setId)) {
+            DOCUMENT_SAMPLE_STATE.openSetIds.delete(setId);
+            if (state.selectedDocumentSetId === setId) state.selectedDocumentSetId = null;
+            renderDocumentSamples(comparison);
+          } else {
+            DOCUMENT_SAMPLE_STATE.openSetIds.add(setId);
+            state.selectedDocumentSetId = setId;
+            requestAnchorScroll(domAnchorId('document-sample', setId));
+            renderDocumentSamples(comparison);
+            loadDocumentSampleSet(setEntry);
+          }
+          syncHash();
+        };
+      });
+      setEntries
+        .filter((setEntry) =>
+          DOCUMENT_SAMPLE_STATE.openSetIds.has(setEntry.id) &&
+          !DOCUMENT_SAMPLE_STATE.payloads.has(setEntry.id) &&
+          !DOCUMENT_SAMPLE_STATE.loading.has(setEntry.id)
+        )
+        .forEach((setEntry) => setTimeout(() => loadDocumentSampleSet(setEntry), 0));
+      consumeAnchorScroll();
     }
 
     function renderSpotlights() {
@@ -755,13 +1417,20 @@ const SPOTLIGHTS = [
 
     function visibleRows(rows) {
       if (!state.hideMultilingual) return rows;
-      return rows.filter((row) => row.corpus !== 'Multilingual raw');
+      return rows.filter((row) => !isMultilingualRow(row));
     }
 
-    function renderRows(rows) {
+    function renderRows(rows, showCorpusColumn) {
       const tbody = byId('rows');
+      byId('table-headings').innerHTML = `
+        ${showCorpusColumn ? '<th>Corpus</th>' : ''}
+        <th>Name</th>
+        <th>Gap</th>
+        <th>Bar</th>
+        <th>Bytes</th>
+        <th>Docs</th>`;
       if (!rows.length) {
-        tbody.innerHTML = '<tr><td colspan="6">No rows match the current filter.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="${showCorpusColumn ? 6 : 5}">No rows match the current filter.</td></tr>`;
         return;
       }
       const maxAbs = Math.max(...rows.map((row) => Math.abs(row.gap_bpb)), 0.001);
@@ -769,7 +1438,7 @@ const SPOTLIGHTS = [
         const width = `${Math.max(2, Math.round(Math.abs(row.gap_bpb) / maxAbs * 50))}%`;
         const fillClass = row.gap_bpb >= 0 ? 'positive' : 'negative';
         return `<tr>
-          <td class="name">${row.corpus}</td>
+          ${showCorpusColumn ? `<td class="name corpus-col">${row.corpus}</td>` : ''}
           <td class="name"><div class="name-main">${row.displayName ?? row.name}</div>${tagsHtml(row.tags)}${refsHtml(row.refs ?? [])}</td>
           <td class="metric">${fmtGap(row.gap_bpb)}</td>
           <td class="barcell"><div class="bar-track"><div class="bar-fill ${fillClass}" style="width:${width}"></div></div></td>
@@ -788,6 +1457,18 @@ const SPOTLIGHTS = [
       `).join('');
       document.querySelectorAll('[data-comparison-id]').forEach((node) => node.onclick = () => {
         state.comparisonId = node.dataset.comparisonId;
+        state.selectedHeatmapId = null;
+        state.selectedDocumentSetId = null;
+        SPAN_HEATMAP_STATE.openSetIds.clear();
+        DOCUMENT_SAMPLE_STATE.openSetIds.clear();
+        render();
+      });
+    }
+
+    function renderPrimaryTabs() {
+      byId('primary-tabs').innerHTML = primaryViews.map((view) => `<button class="primary-tab ${view.id === state.section ? 'active' : ''}" data-section="${view.id}">${view.label}</button>`).join('');
+      document.querySelectorAll('[data-section]').forEach((node) => node.onclick = () => {
+        state.section = node.dataset.section;
         render();
       });
     }
@@ -810,10 +1491,10 @@ const SPOTLIGHTS = [
 
     function render() {
       renderComparisonList();
+      renderPrimaryTabs();
       renderTabs();
       renderSorts();
       const comparison = COMPARISONS.find((entry) => entry.id === state.comparisonId);
-      renderSpotlights();
       const visibleCorpora = comparison.corpora.filter((corpus) => !state.hideMultilingual || corpus !== 'Multilingual raw');
       const visibleHeadlineRows = visibleRows(comparison.rows.headline_groups);
       const visiblePatternRows = visibleRows(comparison.rows.pattern_buckets);
@@ -821,19 +1502,31 @@ const SPOTLIGHTS = [
       byId('run-subtitle').textContent = `Merged across ${visibleCorpora.join(' | ')}${state.hideMultilingual ? ' (multilingual hidden)' : ''}`;
       byId('chip-model-a').textContent = `model_a: ${comparison.model_a}`;
       byId('chip-model-b').textContent = `model_b: ${comparison.model_b}`;
-      byId('cards').innerHTML = [
-        card('Worst group', extremeRow(visibleHeadlineRows, 'max'), 'bad'),
-        card('Best group', extremeRow(visibleHeadlineRows, 'min'), 'good'),
-        card('Worst pattern', extremeRow(visiblePatternRows, 'max'), 'bad'),
-        card('Best pattern', extremeRow(visiblePatternRows, 'min'), 'good'),
-      ].join('');
-      renderCodeTakeaway(comparison);
-      renderExamples(comparison);
-      const rows = sortedRows(visibleRows(comparison.rows[state.view]));
-      renderRows(rows);
-      byId('foot').innerHTML = `${DATA.note}<br>Showing ${rows.length} row(s) for ${views.find(v => v.id === state.view).label.toLowerCase()} in ${comparison.title}${state.hideMultilingual ? ' with multilingual hidden' : ''}.`;
-      byId('search').value = state.query;
+      byId('panel-gaps').hidden = state.section !== 'gaps';
+      byId('panel-examples').hidden = state.section !== 'examples';
+      byId('panel-heatmaps').hidden = state.section !== 'heatmaps';
+      if (state.section === 'gaps') {
+        renderSpotlights();
+        byId('cards').innerHTML = [
+          card('Worst group', extremeRow(visibleHeadlineRows, 'max'), 'bad'),
+          card('Best group', extremeRow(visibleHeadlineRows, 'min'), 'good'),
+          card('Worst pattern', extremeRow(visiblePatternRows, 'max'), 'bad'),
+          card('Best pattern', extremeRow(visiblePatternRows, 'min'), 'good'),
+        ].join('');
+        renderCodeTakeaway(comparison);
+        const rows = sortedRows(visibleRows(comparison.rows[state.view]));
+        const showCorpusColumn = new Set(rows.map((row) => row.corpus)).size > 1;
+        renderRows(rows, showCorpusColumn);
+        byId('foot').innerHTML = `${DATA.note}<br>Showing ${rows.length} row(s) for ${views.find(v => v.id === state.view).label.toLowerCase()} in ${comparison.title}${state.hideMultilingual ? ' with multilingual hidden' : ''}.`;
+        byId('search').value = state.query;
+      } else if (state.section === 'examples') {
+        renderDocumentSamples(comparison);
+      } else if (state.section === 'heatmaps') {
+        renderSpanHeatmap(comparison);
+      }
       byId('toggle-multilingual').checked = state.hideMultilingual;
+      byId('toggle-multilingual-examples').checked = state.hideMultilingual;
+      syncHash();
     }
 
     byId('search').addEventListener('input', (event) => {
@@ -846,4 +1539,20 @@ const SPOTLIGHTS = [
       render();
     });
 
+    byId('toggle-multilingual-examples').addEventListener('change', (event) => {
+      state.hideMultilingual = event.target.checked;
+      render();
+    });
+
+    window.addEventListener('hashchange', () => {
+      applyingHashState = true;
+      try {
+        applyHashState();
+        render();
+      } finally {
+        applyingHashState = false;
+      }
+    });
+
+    applyHashState();
     render();

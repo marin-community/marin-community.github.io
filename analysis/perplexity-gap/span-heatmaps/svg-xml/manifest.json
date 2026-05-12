@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "markup.svg_xml",
+  "title": "SVG/XML span heatmap",
+  "description": "SVG/XML validation and test slices. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "raw_web_markup",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "raw_web_markup/svg_stack/svg_xml_test",
+      "label": "svg_stack/svg_xml_test",
+      "row_index": 211,
+      "shard": "svg_xml_test_jsonl_gz",
+      "bytes": 11335,
+      "score_byte_start": 0,
+      "score_byte_end": 11335,
+      "marin_bpb": 4.5019,
+      "qwen_bpb": 3.8002,
+      "gap_bpb": 0.7018,
+      "payload": "examples/svg_stack-svg_xml_test-svg_xml_test_jsonl_gz-row-211.json"
+    },
+    {
+      "dataset": "raw_web_markup/svg_stack/svg_xml_test",
+      "label": "svg_stack/svg_xml_test",
+      "row_index": 92,
+      "shard": "svg_xml_test_jsonl_gz",
+      "bytes": 418,
+      "score_byte_start": 0,
+      "score_byte_end": 418,
+      "marin_bpb": 0.7744,
+      "qwen_bpb": 0.8372,
+      "gap_bpb": -0.0628,
+      "payload": "examples/svg_stack-svg_xml_test-svg_xml_test_jsonl_gz-row-92.json"
+    },
+    {
+      "dataset": "raw_web_markup/svg_stack/svg_xml_val",
+      "label": "svg_stack/svg_xml_val",
+      "row_index": 110,
+      "shard": "svg_xml_val_jsonl_gz",
+      "bytes": 2297,
+      "score_byte_start": 0,
+      "score_byte_end": 2297,
+      "marin_bpb": 2.4181,
+      "qwen_bpb": 1.8556,
+      "gap_bpb": 0.5625,
+      "payload": "examples/svg_stack-svg_xml_val-svg_xml_val_jsonl_gz-row-110.json"
+    },
+    {
+      "dataset": "raw_web_markup/svg_stack/svg_xml_val",
+      "label": "svg_stack/svg_xml_val",
+      "row_index": 6,
+      "shard": "svg_xml_val_jsonl_gz",
+      "bytes": 9306,
+      "score_byte_start": 0,
+      "score_byte_end": 9306,
+      "marin_bpb": 0.665,
+      "qwen_bpb": 0.7433,
+      "gap_bpb": -0.0783,
+      "payload": "examples/svg_stack-svg_xml_val-svg_xml_val_jsonl_gz-row-6.json"
+    }
+  ]
+}

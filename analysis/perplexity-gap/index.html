@@ -6,7 +6,7 @@
   <title>Perplexity Gap Dashboard | Marin</title>
   <meta name="description" content="Interactive view of Marin perplexity-gap reports across the 32B all-available diagnostic run, including focused code and code-adjacent takeaways.">
   <link rel="canonical" href="https://marin.community/analysis/perplexity-gap/">
-  <link rel="stylesheet" href="./dashboard.css">
+  <link rel="stylesheet" href="./dashboard.css?v=20260511-v20-target-underlines-only">
 </head>
 <body>
 <div class="shell">
@@ -15,7 +15,7 @@
         <h1>Perplexity Gap Dashboard</h1>
         <div class="sub">Completed Marin gap reports rendered as a single dashboard. This refresh is driven by the 32B all-available diagnostic run, with the earlier 8B base, multilingual, long-tail, Common Crawl, game/music, and follow-up slices kept for reference. The 32B run still shows a focused code and code-adjacent deficit, especially on SVG/XML markup, GitHub source, and GH Archive rows. Positive gap means Marin is worse than the comparator. Negative gap means Marin is better.</div>
       </div>
-      <div class="meta">Generated 2026-05-07 16:17 UTC<br>32B all-available diagnostic summary + 8B reference summaries read directly from GCS</div>
+      <div class="meta">Generated 2026-05-11 03:15 UTC<br>32B all-available diagnostic summary + CLRS/numeric stress tests + 8B reference summaries read directly from GCS</div>
     </div>
 
     <div class="layout">
@@ -36,61 +36,66 @@
           </div>
         </div>
 
-        <div class="cards" id="cards"></div>
+        <div class="primary-tabs" id="primary-tabs"></div>
 
-        <section class="code-section" id="code-takeaway"></section>
+        <section class="dashboard-tab-panel" id="panel-gaps">
+          <div class="cards" id="cards"></div>
 
-        <section class="spotlight-section">
-          <h2>8B Base Raw Spotlights</h2>
-          <div class="section-note">Specific Paloma and Uncheatable slices worth remembering from the finalized 8B base_raw coverage-matrix runs.</div>
-          <div id="spotlights" class="spotlight-grid"></div>
-        </section>
+          <section class="code-section" id="code-takeaway"></section>
 
-        <section class="example-section">
-          <details open>
-            <summary class="section-heading"><span class="section-title">Example Documents</span></summary>
-            <div class="section-note">Compact preview windows centered on the highest-gap local span in each document. Warm highlights mean Marin is behind; cool highlights mean Marin is ahead.</div>
-            <div class="example-grid" id="examples"></div>
-          </details>
-        </section>
+          <section class="spotlight-section">
+            <h2>8B Base Raw Spotlights</h2>
+            <div class="section-note">Specific Paloma and Uncheatable slices worth remembering from the finalized 8B base_raw coverage-matrix runs.</div>
+            <div id="spotlights" class="spotlight-grid"></div>
+          </section>
 
-        <div class="controls">
-          <div>
-            <div class="tabs" id="tabs"></div>
-            <div class="sorts" id="sorts" style="margin-top:8px;"></div>
-            <div class="toggle-row">
-              <label class="toggle">
-                <input id="toggle-multilingual" type="checkbox">
-                <span>Hide multilingual</span>
-              </label>
+          <div class="controls">
+            <div>
+              <div class="tabs" id="tabs"></div>
+              <div class="sorts" id="sorts"></div>
+              <div class="toggle-row">
+                <label class="toggle">
+                  <input id="toggle-multilingual" type="checkbox">
+                  <span>Hide multilingual</span>
+                </label>
+              </div>
             </div>
+            <input id="search" class="search" placeholder="Filter rows by name or corpus">
           </div>
-          <input id="search" class="search" placeholder="Filter rows by name or corpus">
-        </div>
 
-        <div class="legend">
-          <div><span class="swatch" style="background:var(--good)"></span>Marin better</div>
-          <div><span class="swatch" style="background:var(--bad)"></span>Comparator better</div>
-        </div>
+          <div class="legend">
+            <div><span class="swatch" style="background:var(--good)"></span>Marin better</div>
+            <div><span class="swatch" style="background:var(--bad)"></span>Comparator better</div>
+          </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Corpus</th>
-              <th>Name</th>
-              <th>Gap</th>
-              <th>Bar</th>
-              <th>Bytes</th>
-              <th>Docs</th>
-            </tr>
-          </thead>
-          <tbody id="rows"></tbody>
-        </table>
+          <table>
+            <thead>
+              <tr id="table-headings"></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
 
-        <div class="foot" id="foot"></div>
+          <div class="foot" id="foot"></div>
+        </section>
+
+        <section class="dashboard-tab-panel example-section" id="panel-examples" hidden>
+          <div class="section-heading"><span class="section-title">Example Documents</span></div>
+          <div class="section-note">Document payloads are loaded only when a corpus is opened. Each preview is centered on the highest-gap local span in that document.</div>
+          <div class="sample-toolbar">
+            <label class="toggle">
+              <input id="toggle-multilingual-examples" type="checkbox">
+              <span>Hide multilingual</span>
+            </label>
+          </div>
+          <div class="document-set-list" id="examples"></div>
+        </section>
+
+        <section class="dashboard-tab-panel heatmap-tab-panel" id="panel-heatmaps" hidden>
+          <section class="heatmap-section" id="span-heatmap"></section>
+        </section>
       </main>
     </div>
   </div>
-<script type="module" src="./dashboard.js"></script>
+<script type="module" src="./dashboard.js?v=20260511-v20-target-underlines-only"></script>
 </body>
 </html>

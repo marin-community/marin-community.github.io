@@ -1,0 +1,106 @@
+{
+  "name": "analysis/perplexity_gap/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-vs-qwen3_32b",
+  "fn_name": "<function find_model_perplexity_gap at 0x7f23803df2e0>",
+  "config": {
+    "name": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-vs-qwen3_32b",
+    "model_a_name": "marin-community/marin-32b-base",
+    "model_b_name": "Qwen/Qwen3-32B",
+    "model_a_scores_path": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea",
+    "model_b_scores_path": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0",
+    "resource_config": {
+      "cpu": 1,
+      "ram": "64g",
+      "disk": "20g",
+      "device": {
+        "kind": "cpu",
+        "variant": "cpu"
+      },
+      "preemptible": true,
+      "regions": [
+        "us-central1"
+      ],
+      "zone": null,
+      "replicas": 1,
+      "device_alternatives": null,
+      "image": null
+    },
+    "output_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-vs-qwen3_32b-91d1a4",
+    "wandb_tags": [
+      "eval=perplexity-gap",
+      "dataset_bundle=all_available_current_main_plus_diagnostic_logs",
+      "model_a=marin-community/marin-32b-base",
+      "model_b=Qwen/Qwen3-32B",
+      "region=us-central1",
+      "retry=v19_report_only_64gb"
+    ],
+    "cache_key": {
+      "name": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-vs-qwen3_32b",
+      "model_a_name": "marin-community/marin-32b-base",
+      "model_b_name": "Qwen/Qwen3-32B",
+      "resource_config": {
+        "cpu": 1,
+        "ram": "64g",
+        "disk": "20g",
+        "device": {
+          "kind": "cpu",
+          "variant": "cpu"
+        },
+        "preemptible": true,
+        "regions": [
+          "us-central1"
+        ],
+        "zone": null,
+        "replicas": 1,
+        "device_alternatives": null,
+        "image": null
+      },
+      "wandb_tags": [
+        "eval=perplexity-gap",
+        "dataset_bundle=all_available_current_main_plus_diagnostic_logs",
+        "model_a=marin-community/marin-32b-base",
+        "model_b=Qwen/Qwen3-32B",
+        "region=us-central1",
+        "retry=v19_report_only_64gb"
+      ]
+    }
+  },
+  "override_output_path": null,
+  "version": {
+    "name": "analysis/perplexity_gap/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-vs-qwen3_32b",
+    "config": {
+      "cache_key": {
+        "name": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-vs-qwen3_32b",
+        "model_a_name": "marin-community/marin-32b-base",
+        "model_b_name": "Qwen/Qwen3-32B",
+        "resource_config": {
+          "cpu": 1,
+          "ram": "64g",
+          "disk": "20g",
+          "device": {
+            "kind": "cpu",
+            "variant": "cpu"
+          },
+          "preemptible": true,
+          "regions": [
+            "us-central1"
+          ],
+          "zone": null,
+          "replicas": 1,
+          "device_alternatives": null,
+          "image": null
+        },
+        "wandb_tags": [
+          "eval=perplexity-gap",
+          "dataset_bundle=all_available_current_main_plus_diagnostic_logs",
+          "model_a=marin-community/marin-32b-base",
+          "model_b=Qwen/Qwen3-32B",
+          "region=us-central1",
+          "retry=v19_report_only_64gb"
+        ]
+      }
+    },
+    "dependencies": []
+  },
+  "dependencies": [],
+  "output_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-vs-qwen3_32b-91d1a4"
+}

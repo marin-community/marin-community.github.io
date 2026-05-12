@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "synthetic_numeric_format_ppl.dense_numeric_blobs",
+  "title": "dense numeric blobs (equals prompt) span heatmap",
+  "description": "SVG path numeric blobs, mmCIF coordinate tables, and format-preserving numeric transforms using the base-model equals prompt format. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "synthetic_numeric_format_prompt_ablation_ppl",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/dense_numeric_blobs/svg_path_numeric_blobs",
+      "label": "equals/dense_numeric_blobs/svg_path_numeric_blobs",
+      "row_index": 124,
+      "shard": "0",
+      "bytes": 31,
+      "score_byte_start": 640,
+      "score_byte_end": 671,
+      "marin_bpb": 2.0855,
+      "qwen_bpb": 2.0168,
+      "gap_bpb": 0.0687,
+      "payload": "examples/equals-dense_numeric_blobs-svg_path_numeric_blobs-0-row-124.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/dense_numeric_blobs/svg_path_numeric_blobs",
+      "label": "equals/dense_numeric_blobs/svg_path_numeric_blobs",
+      "row_index": 24,
+      "shard": "0",
+      "bytes": 31,
+      "score_byte_start": 591,
+      "score_byte_end": 622,
+      "marin_bpb": 2.3096,
+      "qwen_bpb": 2.5195,
+      "gap_bpb": -0.2099,
+      "payload": "examples/equals-dense_numeric_blobs-svg_path_numeric_blobs-0-row-24.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/dense_numeric_blobs/mmcif_coordinate_tables",
+      "label": "equals/dense_numeric_blobs/mmcif_coordinate_tables",
+      "row_index": 211,
+      "shard": "0",
+      "bytes": 63,
+      "score_byte_start": 2260,
+      "score_byte_end": 2323,
+      "marin_bpb": 0.3147,
+      "qwen_bpb": 0.0569,
+      "gap_bpb": 0.2578,
+      "payload": "examples/equals-dense_numeric_blobs-mmcif_coordinate_tables-0-row-211.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/dense_numeric_blobs/mmcif_coordinate_tables",
+      "label": "equals/dense_numeric_blobs/mmcif_coordinate_tables",
+      "row_index": 65,
+      "shard": "0",
+      "bytes": 63,
+      "score_byte_start": 2260,
+      "score_byte_end": 2323,
+      "marin_bpb": 0.114,
+      "qwen_bpb": 0.2336,
+      "gap_bpb": -0.1196,
+      "payload": "examples/equals-dense_numeric_blobs-mmcif_coordinate_tables-0-row-65.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/format_transforms/format_preserving_transforms",
+      "label": "equals/format_transforms/format_preserving_transforms",
+      "row_index": 97,
+      "shard": "0",
+      "bytes": 55,
+      "score_byte_start": 385,
+      "score_byte_end": 440,
+      "marin_bpb": 0.2009,
+      "qwen_bpb": 0.0618,
+      "gap_bpb": 0.1391,
+      "payload": "examples/equals-format_transforms-format_preserving_transforms-0-row-97.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/format_transforms/format_preserving_transforms",
+      "label": "equals/format_transforms/format_preserving_transforms",
+      "row_index": 178,
+      "shard": "0",
+      "bytes": 57,
+      "score_byte_start": 402,
+      "score_byte_end": 459,
+      "marin_bpb": 0.0626,
+      "qwen_bpb": 0.1966,
+      "gap_bpb": -0.134,
+      "payload": "examples/equals-format_transforms-format_preserving_transforms-0-row-178.json"
+    }
+  ]
+}

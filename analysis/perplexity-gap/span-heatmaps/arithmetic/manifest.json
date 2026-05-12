@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "synthetic_reasoning_ppl.arithmetic",
+  "title": "arithmetic span heatmap",
+  "description": "Arithmetic examples in neutral arrow-format 5-shot ICL, target-only scored. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "synthetic_reasoning_ppl",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "synthetic_reasoning_ppl/stepmath/arithmetic",
+      "label": "stepmath/arithmetic",
+      "row_index": 4,
+      "shard": "0",
+      "bytes": 56,
+      "score_byte_start": 1282,
+      "score_byte_end": 1338,
+      "marin_bpb": 0.2471,
+      "qwen_bpb": 0.0721,
+      "gap_bpb": 0.175,
+      "payload": "examples/stepmath-arithmetic-0-row-4.json"
+    },
+    {
+      "dataset": "synthetic_reasoning_ppl/stepmath/arithmetic",
+      "label": "stepmath/arithmetic",
+      "row_index": 200,
+      "shard": "0",
+      "bytes": 58,
+      "score_byte_start": 1492,
+      "score_byte_end": 1550,
+      "marin_bpb": 0.1512,
+      "qwen_bpb": 0.2782,
+      "gap_bpb": -0.1271,
+      "payload": "examples/stepmath-arithmetic-0-row-200.json"
+    },
+    {
+      "dataset": "synthetic_reasoning_ppl/stepmath/arithmetic_5shot_icl",
+      "label": "stepmath/arithmetic_5shot_icl",
+      "row_index": 4,
+      "shard": "0",
+      "bytes": 56,
+      "score_byte_start": 1282,
+      "score_byte_end": 1338,
+      "marin_bpb": 0.2471,
+      "qwen_bpb": 0.0721,
+      "gap_bpb": 0.175,
+      "payload": "examples/stepmath-arithmetic_5shot_icl-0-row-4.json"
+    },
+    {
+      "dataset": "synthetic_reasoning_ppl/stepmath/arithmetic_5shot_icl",
+      "label": "stepmath/arithmetic_5shot_icl",
+      "row_index": 200,
+      "shard": "0",
+      "bytes": 58,
+      "score_byte_start": 1492,
+      "score_byte_end": 1550,
+      "marin_bpb": 0.1512,
+      "qwen_bpb": 0.2782,
+      "gap_bpb": -0.1271,
+      "payload": "examples/stepmath-arithmetic_5shot_icl-0-row-200.json"
+    }
+  ]
+}
