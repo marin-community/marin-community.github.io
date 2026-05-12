@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "synthetic_numeric_format_ppl.structured_records",
+  "title": "structured records (equals prompt) span heatmap",
+  "description": "CSV/TSV rows, IP/port rows, and JSON numeric arrays using the base-model equals prompt format. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "synthetic_numeric_format_prompt_ablation_ppl",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/structured_records/tabular_tsv_csv",
+      "label": "equals/structured_records/tabular_tsv_csv",
+      "row_index": 34,
+      "shard": "0",
+      "bytes": 27,
+      "score_byte_start": 689,
+      "score_byte_end": 716,
+      "marin_bpb": 0.8682,
+      "qwen_bpb": 0.6176,
+      "gap_bpb": 0.2506,
+      "payload": "examples/equals-structured_records-tabular_tsv_csv-0-row-34.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/structured_records/tabular_tsv_csv",
+      "label": "equals/structured_records/tabular_tsv_csv",
+      "row_index": 121,
+      "shard": "0",
+      "bytes": 27,
+      "score_byte_start": 689,
+      "score_byte_end": 716,
+      "marin_bpb": 0.6395,
+      "qwen_bpb": 0.8895,
+      "gap_bpb": -0.25,
+      "payload": "examples/equals-structured_records-tabular_tsv_csv-0-row-121.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/structured_records/network_ip_port_rows",
+      "label": "equals/structured_records/network_ip_port_rows",
+      "row_index": 151,
+      "shard": "0",
+      "bytes": 79,
+      "score_byte_start": 1789,
+      "score_byte_end": 1868,
+      "marin_bpb": 0.597,
+      "qwen_bpb": 0.5476,
+      "gap_bpb": 0.0495,
+      "payload": "examples/equals-structured_records-network_ip_port_rows-0-row-151.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/structured_records/network_ip_port_rows",
+      "label": "equals/structured_records/network_ip_port_rows",
+      "row_index": 193,
+      "shard": "0",
+      "bytes": 76,
+      "score_byte_start": 1767,
+      "score_byte_end": 1843,
+      "marin_bpb": 0.5732,
+      "qwen_bpb": 0.6611,
+      "gap_bpb": -0.0879,
+      "payload": "examples/equals-structured_records-network_ip_port_rows-0-row-193.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/dense_numeric_blobs/json_numeric_arrays",
+      "label": "equals/dense_numeric_blobs/json_numeric_arrays",
+      "row_index": 243,
+      "shard": "0",
+      "bytes": 13,
+      "score_byte_start": 281,
+      "score_byte_end": 294,
+      "marin_bpb": 2.9089,
+      "qwen_bpb": 1.4841,
+      "gap_bpb": 1.4247,
+      "payload": "examples/equals-dense_numeric_blobs-json_numeric_arrays-0-row-243.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/dense_numeric_blobs/json_numeric_arrays",
+      "label": "equals/dense_numeric_blobs/json_numeric_arrays",
+      "row_index": 226,
+      "shard": "0",
+      "bytes": 15,
+      "score_byte_start": 307,
+      "score_byte_end": 322,
+      "marin_bpb": 1.6623,
+      "qwen_bpb": 2.3187,
+      "gap_bpb": -0.6564,
+      "payload": "examples/equals-dense_numeric_blobs-json_numeric_arrays-0-row-226.json"
+    }
+  ]
+}

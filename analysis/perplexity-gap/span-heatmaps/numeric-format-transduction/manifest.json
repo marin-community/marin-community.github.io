@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "synthetic_numeric_format_ppl.numeric_transduction",
+  "title": "numeric transduction (equals prompt) span heatmap",
+  "description": "Digit-heavy copy/increment, compare/sort, range/checksum, and chunk-boundary stress tests using the base-model equals prompt format. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "synthetic_numeric_format_prompt_ablation_ppl",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/numeric_transduction/numeric_copy_increment",
+      "label": "equals/numeric_transduction/numeric_copy_increment",
+      "row_index": 106,
+      "shard": "0",
+      "bytes": 5,
+      "score_byte_start": 152,
+      "score_byte_end": 157,
+      "marin_bpb": 4.4606,
+      "qwen_bpb": 1.5031,
+      "gap_bpb": 2.9576,
+      "payload": "examples/equals-numeric_transduction-numeric_copy_increment-0-row-106.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/numeric_transduction/numeric_copy_increment",
+      "label": "equals/numeric_transduction/numeric_copy_increment",
+      "row_index": 248,
+      "shard": "0",
+      "bytes": 4,
+      "score_byte_start": 151,
+      "score_byte_end": 155,
+      "marin_bpb": 1.55,
+      "qwen_bpb": 2.9863,
+      "gap_bpb": -1.4362,
+      "payload": "examples/equals-numeric_transduction-numeric_copy_increment-0-row-248.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/numeric_transduction/numeric_compare_sort",
+      "label": "equals/numeric_transduction/numeric_compare_sort",
+      "row_index": 197,
+      "shard": "0",
+      "bytes": 7,
+      "score_byte_start": 368,
+      "score_byte_end": 375,
+      "marin_bpb": 1.9445,
+      "qwen_bpb": 1.2507,
+      "gap_bpb": 0.6938,
+      "payload": "examples/equals-numeric_transduction-numeric_compare_sort-0-row-197.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/numeric_transduction/numeric_compare_sort",
+      "label": "equals/numeric_transduction/numeric_compare_sort",
+      "row_index": 86,
+      "shard": "0",
+      "bytes": 6,
+      "score_byte_start": 361,
+      "score_byte_end": 367,
+      "marin_bpb": 0.8433,
+      "qwen_bpb": 2.6216,
+      "gap_bpb": -1.7783,
+      "payload": "examples/equals-numeric_transduction-numeric_compare_sort-0-row-86.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/numeric_transduction/numeric_range_checksum_base",
+      "label": "equals/numeric_transduction/numeric_range_checksum_base",
+      "row_index": 69,
+      "shard": "0",
+      "bytes": 6,
+      "score_byte_start": 132,
+      "score_byte_end": 138,
+      "marin_bpb": 4.293,
+      "qwen_bpb": 1.3349,
+      "gap_bpb": 2.9581,
+      "payload": "examples/equals-numeric_transduction-numeric_range_checksum_base-0-row-69.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/numeric_transduction/numeric_range_checksum_base",
+      "label": "equals/numeric_transduction/numeric_range_checksum_base",
+      "row_index": 41,
+      "shard": "0",
+      "bytes": 8,
+      "score_byte_start": 131,
+      "score_byte_end": 139,
+      "marin_bpb": 2.0124,
+      "qwen_bpb": 4.3721,
+      "gap_bpb": -2.3597,
+      "payload": "examples/equals-numeric_transduction-numeric_range_checksum_base-0-row-41.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/chunk_boundary/chunk_boundary_stress",
+      "label": "equals/chunk_boundary/chunk_boundary_stress",
+      "row_index": 16,
+      "shard": "0",
+      "bytes": 32,
+      "score_byte_start": 267,
+      "score_byte_end": 299,
+      "marin_bpb": 0.2645,
+      "qwen_bpb": 0.2048,
+      "gap_bpb": 0.0597,
+      "payload": "examples/equals-chunk_boundary-chunk_boundary_stress-0-row-16.json"
+    },
+    {
+      "dataset": "synthetic_numeric_format_prompt_ablation_ppl/equals/chunk_boundary/chunk_boundary_stress",
+      "label": "equals/chunk_boundary/chunk_boundary_stress",
+      "row_index": 54,
+      "shard": "0",
+      "bytes": 11,
+      "score_byte_start": 267,
+      "score_byte_end": 278,
+      "marin_bpb": 0.2838,
+      "qwen_bpb": 1.0454,
+      "gap_bpb": -0.7616,
+      "payload": "examples/equals-chunk_boundary-chunk_boundary_stress-0-row-54.json"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "multilingual.fineweb2_high_gap",
+  "title": "high-gap FineWeb2 languages span heatmap",
+  "description": "FineWeb2 language slices with large local Marin-Qwen differences. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "fineweb2_multilingual",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "fineweb2_multilingual/lit_Latn",
+      "label": "lit_Latn",
+      "row_index": 62,
+      "shard": "0000_parquet",
+      "bytes": 549,
+      "score_byte_start": 0,
+      "score_byte_end": 549,
+      "marin_bpb": 2.1885,
+      "qwen_bpb": 1.0461,
+      "gap_bpb": 1.1425,
+      "payload": "examples/lit_Latn-0000_parquet-row-62.json"
+    },
+    {
+      "dataset": "fineweb2_multilingual/lit_Latn",
+      "label": "lit_Latn",
+      "row_index": 71,
+      "shard": "0000_parquet",
+      "bytes": 1573,
+      "score_byte_start": 0,
+      "score_byte_end": 1573,
+      "marin_bpb": 1.237,
+      "qwen_bpb": 1.2334,
+      "gap_bpb": 0.0035,
+      "payload": "examples/lit_Latn-0000_parquet-row-71.json"
+    },
+    {
+      "dataset": "fineweb2_multilingual/snd_Arab",
+      "label": "snd_Arab",
+      "row_index": 254,
+      "shard": "0000_parquet",
+      "bytes": 516,
+      "score_byte_start": 0,
+      "score_byte_end": 516,
+      "marin_bpb": 1.7508,
+      "qwen_bpb": 0.589,
+      "gap_bpb": 1.1618,
+      "payload": "examples/snd_Arab-0000_parquet-row-254.json"
+    },
+    {
+      "dataset": "fineweb2_multilingual/snd_Arab",
+      "label": "snd_Arab",
+      "row_index": 130,
+      "shard": "0000_parquet",
+      "bytes": 6739,
+      "score_byte_start": 0,
+      "score_byte_end": 6739,
+      "marin_bpb": 1.3567,
+      "qwen_bpb": 1.0885,
+      "gap_bpb": 0.2683,
+      "payload": "examples/snd_Arab-0000_parquet-row-130.json"
+    }
+  ]
+}

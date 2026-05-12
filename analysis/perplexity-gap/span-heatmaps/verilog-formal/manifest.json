@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "code.verilog_formal",
+  "title": "Verilog eval prompts and solutions span heatmap",
+  "description": "Verilog prompt and canonical-solution slices from the formal-hardware long-tail set. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "code",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "long_tail_ppl_runnable/formal_hardware/verilogeval_prompt",
+      "label": "formal_hardware/verilogeval_prompt",
+      "row_index": 77,
+      "shard": "0",
+      "bytes": 62,
+      "score_byte_start": 0,
+      "score_byte_end": 62,
+      "marin_bpb": 1.1934,
+      "qwen_bpb": 0.6782,
+      "gap_bpb": 0.5152,
+      "payload": "examples/formal_hardware-verilogeval_prompt-0-row-77.json"
+    },
+    {
+      "dataset": "long_tail_ppl_runnable/formal_hardware/verilogeval_prompt",
+      "label": "formal_hardware/verilogeval_prompt",
+      "row_index": 11,
+      "shard": "0",
+      "bytes": 65,
+      "score_byte_start": 0,
+      "score_byte_end": 65,
+      "marin_bpb": 0.9099,
+      "qwen_bpb": 0.9889,
+      "gap_bpb": -0.079,
+      "payload": "examples/formal_hardware-verilogeval_prompt-0-row-11.json"
+    },
+    {
+      "dataset": "long_tail_ppl_runnable/formal_hardware/verilogeval_canonical_solution",
+      "label": "formal_hardware/verilogeval_canonical_solution",
+      "row_index": 12,
+      "shard": "0",
+      "bytes": 48,
+      "score_byte_start": 0,
+      "score_byte_end": 48,
+      "marin_bpb": 2.272,
+      "qwen_bpb": 1.4071,
+      "gap_bpb": 0.8649,
+      "payload": "examples/formal_hardware-verilogeval_canonical_solution-0-row-12.json"
+    },
+    {
+      "dataset": "long_tail_ppl_runnable/formal_hardware/verilogeval_canonical_solution",
+      "label": "formal_hardware/verilogeval_canonical_solution",
+      "row_index": 33,
+      "shard": "0",
+      "bytes": 40,
+      "score_byte_start": 0,
+      "score_byte_end": 40,
+      "marin_bpb": 1.9973,
+      "qwen_bpb": 2.7017,
+      "gap_bpb": -0.7044,
+      "payload": "examples/formal_hardware-verilogeval_canonical_solution-0-row-33.json"
+    }
+  ]
+}

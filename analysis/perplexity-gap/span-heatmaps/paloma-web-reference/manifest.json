@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "paloma.web_reference",
+  "title": "web/reference text span heatmap",
+  "description": "Wikitext, C4, and Dolma-style Paloma slices. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "paloma",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "paloma/wikitext_103",
+      "label": "wikitext_103",
+      "row_index": 55,
+      "shard": "val_jsonl_gz",
+      "bytes": 13856,
+      "score_byte_start": 0,
+      "score_byte_end": 13856,
+      "marin_bpb": 0.5708,
+      "qwen_bpb": 0.6228,
+      "gap_bpb": -0.052,
+      "payload": "examples/wikitext_103-val_jsonl_gz-row-55.json"
+    },
+    {
+      "dataset": "paloma/wikitext_103",
+      "label": "wikitext_103",
+      "row_index": 18,
+      "shard": "val_jsonl_gz",
+      "bytes": 19865,
+      "score_byte_start": 0,
+      "score_byte_end": 19865,
+      "marin_bpb": 0.3784,
+      "qwen_bpb": 0.6502,
+      "gap_bpb": -0.2719,
+      "payload": "examples/wikitext_103-val_jsonl_gz-row-18.json"
+    },
+    {
+      "dataset": "paloma/c4_en",
+      "label": "c4_en",
+      "row_index": 115,
+      "shard": "0_jsonl_gz",
+      "bytes": 98,
+      "score_byte_start": 0,
+      "score_byte_end": 98,
+      "marin_bpb": 1.6364,
+      "qwen_bpb": 1.2571,
+      "gap_bpb": 0.3794,
+      "payload": "examples/c4_en-0_jsonl_gz-row-115.json"
+    },
+    {
+      "dataset": "paloma/c4_en",
+      "label": "c4_en",
+      "row_index": 190,
+      "shard": "0_jsonl_gz",
+      "bytes": 322,
+      "score_byte_start": 0,
+      "score_byte_end": 322,
+      "marin_bpb": 0.5126,
+      "qwen_bpb": 1.4908,
+      "gap_bpb": -0.9782,
+      "payload": "examples/c4_en-0_jsonl_gz-row-190.json"
+    },
+    {
+      "dataset": "paloma/dolma-v1_5",
+      "label": "dolma-v1_5",
+      "row_index": 40,
+      "shard": "common-crawl_jsonl_gz",
+      "bytes": 77,
+      "score_byte_start": 0,
+      "score_byte_end": 77,
+      "marin_bpb": 1.0352,
+      "qwen_bpb": 0.7088,
+      "gap_bpb": 0.3264,
+      "payload": "examples/dolma-v1_5-common-crawl_jsonl_gz-row-40.json"
+    },
+    {
+      "dataset": "paloma/dolma-v1_5",
+      "label": "dolma-v1_5",
+      "row_index": 14,
+      "shard": "common-crawl_jsonl_gz",
+      "bytes": 8212,
+      "score_byte_start": 0,
+      "score_byte_end": 8212,
+      "marin_bpb": 0.124,
+      "qwen_bpb": 0.8347,
+      "gap_bpb": -0.7107,
+      "payload": "examples/dolma-v1_5-common-crawl_jsonl_gz-row-14.json"
+    }
+  ]
+}

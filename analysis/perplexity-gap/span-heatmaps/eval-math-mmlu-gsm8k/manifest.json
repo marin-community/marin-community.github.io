@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "eval_math.mmlu_gsm8k",
+  "title": "MMLU auxiliary and GSM8K span heatmap",
+  "description": "LM-eval training slices for auxiliary MMLU and GSM8K. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "lm_eval",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "lm_eval/mmlu_auxiliary_train",
+      "label": "mmlu_auxiliary_train",
+      "row_index": 12,
+      "shard": "staged_jsonl_gz",
+      "bytes": 1,
+      "score_byte_start": 2415,
+      "score_byte_end": 2416,
+      "marin_bpb": 1.9094,
+      "qwen_bpb": 0.0394,
+      "gap_bpb": 1.87,
+      "payload": "examples/mmlu_auxiliary_train-staged_jsonl_gz-row-12.json"
+    },
+    {
+      "dataset": "lm_eval/mmlu_auxiliary_train",
+      "label": "mmlu_auxiliary_train",
+      "row_index": 10,
+      "shard": "staged_jsonl_gz",
+      "bytes": 1,
+      "score_byte_start": 2003,
+      "score_byte_end": 2004,
+      "marin_bpb": 0.9001,
+      "qwen_bpb": 5.1831,
+      "gap_bpb": -4.283,
+      "payload": "examples/mmlu_auxiliary_train-staged_jsonl_gz-row-10.json"
+    },
+    {
+      "dataset": "lm_eval/gsm8k_train",
+      "label": "gsm8k_train",
+      "row_index": 132,
+      "shard": "staged_jsonl_gz",
+      "bytes": 73,
+      "score_byte_start": 2259,
+      "score_byte_end": 2332,
+      "marin_bpb": 0.8078,
+      "qwen_bpb": 0.5201,
+      "gap_bpb": 0.2877,
+      "payload": "examples/gsm8k_train-staged_jsonl_gz-row-132.json"
+    },
+    {
+      "dataset": "lm_eval/gsm8k_train",
+      "label": "gsm8k_train",
+      "row_index": 88,
+      "shard": "staged_jsonl_gz",
+      "bytes": 108,
+      "score_byte_start": 2278,
+      "score_byte_end": 2386,
+      "marin_bpb": 0.2825,
+      "qwen_bpb": 0.7821,
+      "gap_bpb": -0.4996,
+      "payload": "examples/gsm8k_train-staged_jsonl_gz-row-88.json"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "web_markup.common_crawl",
+  "title": "WARC/WAT markup span heatmap",
+  "description": "Common Crawl WARC and WAT raw web markup slices. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "raw_web_markup",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "raw_web_markup/common_crawl/warc",
+      "label": "common_crawl/warc",
+      "row_index": 225,
+      "shard": "data_jsonl_gz",
+      "bytes": 32768,
+      "score_byte_start": 0,
+      "score_byte_end": 32768,
+      "marin_bpb": 1.1981,
+      "qwen_bpb": 1.0183,
+      "gap_bpb": 0.1798,
+      "payload": "examples/common_crawl-warc-data_jsonl_gz-row-225.json"
+    },
+    {
+      "dataset": "raw_web_markup/common_crawl/warc",
+      "label": "common_crawl/warc",
+      "row_index": 38,
+      "shard": "data_jsonl_gz",
+      "bytes": 29313,
+      "score_byte_start": 0,
+      "score_byte_end": 29313,
+      "marin_bpb": 0.535,
+      "qwen_bpb": 0.563,
+      "gap_bpb": -0.028,
+      "payload": "examples/common_crawl-warc-data_jsonl_gz-row-38.json"
+    },
+    {
+      "dataset": "raw_web_markup/common_crawl/wat",
+      "label": "common_crawl/wat",
+      "row_index": 0,
+      "shard": "data_jsonl_gz",
+      "bytes": 712,
+      "score_byte_start": 0,
+      "score_byte_end": 712,
+      "marin_bpb": 1.2094,
+      "qwen_bpb": 0.9974,
+      "gap_bpb": 0.212,
+      "payload": "examples/common_crawl-wat-data_jsonl_gz-row-0.json"
+    },
+    {
+      "dataset": "raw_web_markup/common_crawl/wat",
+      "label": "common_crawl/wat",
+      "row_index": 169,
+      "shard": "data_jsonl_gz",
+      "bytes": 2072,
+      "score_byte_start": 0,
+      "score_byte_end": 2072,
+      "marin_bpb": 0.9274,
+      "qwen_bpb": 0.9774,
+      "gap_bpb": -0.05,
+      "payload": "examples/common_crawl-wat-data_jsonl_gz-row-169.json"
+    }
+  ]
+}

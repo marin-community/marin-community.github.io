@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "ocr_asr.noisy_text",
+  "title": "noisy text span heatmap",
+  "description": "OCR/ASR clean/noisy and OCR token slices where Marin is often ahead. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "asr_ocr_noisy_ppl",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "asr_ocr_noisy_ppl/hypr_librispeech_without_lm_test_clean/clean",
+      "label": "hypr_librispeech_without_lm_test_clean/clean",
+      "row_index": 58,
+      "shard": "data-00000-of-00001_jsonl_gz",
+      "bytes": 38,
+      "score_byte_start": 0,
+      "score_byte_end": 38,
+      "marin_bpb": 2.4778,
+      "qwen_bpb": 1.951,
+      "gap_bpb": 0.5268,
+      "payload": "examples/hypr_librispeech_without_lm_test_clean-clean-data-00000-of-00001_jsonl_gz-row-58.json"
+    },
+    {
+      "dataset": "asr_ocr_noisy_ppl/hypr_librispeech_without_lm_test_clean/clean",
+      "label": "hypr_librispeech_without_lm_test_clean/clean",
+      "row_index": 129,
+      "shard": "data-00000-of-00001_jsonl_gz",
+      "bytes": 173,
+      "score_byte_start": 0,
+      "score_byte_end": 173,
+      "marin_bpb": 0.6336,
+      "qwen_bpb": 1.6389,
+      "gap_bpb": -1.0053,
+      "payload": "examples/hypr_librispeech_without_lm_test_clean-clean-data-00000-of-00001_jsonl_gz-row-129.json"
+    },
+    {
+      "dataset": "asr_ocr_noisy_ppl/hypr_librispeech_without_lm_test_clean/noisy",
+      "label": "hypr_librispeech_without_lm_test_clean/noisy",
+      "row_index": 125,
+      "shard": "data-00000-of-00001_jsonl_gz",
+      "bytes": 4,
+      "score_byte_start": 0,
+      "score_byte_end": 4,
+      "marin_bpb": 4.1051,
+      "qwen_bpb": 3.3313,
+      "gap_bpb": 0.7739,
+      "payload": "examples/hypr_librispeech_without_lm_test_clean-noisy-data-00000-of-00001_jsonl_gz-row-125.json"
+    },
+    {
+      "dataset": "asr_ocr_noisy_ppl/hypr_librispeech_without_lm_test_clean/noisy",
+      "label": "hypr_librispeech_without_lm_test_clean/noisy",
+      "row_index": 129,
+      "shard": "data-00000-of-00001_jsonl_gz",
+      "bytes": 173,
+      "score_byte_start": 0,
+      "score_byte_end": 173,
+      "marin_bpb": 0.6203,
+      "qwen_bpb": 1.628,
+      "gap_bpb": -1.0077,
+      "payload": "examples/hypr_librispeech_without_lm_test_clean-noisy-data-00000-of-00001_jsonl_gz-row-129.json"
+    },
+    {
+      "dataset": "raw_web_markup/ocr_vqa/ocr_tokens_validation",
+      "label": "ocr_vqa/ocr_tokens_validation",
+      "row_index": 78,
+      "shard": "ocr_tokens_validation_jsonl_gz",
+      "bytes": 22,
+      "score_byte_start": 0,
+      "score_byte_end": 22,
+      "marin_bpb": 2.452,
+      "qwen_bpb": 2.0607,
+      "gap_bpb": 0.3913,
+      "payload": "examples/ocr_vqa-ocr_tokens_validation-ocr_tokens_validation_jsonl_gz-row-78.json"
+    },
+    {
+      "dataset": "raw_web_markup/ocr_vqa/ocr_tokens_validation",
+      "label": "ocr_vqa/ocr_tokens_validation",
+      "row_index": 110,
+      "shard": "ocr_tokens_validation_jsonl_gz",
+      "bytes": 47,
+      "score_byte_start": 0,
+      "score_byte_end": 47,
+      "marin_bpb": 1.699,
+      "qwen_bpb": 2.6903,
+      "gap_bpb": -0.9912,
+      "payload": "examples/ocr_vqa-ocr_tokens_validation-ocr_tokens_validation_jsonl_gz-row-110.json"
+    }
+  ]
+}

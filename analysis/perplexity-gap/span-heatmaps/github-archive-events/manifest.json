@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "github_archive.events",
+  "title": "structured events span heatmap",
+  "description": "Structured GitHub Archive event payload slices. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "gh_archive_structured_output",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "gh_archive_structured_output/PushEvent",
+      "label": "PushEvent",
+      "row_index": 225,
+      "shard": "part-00000_jsonl_gz",
+      "bytes": 762,
+      "score_byte_start": 0,
+      "score_byte_end": 762,
+      "marin_bpb": 0.7938,
+      "qwen_bpb": 0.6342,
+      "gap_bpb": 0.1596,
+      "payload": "examples/PushEvent-part-00000_jsonl_gz-row-225.json"
+    },
+    {
+      "dataset": "gh_archive_structured_output/PushEvent",
+      "label": "PushEvent",
+      "row_index": 147,
+      "shard": "part-00000_jsonl_gz",
+      "bytes": 14819,
+      "score_byte_start": 0,
+      "score_byte_end": 14819,
+      "marin_bpb": 0.8343,
+      "qwen_bpb": 0.8675,
+      "gap_bpb": -0.0333,
+      "payload": "examples/PushEvent-part-00000_jsonl_gz-row-147.json"
+    },
+    {
+      "dataset": "gh_archive_structured_output/IssuesEvent",
+      "label": "IssuesEvent",
+      "row_index": 158,
+      "shard": "part-00000_jsonl_gz",
+      "bytes": 11750,
+      "score_byte_start": 0,
+      "score_byte_end": 11750,
+      "marin_bpb": 0.6659,
+      "qwen_bpb": 0.5698,
+      "gap_bpb": 0.0961,
+      "payload": "examples/IssuesEvent-part-00000_jsonl_gz-row-158.json"
+    },
+    {
+      "dataset": "gh_archive_structured_output/IssuesEvent",
+      "label": "IssuesEvent",
+      "row_index": 6,
+      "shard": "part-00000_jsonl_gz",
+      "bytes": 32768,
+      "score_byte_start": 0,
+      "score_byte_end": 32768,
+      "marin_bpb": 0.5153,
+      "qwen_bpb": 0.5475,
+      "gap_bpb": -0.0322,
+      "payload": "examples/IssuesEvent-part-00000_jsonl_gz-row-6.json"
+    },
+    {
+      "dataset": "gh_archive_structured_output/PullRequestEvent",
+      "label": "PullRequestEvent",
+      "row_index": 148,
+      "shard": "part-00000_jsonl_gz",
+      "bytes": 16873,
+      "score_byte_start": 0,
+      "score_byte_end": 16873,
+      "marin_bpb": 0.1012,
+      "qwen_bpb": 0.0683,
+      "gap_bpb": 0.0329,
+      "payload": "examples/PullRequestEvent-part-00000_jsonl_gz-row-148.json"
+    },
+    {
+      "dataset": "gh_archive_structured_output/PullRequestEvent",
+      "label": "PullRequestEvent",
+      "row_index": 183,
+      "shard": "part-00000_jsonl_gz",
+      "bytes": 32768,
+      "score_byte_start": 0,
+      "score_byte_end": 32768,
+      "marin_bpb": 0.3865,
+      "qwen_bpb": 0.4332,
+      "gap_bpb": -0.0467,
+      "payload": "examples/PullRequestEvent-part-00000_jsonl_gz-row-183.json"
+    },
+    {
+      "dataset": "gh_archive_structured_output/IssueCommentEvent",
+      "label": "IssueCommentEvent",
+      "row_index": 203,
+      "shard": "part-00000_jsonl_gz",
+      "bytes": 7044,
+      "score_byte_start": 0,
+      "score_byte_end": 7044,
+      "marin_bpb": 0.4131,
+      "qwen_bpb": 0.3316,
+      "gap_bpb": 0.0815,
+      "payload": "examples/IssueCommentEvent-part-00000_jsonl_gz-row-203.json"
+    },
+    {
+      "dataset": "gh_archive_structured_output/IssueCommentEvent",
+      "label": "IssueCommentEvent",
+      "row_index": 24,
+      "shard": "part-00000_jsonl_gz",
+      "bytes": 32768,
+      "score_byte_start": 0,
+      "score_byte_end": 32768,
+      "marin_bpb": 0.273,
+      "qwen_bpb": 0.2995,
+      "gap_bpb": -0.0265,
+      "payload": "examples/IssueCommentEvent-part-00000_jsonl_gz-row-24.json"
+    }
+  ]
+}

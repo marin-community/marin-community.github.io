@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "paloma.social_forums",
+  "title": "social/forum text span heatmap",
+  "description": "Social and forum Paloma slices where Marin is generally ahead. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "paloma",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "paloma/twitterAAE_HELM_fixed",
+      "label": "twitterAAE_HELM_fixed",
+      "row_index": 41,
+      "shard": "AA_jsonl_gz",
+      "bytes": 12,
+      "score_byte_start": 0,
+      "score_byte_end": 12,
+      "marin_bpb": 5.5333,
+      "qwen_bpb": 4.4763,
+      "gap_bpb": 1.057,
+      "payload": "examples/twitterAAE_HELM_fixed-AA_jsonl_gz-row-41.json"
+    },
+    {
+      "dataset": "paloma/twitterAAE_HELM_fixed",
+      "label": "twitterAAE_HELM_fixed",
+      "row_index": 14,
+      "shard": "AA_jsonl_gz",
+      "bytes": 5,
+      "score_byte_start": 0,
+      "score_byte_end": 5,
+      "marin_bpb": 2.9437,
+      "qwen_bpb": 5.3494,
+      "gap_bpb": -2.4057,
+      "payload": "examples/twitterAAE_HELM_fixed-AA_jsonl_gz-row-14.json"
+    },
+    {
+      "dataset": "paloma/gab",
+      "label": "gab",
+      "row_index": 205,
+      "shard": "0_jsonl_gz",
+      "bytes": 7,
+      "score_byte_start": 0,
+      "score_byte_end": 7,
+      "marin_bpb": 1.7736,
+      "qwen_bpb": 1.4334,
+      "gap_bpb": 0.3402,
+      "payload": "examples/gab-0_jsonl_gz-row-205.json"
+    },
+    {
+      "dataset": "paloma/gab",
+      "label": "gab",
+      "row_index": 81,
+      "shard": "0_jsonl_gz",
+      "bytes": 14,
+      "score_byte_start": 0,
+      "score_byte_end": 14,
+      "marin_bpb": 2.8693,
+      "qwen_bpb": 4.2564,
+      "gap_bpb": -1.387,
+      "payload": "examples/gab-0_jsonl_gz-row-81.json"
+    },
+    {
+      "dataset": "paloma/4chan",
+      "label": "4chan",
+      "row_index": 7,
+      "shard": "1_jsonl_gz",
+      "bytes": 2453,
+      "score_byte_start": 0,
+      "score_byte_end": 2453,
+      "marin_bpb": 0.7435,
+      "qwen_bpb": 0.7213,
+      "gap_bpb": 0.0222,
+      "payload": "examples/4chan-1_jsonl_gz-row-7.json"
+    },
+    {
+      "dataset": "paloma/4chan",
+      "label": "4chan",
+      "row_index": 146,
+      "shard": "0_jsonl_gz",
+      "bytes": 77,
+      "score_byte_start": 0,
+      "score_byte_end": 77,
+      "marin_bpb": 1.7539,
+      "qwen_bpb": 2.3231,
+      "gap_bpb": -0.5692,
+      "payload": "examples/4chan-0_jsonl_gz-row-146.json"
+    }
+  ]
+}

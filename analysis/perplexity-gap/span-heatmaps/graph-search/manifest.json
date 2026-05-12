@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "synthetic_reasoning_ppl.graph_search",
+  "title": "BFS graph search span heatmap",
+  "description": "Native and CLRS-style BFS examples in neutral arrow-format 5-shot ICL. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "synthetic_reasoning_ppl",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "synthetic_reasoning_ppl/native/bfs_shortest_path",
+      "label": "native/bfs_shortest_path",
+      "row_index": 160,
+      "shard": "0",
+      "bytes": 216,
+      "score_byte_start": 3293,
+      "score_byte_end": 3509,
+      "marin_bpb": 0.1234,
+      "qwen_bpb": 0.0338,
+      "gap_bpb": 0.0896,
+      "payload": "examples/native-bfs_shortest_path-0-row-160.json"
+    },
+    {
+      "dataset": "synthetic_reasoning_ppl/native/bfs_shortest_path",
+      "label": "native/bfs_shortest_path",
+      "row_index": 77,
+      "shard": "0",
+      "bytes": 307,
+      "score_byte_start": 3513,
+      "score_byte_end": 3820,
+      "marin_bpb": 0.1071,
+      "qwen_bpb": 0.1519,
+      "gap_bpb": -0.0448,
+      "payload": "examples/native-bfs_shortest_path-0-row-77.json"
+    },
+    {
+      "dataset": "synthetic_reasoning_ppl/clrs_style/clrs_bfs",
+      "label": "clrs_style/clrs_bfs",
+      "row_index": 111,
+      "shard": "0",
+      "bytes": 216,
+      "score_byte_start": 3346,
+      "score_byte_end": 3562,
+      "marin_bpb": 0.0981,
+      "qwen_bpb": 0.0254,
+      "gap_bpb": 0.0727,
+      "payload": "examples/clrs_style-clrs_bfs-0-row-111.json"
+    },
+    {
+      "dataset": "synthetic_reasoning_ppl/clrs_style/clrs_bfs",
+      "label": "clrs_style/clrs_bfs",
+      "row_index": 167,
+      "shard": "0",
+      "bytes": 644,
+      "score_byte_start": 3021,
+      "score_byte_end": 3665,
+      "marin_bpb": 0.0656,
+      "qwen_bpb": 0.1079,
+      "gap_bpb": -0.0423,
+      "payload": "examples/clrs_style-clrs_bfs-0-row-167.json"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "synthetic_reasoning_ppl.floyd_warshall",
+  "title": "Floyd-Warshall span heatmap",
+  "description": "Native and CLRS-style Floyd-Warshall examples in neutral arrow-format 5-shot ICL. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "synthetic_reasoning_ppl",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "synthetic_reasoning_ppl/native/floyd_warshall_apsp",
+      "label": "native/floyd_warshall_apsp",
+      "row_index": 79,
+      "shard": "0",
+      "bytes": 511,
+      "score_byte_start": 7277,
+      "score_byte_end": 7788,
+      "marin_bpb": 0.634,
+      "qwen_bpb": 0.2474,
+      "gap_bpb": 0.3866,
+      "payload": "examples/native-floyd_warshall_apsp-0-row-79.json"
+    },
+    {
+      "dataset": "synthetic_reasoning_ppl/native/floyd_warshall_apsp",
+      "label": "native/floyd_warshall_apsp",
+      "row_index": 178,
+      "shard": "0",
+      "bytes": 308,
+      "score_byte_start": 7014,
+      "score_byte_end": 7322,
+      "marin_bpb": 0.1498,
+      "qwen_bpb": 0.6163,
+      "gap_bpb": -0.4665,
+      "payload": "examples/native-floyd_warshall_apsp-0-row-178.json"
+    },
+    {
+      "dataset": "synthetic_reasoning_ppl/clrs_style/clrs_floyd_warshall",
+      "label": "clrs_style/clrs_floyd_warshall",
+      "row_index": 46,
+      "shard": "0",
+      "bytes": 202,
+      "score_byte_start": 7336,
+      "score_byte_end": 7538,
+      "marin_bpb": 0.9279,
+      "qwen_bpb": 0.2397,
+      "gap_bpb": 0.6882,
+      "payload": "examples/clrs_style-clrs_floyd_warshall-0-row-46.json"
+    },
+    {
+      "dataset": "synthetic_reasoning_ppl/clrs_style/clrs_floyd_warshall",
+      "label": "clrs_style/clrs_floyd_warshall",
+      "row_index": 124,
+      "shard": "0",
+      "bytes": 199,
+      "score_byte_start": 6875,
+      "score_byte_end": 7074,
+      "marin_bpb": 0.11,
+      "qwen_bpb": 0.9936,
+      "gap_bpb": -0.8836,
+      "payload": "examples/clrs_style-clrs_floyd_warshall-0-row-124.json"
+    }
+  ]
+}

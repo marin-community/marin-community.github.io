@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "diagnostic_logs.logs",
+  "title": "Diagnostic logs span heatmap",
+  "description": "Diagnostic log slices from GHA logs, LogChunks, and LogHub. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "diagnostic_logs",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "diagnostic_logs/ghalogs_issue_5093_holdout",
+      "label": "ghalogs_issue_5093_holdout",
+      "row_index": 38,
+      "shard": "data-00000-of-00001_jsonl",
+      "bytes": 32768,
+      "score_byte_start": 0,
+      "score_byte_end": 32768,
+      "marin_bpb": 2.5138,
+      "qwen_bpb": 2.4921,
+      "gap_bpb": 0.0217,
+      "payload": "examples/ghalogs_issue_5093_holdout-data-00000-of-00001_jsonl-row-38.json"
+    },
+    {
+      "dataset": "diagnostic_logs/ghalogs_issue_5093_holdout",
+      "label": "ghalogs_issue_5093_holdout",
+      "row_index": 14,
+      "shard": "data-00000-of-00001_jsonl",
+      "bytes": 32768,
+      "score_byte_start": 0,
+      "score_byte_end": 32768,
+      "marin_bpb": 2.7547,
+      "qwen_bpb": 2.821,
+      "gap_bpb": -0.0663,
+      "payload": "examples/ghalogs_issue_5093_holdout-data-00000-of-00001_jsonl-row-14.json"
+    },
+    {
+      "dataset": "diagnostic_logs/logchunks_eval",
+      "label": "logchunks_eval",
+      "row_index": 245,
+      "shard": "data-00000-of-00001_jsonl",
+      "bytes": 129,
+      "score_byte_start": 0,
+      "score_byte_end": 129,
+      "marin_bpb": 1.3115,
+      "qwen_bpb": 0.9602,
+      "gap_bpb": 0.3513,
+      "payload": "examples/logchunks_eval-data-00000-of-00001_jsonl-row-245.json"
+    },
+    {
+      "dataset": "diagnostic_logs/logchunks_eval",
+      "label": "logchunks_eval",
+      "row_index": 156,
+      "shard": "data-00000-of-00001_jsonl",
+      "bytes": 39,
+      "score_byte_start": 0,
+      "score_byte_end": 39,
+      "marin_bpb": 1.8118,
+      "qwen_bpb": 2.3887,
+      "gap_bpb": -0.5769,
+      "payload": "examples/logchunks_eval-data-00000-of-00001_jsonl-row-156.json"
+    },
+    {
+      "dataset": "diagnostic_logs/loghub_eval",
+      "label": "loghub_eval",
+      "row_index": 5,
+      "shard": "data-00000-of-00001_jsonl",
+      "bytes": 32768,
+      "score_byte_start": 0,
+      "score_byte_end": 32768,
+      "marin_bpb": 0.217,
+      "qwen_bpb": 0.1768,
+      "gap_bpb": 0.0403,
+      "payload": "examples/loghub_eval-data-00000-of-00001_jsonl-row-5.json"
+    },
+    {
+      "dataset": "diagnostic_logs/loghub_eval",
+      "label": "loghub_eval",
+      "row_index": 8,
+      "shard": "data-00000-of-00001_jsonl",
+      "bytes": 32768,
+      "score_byte_start": 0,
+      "score_byte_end": 32768,
+      "marin_bpb": 0.5067,
+      "qwen_bpb": 0.6771,
+      "gap_bpb": -0.1704,
+      "payload": "examples/loghub_eval-data-00000-of-00001_jsonl-row-8.json"
+    }
+  ]
+}

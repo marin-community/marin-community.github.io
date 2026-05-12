@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "formal_package_network.misc",
+  "title": "Formal/package/network formats span heatmap",
+  "description": "TPTP, npm registry metadata, and Zeek network-security formats. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "structured_formats",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "formal_methods/tptp",
+      "label": "formal_methods/tptp",
+      "row_index": 113,
+      "shard": "data_jsonl_gz",
+      "bytes": 1174,
+      "score_byte_start": 0,
+      "score_byte_end": 1174,
+      "marin_bpb": 0.3274,
+      "qwen_bpb": 0.2461,
+      "gap_bpb": 0.0813,
+      "payload": "examples/formal_methods-tptp-data_jsonl_gz-row-113.json"
+    },
+    {
+      "dataset": "formal_methods/tptp",
+      "label": "formal_methods/tptp",
+      "row_index": 212,
+      "shard": "data_jsonl_gz",
+      "bytes": 1659,
+      "score_byte_start": 0,
+      "score_byte_end": 1659,
+      "marin_bpb": 0.3116,
+      "qwen_bpb": 0.3266,
+      "gap_bpb": -0.015,
+      "payload": "examples/formal_methods-tptp-data_jsonl_gz-row-212.json"
+    },
+    {
+      "dataset": "package_metadata/npm_registry_metadata",
+      "label": "package_metadata/npm_registry_metadata",
+      "row_index": 6,
+      "shard": "data_jsonl_gz",
+      "bytes": 3790,
+      "score_byte_start": 0,
+      "score_byte_end": 3790,
+      "marin_bpb": 1.0542,
+      "qwen_bpb": 0.9633,
+      "gap_bpb": 0.091,
+      "payload": "examples/package_metadata-npm_registry_metadata-data_jsonl_gz-row-6.json"
+    },
+    {
+      "dataset": "package_metadata/npm_registry_metadata",
+      "label": "package_metadata/npm_registry_metadata",
+      "row_index": 14,
+      "shard": "data_jsonl_gz",
+      "bytes": 2866,
+      "score_byte_start": 0,
+      "score_byte_end": 2866,
+      "marin_bpb": 0.9123,
+      "qwen_bpb": 0.9165,
+      "gap_bpb": -0.0042,
+      "payload": "examples/package_metadata-npm_registry_metadata-data_jsonl_gz-row-14.json"
+    },
+    {
+      "dataset": "binary_network_security/uwf_zeek",
+      "label": "binary_network_security/uwf_zeek",
+      "row_index": 18,
+      "shard": "data_jsonl_gz",
+      "bytes": 500,
+      "score_byte_start": 0,
+      "score_byte_end": 500,
+      "marin_bpb": 1.9362,
+      "qwen_bpb": 1.6697,
+      "gap_bpb": 0.2664,
+      "payload": "examples/binary_network_security-uwf_zeek-data_jsonl_gz-row-18.json"
+    },
+    {
+      "dataset": "binary_network_security/uwf_zeek",
+      "label": "binary_network_security/uwf_zeek",
+      "row_index": 237,
+      "shard": "data_jsonl_gz",
+      "bytes": 482,
+      "score_byte_start": 0,
+      "score_byte_end": 482,
+      "marin_bpb": 1.9396,
+      "qwen_bpb": 1.8265,
+      "gap_bpb": 0.1131,
+      "payload": "examples/binary_network_security-uwf_zeek-data_jsonl_gz-row-237.json"
+    }
+  ]
+}

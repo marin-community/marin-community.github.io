@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "multilingual.fineweb2_major_scripts",
+  "title": "major-script FineWeb2 samples span heatmap",
+  "description": "FineWeb2 Chinese/Japanese/Russian slices to inspect script-specific behavior. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "fineweb2_multilingual",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-88a8ea/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/qwen3_32b-7da8f0/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "fineweb2_multilingual/cmn_Hani",
+      "label": "cmn_Hani",
+      "row_index": 140,
+      "shard": "0000_parquet",
+      "bytes": 3041,
+      "score_byte_start": 0,
+      "score_byte_end": 3041,
+      "marin_bpb": 1.9997,
+      "qwen_bpb": 1.1159,
+      "gap_bpb": 0.8838,
+      "payload": "examples/cmn_Hani-0000_parquet-row-140.json"
+    },
+    {
+      "dataset": "fineweb2_multilingual/cmn_Hani",
+      "label": "cmn_Hani",
+      "row_index": 148,
+      "shard": "0000_parquet",
+      "bytes": 922,
+      "score_byte_start": 0,
+      "score_byte_end": 922,
+      "marin_bpb": 1.1153,
+      "qwen_bpb": 1.1349,
+      "gap_bpb": -0.0195,
+      "payload": "examples/cmn_Hani-0000_parquet-row-148.json"
+    },
+    {
+      "dataset": "fineweb2_multilingual/jpn_Jpan",
+      "label": "jpn_Jpan",
+      "row_index": 68,
+      "shard": "0000_parquet",
+      "bytes": 423,
+      "score_byte_start": 0,
+      "score_byte_end": 423,
+      "marin_bpb": 1.1267,
+      "qwen_bpb": 0.4281,
+      "gap_bpb": 0.6986,
+      "payload": "examples/jpn_Jpan-0000_parquet-row-68.json"
+    },
+    {
+      "dataset": "fineweb2_multilingual/jpn_Jpan",
+      "label": "jpn_Jpan",
+      "row_index": 106,
+      "shard": "0000_parquet",
+      "bytes": 319,
+      "score_byte_start": 0,
+      "score_byte_end": 319,
+      "marin_bpb": 1.3192,
+      "qwen_bpb": 1.375,
+      "gap_bpb": -0.0558,
+      "payload": "examples/jpn_Jpan-0000_parquet-row-106.json"
+    },
+    {
+      "dataset": "fineweb2_multilingual/rus_Cyrl",
+      "label": "rus_Cyrl",
+      "row_index": 39,
+      "shard": "0000_parquet",
+      "bytes": 1568,
+      "score_byte_start": 0,
+      "score_byte_end": 1568,
+      "marin_bpb": 0.5542,
+      "qwen_bpb": 0.3429,
+      "gap_bpb": 0.2114,
+      "payload": "examples/rus_Cyrl-0000_parquet-row-39.json"
+    },
+    {
+      "dataset": "fineweb2_multilingual/rus_Cyrl",
+      "label": "rus_Cyrl",
+      "row_index": 86,
+      "shard": "0000_parquet",
+      "bytes": 3755,
+      "score_byte_start": 0,
+      "score_byte_end": 3755,
+      "marin_bpb": 0.4877,
+      "qwen_bpb": 0.5192,
+      "gap_bpb": -0.0315,
+      "payload": "examples/rus_Cyrl-0000_parquet-row-86.json"
+    }
+  ]
+}

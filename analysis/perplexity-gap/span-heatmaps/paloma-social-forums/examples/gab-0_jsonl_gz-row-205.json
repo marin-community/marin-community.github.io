@@ -1,0 +1,1 @@
+{"dataset":"paloma/gab","label":"gab","row_index":205,"shard":"0_jsonl_gz","bytes":7,"score_byte_start":0,"score_byte_end":7,"marin_bpb":1.7736,"qwen_bpb":1.4334,"gap_bpb":0.3402,"text":"also...","marin_bpb_by_char":[0.0,0.0,0.0,0.0,4.1384,4.1384,4.1384],"qwen_bpb_by_char":[0.0,0.0,0.0,0.0,3.3445,3.3445,3.3445],"gap_bpb_by_char":[0.0,0.0,0.0,0.0,0.7939,0.7939,0.7939]}
