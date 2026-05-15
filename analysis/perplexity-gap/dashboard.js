@@ -1,4 +1,4 @@
-const ASSET_VERSION = '20260511-v21-arrow-icl-results';
+const ASSET_VERSION = '20260515-v25-stack-v2-v0';
 const response = await fetch(`./data.json?v=${ASSET_VERSION}`);
 if (!response.ok) {
   throw new Error(`Failed to load dashboard data: ${response.status} ${response.statusText}`);
@@ -150,6 +150,7 @@ const SPOTLIGHTS = [
       irishman: 'https://huggingface.co/datasets/sander-wood/irishman',
       melodyhub: 'https://huggingface.co/datasets/sander-wood/melodyhub',
       lichess: 'https://huggingface.co/datasets/Icannos/lichess_games',
+      stackV2: 'https://huggingface.co/datasets/bigcode/the-stack-v2',
     };
 
     const kindLabels = {
@@ -182,6 +183,10 @@ const SPOTLIGHTS = [
         matches: (name) => name === 'paloma/dolma_100_programing_languages',
       },
       {
+        label: 'Stack v2 code ecosystem',
+        matches: (name) => name.startsWith('long_tail_ppl/code_ecosystem'),
+      },
+      {
         label: 'Hardware / Verilog',
         matches: (name) =>
           name.startsWith('hardware_rtl/') ||
@@ -197,6 +202,7 @@ const SPOTLIGHTS = [
       'source:svg_stack',
       'formal_hardware',
       'package_metadata',
+      'code_ecosystem',
       'paloma/dolma_100_programing_languages',
     ]);
     const CODE_TAG_PREFIXES = [
@@ -207,6 +213,7 @@ const SPOTLIGHTS = [
       'hardware_rtl',
       'long_tail_ppl_runnable/formal_hardware',
       'package_metadata/npm_registry_metadata',
+      'long_tail_ppl/code_ecosystem',
     ];
 
     const DATASET_ALIAS_PREFIXES = ['issue:', 'epic:', 'source:', 'surface:', 'split:', 'family:', 'task:', 'renderer:', 'seed_range:', 'crawl:'];
@@ -291,6 +298,11 @@ const SPOTLIGHTS = [
       if (name === 'issue:5053') displayName = 'lm_eval_bridge';
       if (name === 'issue:5059') displayName = 'structured_text';
       if (name === 'issue:5061') displayName = 'package_metadata';
+      if (name === 'issue:5254') displayName = 'Stack v2 code ecosystem';
+      if (name === 'code_ecosystem') displayName = 'Stack v2 code ecosystem';
+      if (name.startsWith('long_tail_ppl/code_ecosystem/stack_v2_')) {
+        displayName = `Stack v2: ${name.slice('long_tail_ppl/code_ecosystem/stack_v2_'.length)}`;
+      }
       if (name.startsWith('family:')) displayName = `synthetic family: ${name.slice('family:'.length)}`;
       if (name.startsWith('task:')) displayName = `synthetic task: ${name.slice('task:'.length)}`;
       if (name.startsWith('renderer:')) displayName = `synthetic renderer: ${name.slice('renderer:'.length)}`;
@@ -384,6 +396,10 @@ const SPOTLIGHTS = [
         pushRef(refs, 'issue #5061', issueUrl(5061), 'issue');
       }
       if (name.includes('npm_registry_metadata')) pushRef(refs, 'npm registry', DATASET_LINKS.npmRegistry, 'dataset');
+      if (name === 'code_ecosystem' || name === 'issue:5254' || name.startsWith('long_tail_ppl/code_ecosystem')) {
+        pushRef(refs, 'issue #5254', issueUrl(5254), 'issue');
+        pushRef(refs, 'The Stack v2', DATASET_LINKS.stackV2, 'dataset');
+      }
 
       if (name === 'gh_archive_structured_output' || name.startsWith('gh_archive_structured_output/')) {
         pushRef(refs, 'issue #5098', issueUrl(5098), 'issue');
@@ -745,6 +761,21 @@ const SPOTLIGHTS = [
       return canonicalDatasetRows(rows.filter((row) => CODE_TAKEAWAY_BUCKETS.some((bucket) => bucket.matches(row.name))));
     }
 
+    function stackV2SliceRows(rows) {
+      return rows
+        .filter((row) => row.name.startsWith('long_tail_ppl/code_ecosystem/stack_v2_'))
+        .sort((a, b) => Math.abs(b.gap_bpb) - Math.abs(a.gap_bpb));
+    }
+
+    function stackV2SliceRow(row) {
+      const cls = row.gap_bpb >= 0 ? 'bad' : 'good';
+      return `<div class="stack-slice-row">
+        <div class="stack-slice-name">${escapeHtml(row.displayName ?? row.name)}</div>
+        <div class="stack-slice-gap ${cls}">${fmtGap(row.gap_bpb)}</div>
+        <div class="stack-slice-meta">Marin ${row.model_a_bpb.toFixed(3)} | Qwen ${row.model_b_bpb.toFixed(3)} | ${fmtBytes(row.bytes)}</div>
+      </div>`;
+    }
+
     function renderCodeTakeaway(comparison) {
       const node = byId('code-takeaway');
       const rows = codeRows(comparison.rows.top_datasets);
@@ -768,6 +799,18 @@ const SPOTLIGHTS = [
           <div class="bucket-meta">${fmtInt(bucketRows.length)} row(s) | ${fmtBytes(summary.bytes)} | ${fmtInt(summary.documents)} docs</div>
         </div>`;
       }).join('');
+      const stackRows = stackV2SliceRows(comparison.rows.top_datasets);
+      const stackBreakout = stackRows.length ? `
+        <div class="stack-slices">
+          <div class="stack-slices-heading">
+            <div>
+              <div class="stack-slices-title">Stack v2 language slices</div>
+              <div class="stack-slices-note">#5254 v0 105-slice cut; sorted by absolute gap.</div>
+            </div>
+            <button class="inline-link-button" type="button" data-stack-filter>Open in dataset table</button>
+          </div>
+          <div class="stack-slice-grid">${stackRows.map(stackV2SliceRow).join('')}</div>
+        </div>` : '';
       node.innerHTML = `
         <div class="takeaway-top">
           <div>
@@ -779,7 +822,13 @@ const SPOTLIGHTS = [
             Marin is ${isBehind ? 'still behind' : 'ahead'} on the focused code and code-adjacent subset for this comparison. ${hasAllAvailableRun ? 'In the 32B run, the largest gap is on SVG/XML markup;' : 'The largest gap is on SVG/XML markup;'} GitHub source and GH Archive structured-output rows are also comparator-favored, while hardware/Verilog is close to parity.
           </p>
         </div>
-        <div class="takeaway-buckets">${bucketCards}</div>`;
+        <div class="takeaway-buckets">${bucketCards}</div>
+        ${stackBreakout}`;
+      node.querySelector('[data-stack-filter]')?.addEventListener('click', () => {
+        state.view = 'top_datasets';
+        state.query = 'stack_v2';
+        render();
+      });
     }
 
     function card(label, row, cls) {
@@ -1373,7 +1422,14 @@ const SPOTLIGHTS = [
       consumeAnchorScroll();
     }
 
-    function renderSpotlights() {
+    function renderSpotlights(comparison) {
+      const section = byId('spotlights').closest('.spotlight-section');
+      const showSpotlights = !comparison.runs.some((run) => run.kind === 'all_available');
+      section.hidden = !showSpotlights;
+      if (!showSpotlights) {
+        byId('spotlights').innerHTML = '';
+        return;
+      }
       const maxAbs = Math.max(...SPOTLIGHTS.flatMap((spot) => [Math.abs(spot.gaps.llama), Math.abs(spot.gaps.qwen)]), 0.001);
       byId('spotlights').innerHTML = SPOTLIGHTS.map((spot) => `
         <div class="spotlight-card ${spot.tone}">
@@ -1506,7 +1562,7 @@ const SPOTLIGHTS = [
       byId('panel-examples').hidden = state.section !== 'examples';
       byId('panel-heatmaps').hidden = state.section !== 'heatmaps';
       if (state.section === 'gaps') {
-        renderSpotlights();
+        renderSpotlights(comparison);
         byId('cards').innerHTML = [
           card('Worst group', extremeRow(visibleHeadlineRows, 'max'), 'bad'),
           card('Best group', extremeRow(visibleHeadlineRows, 'min'), 'good'),
