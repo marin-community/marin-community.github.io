@@ -22,24 +22,24 @@ ROOT = Path(__file__).resolve().parents[1]
 SPAN_ROOT = ROOT / "span-heatmaps"
 SUMMARY_PATH = (
     ROOT
-    / "artifacts/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/"
-    / "marin_32b-vs-qwen3_32b-91d1a4/summary.json"
+    / "artifacts/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/"
+    / "marin_32b-vs-qwen3_32b-adf925/summary.json"
 )
 
-RUN_KEY = "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl"
+RUN_KEY = "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105"
 MODEL_A = "marin-community/marin-32b-base"
 MODEL_B = "Qwen/Qwen3-32B"
 COMPARISON_ID = f"{MODEL_A}__{MODEL_B}"
 CORPUS = "All available diagnostic slices"
 MODEL_A_SCORE_PATH = (
     "gs://marin-us-central1/analysis/model_perplexity_scores/"
-    "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/"
-    "marin_32b-88a8ea/scored_documents.parquet"
+    "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/"
+    "marin_32b-1f7795/scored_documents.parquet"
 )
 MODEL_B_SCORE_PATH = (
     "gs://marin-us-central1/analysis/model_perplexity_scores/"
-    "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/"
-    "qwen3_32b-7da8f0/scored_documents.parquet"
+    "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/"
+    "qwen3_32b-c2c5c8/scored_documents.parquet"
 )
 
 NUMERIC_PROMPT_ABLATION_SUBSETS = [
@@ -314,6 +314,57 @@ SETS = [
         ],
     },
     {
+        "id": "stack_v2.json",
+        "dir": "stack-v2-json",
+        "title": "Stack v2: JSON",
+        "description": "Stack v2 JSON rows where Qwen is sharply ahead, including serialized payloads and encoded blobs.",
+        "dataset_family": "stack_v2",
+        "datasets": ["long_tail_ppl/code_ecosystem/stack_v2_json"],
+    },
+    {
+        "id": "stack_v2.assembly",
+        "dir": "stack-v2-assembly",
+        "title": "Stack v2: Assembly",
+        "description": "Stack v2 assembly rows where Marin is often ahead on address-like and instruction-format continuations.",
+        "dataset_family": "stack_v2",
+        "datasets": ["long_tail_ppl/code_ecosystem/stack_v2_assembly"],
+    },
+    {
+        "id": "stack_v2.scala_csharp",
+        "dir": "stack-v2-scala-csharp",
+        "title": "Stack v2: Scala and C#",
+        "description": "JVM/.NET-adjacent Stack v2 slices from the v0 cut.",
+        "dataset_family": "stack_v2",
+        "datasets": [
+            "long_tail_ppl/code_ecosystem/stack_v2_scala",
+            "long_tail_ppl/code_ecosystem/stack_v2_c_sharp",
+        ],
+    },
+    {
+        "id": "stack_v2.proof_math",
+        "dir": "stack-v2-proof-math",
+        "title": "Stack v2: Coq and Mathematica",
+        "description": "Formal proof and symbolic-math Stack v2 slices with very different surface forms.",
+        "dataset_family": "stack_v2",
+        "datasets": [
+            "long_tail_ppl/code_ecosystem/stack_v2_coq",
+            "long_tail_ppl/code_ecosystem/stack_v2_mathematica",
+        ],
+    },
+    {
+        "id": "stack_v2.specialty_formats",
+        "dir": "stack-v2-specialty-formats",
+        "title": "Stack v2: high-gap specialty formats",
+        "description": "High-absolute-gap Stack v2 v0 slices beyond the obvious Python/TOML cases.",
+        "dataset_family": "stack_v2",
+        "datasets": [
+            "long_tail_ppl/code_ecosystem/stack_v2_less",
+            "long_tail_ppl/code_ecosystem/stack_v2_standard_ml",
+            "long_tail_ppl/code_ecosystem/stack_v2_yacc",
+            "long_tail_ppl/code_ecosystem/stack_v2_svelte",
+        ],
+    },
+    {
         "id": "markup.svg_xml",
         "dir": "svg-xml",
         "title": "Markup: SVG/XML",
@@ -494,6 +545,7 @@ def display_title(title: str) -> str:
         "Synthetic numeric formats: ",
         "Synthetic numeric prompt ablation: ",
         "Synthetic surface forms: ",
+        "Stack v2: ",
     )
     for prefix in prefixes:
         if title.startswith(prefix):
@@ -559,6 +611,7 @@ def label_for(dataset: str, family: str) -> str:
         "uncheatable_eval/",
         "raw_web_markup/",
         "long_tail_ppl_runnable/",
+        "long_tail_ppl/code_ecosystem/stack_v2_",
         "gh_archive_structured_output/",
         "diagnostic_logs/",
         "structured_text/",

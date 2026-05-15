@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "stack_v2.json",
+  "title": "JSON span heatmap",
+  "description": "Stack v2 JSON rows where Qwen is sharply ahead, including serialized payloads and encoded blobs. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "stack_v2",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/marin_32b-1f7795/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/qwen3_32b-c2c5c8/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_json",
+      "label": "json",
+      "row_index": 34,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 32768,
+      "score_byte_start": 0,
+      "score_byte_end": 32768,
+      "marin_bpb": 4.7784,
+      "qwen_bpb": 3.7152,
+      "gap_bpb": 1.0632,
+      "payload": "examples/json-heldout_jsonl_gz-row-34.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_json",
+      "label": "json",
+      "row_index": 4,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 1055,
+      "score_byte_start": 0,
+      "score_byte_end": 1055,
+      "marin_bpb": 0.4161,
+      "qwen_bpb": 1.2722,
+      "gap_bpb": -0.856,
+      "payload": "examples/json-heldout_jsonl_gz-row-4.json"
+    }
+  ]
+}
