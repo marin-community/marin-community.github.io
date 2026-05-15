@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "stack_v2.assembly",
+  "title": "Assembly span heatmap",
+  "description": "Stack v2 assembly rows where Marin is often ahead on address-like and instruction-format continuations. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "stack_v2",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/marin_32b-1f7795/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/qwen3_32b-c2c5c8/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_assembly",
+      "label": "assembly",
+      "row_index": 162,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 1117,
+      "score_byte_start": 0,
+      "score_byte_end": 1117,
+      "marin_bpb": 2.2494,
+      "qwen_bpb": 0.837,
+      "gap_bpb": 1.4124,
+      "payload": "examples/assembly-heldout_jsonl_gz-row-162.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_assembly",
+      "label": "assembly",
+      "row_index": 124,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 1230,
+      "score_byte_start": 0,
+      "score_byte_end": 1230,
+      "marin_bpb": 0.2326,
+      "qwen_bpb": 0.8774,
+      "gap_bpb": -0.6448,
+      "payload": "examples/assembly-heldout_jsonl_gz-row-124.json"
+    }
+  ]
+}

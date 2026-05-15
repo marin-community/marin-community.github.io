@@ -16,11 +16,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "connected-components/manifest.json",
       "example_count": 4,
       "text_bytes": 890,
-      "payload_bytes": 142034,
+      "payload_bytes": 142007,
       "aggregate_gap_bpb": 0.001147828310443404
     },
     {
@@ -36,11 +36,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "graph-search/manifest.json",
       "example_count": 4,
       "text_bytes": 1383,
-      "payload_bytes": 200790,
+      "payload_bytes": 200763,
       "aggregate_gap_bpb": 0.007595989341862954
     },
     {
@@ -56,11 +56,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "arithmetic/manifest.json",
       "example_count": 4,
       "text_bytes": 228,
-      "payload_bytes": 80347,
+      "payload_bytes": 80320,
       "aggregate_gap_bpb": 0.012914821454142038
     },
     {
@@ -76,11 +76,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "euclid-gcd/manifest.json",
       "example_count": 4,
       "text_bytes": 826,
-      "payload_bytes": 124773,
+      "payload_bytes": 124746,
       "aggregate_gap_bpb": 0.029209369824664586
     },
     {
@@ -96,11 +96,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "floyd-warshall/manifest.json",
       "example_count": 4,
       "text_bytes": 1220,
-      "payload_bytes": 403810,
+      "payload_bytes": 403783,
       "aggregate_gap_bpb": 0.037991901169615476
     },
     {
@@ -118,11 +118,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "numeric-format-transduction/manifest.json",
       "example_count": 8,
       "text_bytes": 79,
-      "payload_bytes": 33619,
+      "payload_bytes": 33592,
       "aggregate_gap_bpb": -0.06077982091198231
     },
     {
@@ -139,11 +139,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "numeric-format-structured-records/manifest.json",
       "example_count": 6,
       "text_bytes": 237,
-      "payload_bytes": 83047,
+      "payload_bytes": 83020,
       "aggregate_gap_bpb": 0.006747007619349545
     },
     {
@@ -160,11 +160,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "numeric-format-dense-blobs/manifest.json",
       "example_count": 6,
       "text_bytes": 300,
-      "payload_bytes": 97911,
+      "payload_bytes": 97884,
       "aggregate_gap_bpb": 0.008563787934684916
     },
     {
@@ -188,11 +188,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "numeric-format-prompt-newline/manifest.json",
       "example_count": 20,
       "text_bytes": 748,
-      "payload_bytes": 212140,
+      "payload_bytes": 212113,
       "aggregate_gap_bpb": -0.014669036683798906
     },
     {
@@ -216,11 +216,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "numeric-format-prompt-arrow/manifest.json",
       "example_count": 20,
       "text_bytes": 626,
-      "payload_bytes": 212482,
+      "payload_bytes": 212455,
       "aggregate_gap_bpb": -0.0052129645068882445
     },
     {
@@ -244,11 +244,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "numeric-format-prompt-equals/manifest.json",
       "example_count": 20,
       "text_bytes": 616,
-      "payload_bytes": 212212,
+      "payload_bytes": 212185,
       "aggregate_gap_bpb": -0.004765348882587542
     },
     {
@@ -270,11 +270,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "synthetic-delimiter-format/manifest.json",
       "example_count": 16,
       "text_bytes": 141,
-      "payload_bytes": 59687,
+      "payload_bytes": 59660,
       "aggregate_gap_bpb": -0.039638761321772284
     },
     {
@@ -298,11 +298,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "synthetic-identifier-encoding/manifest.json",
       "example_count": 20,
       "text_bytes": 591,
-      "payload_bytes": 53969,
+      "payload_bytes": 53942,
       "aggregate_gap_bpb": -0.20308594081299697
     },
     {
@@ -330,11 +330,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "synthetic-machine-records/manifest.json",
       "example_count": 26,
       "text_bytes": 1860,
-      "payload_bytes": 122600,
+      "payload_bytes": 122573,
       "aggregate_gap_bpb": 0.06371832642808112
     },
     {
@@ -354,11 +354,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "synthetic-patch-diff/manifest.json",
       "example_count": 12,
       "text_bytes": 1698,
-      "payload_bytes": 91193,
+      "payload_bytes": 91166,
       "aggregate_gap_bpb": -0.06845498933265581
     },
     {
@@ -387,11 +387,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "synthetic-science-markup/manifest.json",
       "example_count": 30,
       "text_bytes": 2257,
-      "payload_bytes": 107026,
+      "payload_bytes": 106999,
       "aggregate_gap_bpb": 0.08860769446185232
     },
     {
@@ -407,11 +407,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "github-source/manifest.json",
       "example_count": 4,
       "text_bytes": 8943,
-      "payload_bytes": 191377,
+      "payload_bytes": 191350,
       "aggregate_gap_bpb": 0.04731046672404628
     },
     {
@@ -427,12 +427,112 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "verilog-formal/manifest.json",
       "example_count": 4,
       "text_bytes": 215,
-      "payload_bytes": 8771,
+      "payload_bytes": 8744,
       "aggregate_gap_bpb": 0.09328413968637163
+    },
+    {
+      "id": "stack_v2.json",
+      "title": "Stack v2: JSON",
+      "description": "Stack v2 JSON rows where Qwen is sharply ahead, including serialized payloads and encoded blobs. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "All available diagnostic slices",
+      "dataset_family": "stack_v2",
+      "datasets": [
+        "long_tail_ppl/code_ecosystem/stack_v2_json"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
+      "manifest": "stack-v2-json/manifest.json",
+      "example_count": 2,
+      "text_bytes": 33823,
+      "payload_bytes": 738450,
+      "aggregate_gap_bpb": 0.13212084355924852
+    },
+    {
+      "id": "stack_v2.assembly",
+      "title": "Stack v2: Assembly",
+      "description": "Stack v2 assembly rows where Marin is often ahead on address-like and instruction-format continuations. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "All available diagnostic slices",
+      "dataset_family": "stack_v2",
+      "datasets": [
+        "long_tail_ppl/code_ecosystem/stack_v2_assembly"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
+      "manifest": "stack-v2-assembly/manifest.json",
+      "example_count": 2,
+      "text_bytes": 2347,
+      "payload_bytes": 51741,
+      "aggregate_gap_bpb": -0.057959069092013066
+    },
+    {
+      "id": "stack_v2.scala_csharp",
+      "title": "Stack v2: Scala and C#",
+      "description": "JVM/.NET-adjacent Stack v2 slices from the v0 cut. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "All available diagnostic slices",
+      "dataset_family": "stack_v2",
+      "datasets": [
+        "long_tail_ppl/code_ecosystem/stack_v2_scala",
+        "long_tail_ppl/code_ecosystem/stack_v2_c_sharp"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
+      "manifest": "stack-v2-scala-csharp/manifest.json",
+      "example_count": 4,
+      "text_bytes": 4253,
+      "payload_bytes": 84877,
+      "aggregate_gap_bpb": 0.031093358225804613
+    },
+    {
+      "id": "stack_v2.proof_math",
+      "title": "Stack v2: Coq and Mathematica",
+      "description": "Formal proof and symbolic-math Stack v2 slices with very different surface forms. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "All available diagnostic slices",
+      "dataset_family": "stack_v2",
+      "datasets": [
+        "long_tail_ppl/code_ecosystem/stack_v2_coq",
+        "long_tail_ppl/code_ecosystem/stack_v2_mathematica"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
+      "manifest": "stack-v2-proof-math/manifest.json",
+      "example_count": 4,
+      "text_bytes": 52801,
+      "payload_bytes": 1061953,
+      "aggregate_gap_bpb": 0.02277819945351984
+    },
+    {
+      "id": "stack_v2.specialty_formats",
+      "title": "Stack v2: high-gap specialty formats",
+      "description": "High-absolute-gap Stack v2 v0 slices beyond the obvious Python/TOML cases. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "All available diagnostic slices",
+      "dataset_family": "stack_v2",
+      "datasets": [
+        "long_tail_ppl/code_ecosystem/stack_v2_less",
+        "long_tail_ppl/code_ecosystem/stack_v2_standard_ml",
+        "long_tail_ppl/code_ecosystem/stack_v2_yacc",
+        "long_tail_ppl/code_ecosystem/stack_v2_svelte"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
+      "manifest": "stack-v2-specialty-formats/manifest.json",
+      "example_count": 8,
+      "text_bytes": 38426,
+      "payload_bytes": 849061,
+      "aggregate_gap_bpb": 0.06239260185237391
     },
     {
       "id": "markup.svg_xml",
@@ -447,11 +547,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "svg-xml/manifest.json",
       "example_count": 4,
       "text_bytes": 23356,
-      "payload_bytes": 487510,
+      "payload_bytes": 487483,
       "aggregate_gap_bpb": 0.10208015732909223
     },
     {
@@ -467,11 +567,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "fineweb2-high-gap/manifest.json",
       "example_count": 4,
       "text_bytes": 9377,
-      "payload_bytes": 154932,
+      "payload_bytes": 154905,
       "aggregate_gap_bpb": 0.5665724071294865
     },
     {
@@ -488,11 +588,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "fineweb2-major-scripts/manifest.json",
       "example_count": 6,
       "text_bytes": 10028,
-      "payload_bytes": 131908,
+      "payload_bytes": 131881,
       "aggregate_gap_bpb": 0.13861179548403146
     },
     {
@@ -508,11 +608,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "bio-chem-proteins-structures/manifest.json",
       "example_count": 4,
       "text_bytes": 94968,
-      "payload_bytes": 1969834,
+      "payload_bytes": 1969807,
       "aggregate_gap_bpb": 0.17196217434953062
     },
     {
@@ -529,11 +629,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "bio-chem-molecules/manifest.json",
       "example_count": 6,
       "text_bytes": 81957,
-      "payload_bytes": 1543804,
+      "payload_bytes": 1543777,
       "aggregate_gap_bpb": 0.058235078188253915
     },
     {
@@ -550,11 +650,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "paloma-social-forums/manifest.json",
       "example_count": 6,
       "text_bytes": 2568,
-      "payload_bytes": 57962,
+      "payload_bytes": 57935,
       "aggregate_gap_bpb": -0.13567828431538717
     },
     {
@@ -571,11 +671,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "paloma-web-reference/manifest.json",
       "example_count": 6,
       "text_bytes": 42430,
-      "payload_bytes": 939804,
+      "payload_bytes": 939777,
       "aggregate_gap_bpb": -0.11885108202028578
     },
     {
@@ -592,11 +692,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "ocr-asr-noisy-text/manifest.json",
       "example_count": 6,
       "text_bytes": 457,
-      "payload_bytes": 16189,
+      "payload_bytes": 16162,
       "aggregate_gap_bpb": -0.17771433617978638
     },
     {
@@ -613,11 +713,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "ocr-markup-textocr-metadata/manifest.json",
       "example_count": 6,
       "text_bytes": 2973,
-      "payload_bytes": 63057,
+      "payload_bytes": 63030,
       "aggregate_gap_bpb": -0.011100256615238623
     },
     {
@@ -635,11 +735,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "github-archive-events/manifest.json",
       "example_count": 8,
       "text_bytes": 149552,
-      "payload_bytes": 2859094,
+      "payload_bytes": 2859067,
       "aggregate_gap_bpb": 0.02130277369685006
     },
     {
@@ -656,11 +756,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "diagnostic-logs/manifest.json",
       "example_count": 6,
       "text_bytes": 131240,
-      "payload_bytes": 2172067,
+      "payload_bytes": 2172040,
       "aggregate_gap_bpb": -0.03483860992909989
     },
     {
@@ -676,11 +776,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "common-crawl-markup/manifest.json",
       "example_count": 4,
       "text_bytes": 64865,
-      "payload_bytes": 1339294,
+      "payload_bytes": 1339267,
       "aggregate_gap_bpb": 0.02616304829937325
     },
     {
@@ -697,11 +797,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "structured-text-tables/manifest.json",
       "example_count": 6,
       "text_bytes": 12666,
-      "payload_bytes": 236081,
+      "payload_bytes": 236054,
       "aggregate_gap_bpb": -0.04676528672926815
     },
     {
@@ -717,11 +817,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "eval-math-mmlu-gsm8k/manifest.json",
       "example_count": 4,
       "text_bytes": 183,
-      "payload_bytes": 124081,
+      "payload_bytes": 124054,
       "aggregate_gap_bpb": -0.20081746393414104
     },
     {
@@ -738,11 +838,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "formal-package-network/manifest.json",
       "example_count": 6,
       "text_bytes": 10471,
-      "payload_bytes": 227640,
+      "payload_bytes": 227613,
       "aggregate_gap_bpb": 0.0306019929878218
     },
     {
@@ -758,11 +858,11 @@
       "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
-      "run_key": "main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl",
+      "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
       "manifest": "music-hardware-rtl-abc/manifest.json",
       "example_count": 4,
       "text_bytes": 1170,
-      "payload_bytes": 29364,
+      "payload_bytes": 29337,
       "aggregate_gap_bpb": -0.027448776237667404
     }
   ]

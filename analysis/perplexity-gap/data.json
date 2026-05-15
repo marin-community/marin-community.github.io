@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-05-12T00:47:07.821154Z",
+  "generated_at": "2026-05-15T01:08:17Z",
   "note": "Positive gap means Marin is worse. Negative gap means Marin is better. The dashboard hides the superseded chat-framed synthetic_numeric_format_ppl stress slices; use synthetic_numeric_format_prompt_ablation_ppl for the base-model numeric-format comparison.",
   "runs": [
     {
       "id": "qwen32_all_available_diag",
       "title": "Marin 32B vs Qwen3 32B",
-      "subtitle": "All available diagnostic slices + CLRS ICL + numeric prompt ablations + surface-form probes + arrow-ICL synthetic reasoning",
-      "summary_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-vs-qwen3_32b-91d1a4/summary.json",
-      "report_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-vs-qwen3_32b-91d1a4/report.md",
-      "worst_documents_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-vs-qwen3_32b-91d1a4/worst_documents.jsonl",
-      "local_artifact_path": "artifacts/main_gap_all_available_diag_50eb41089_v19_synthetic_reasoning_arrow_icl/marin_32b-vs-qwen3_32b-91d1a4",
+      "subtitle": "All available diagnostic slices + CLRS ICL + numeric prompt ablations + surface-form probes + arrow-ICL synthetic reasoning + Stack v2 code v0 105-slice cut (#5254)",
+      "summary_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/marin_32b-vs-qwen3_32b-adf925/summary.json",
+      "report_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/marin_32b-vs-qwen3_32b-adf925/report.md",
+      "worst_documents_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/marin_32b-vs-qwen3_32b-adf925/worst_documents.jsonl",
+      "local_artifact_path": "artifacts/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/marin_32b-vs-qwen3_32b-adf925",
       "kind": "all_available",
       "model_a": "marin-community/marin-32b-base",
       "model_b": "Qwen/Qwen3-32B",
@@ -69,6 +69,15 @@
           "name": "fineweb2_multilingual/script/Latn"
         },
         {
+          "bytes": 115075915,
+          "delta_bits": 2193228.3236680944,
+          "documents": 57322,
+          "gap_bpb": 0.019058969234944552,
+          "model_a_bpb": 0.37732003161307115,
+          "model_b_bpb": 0.3582610623781266,
+          "name": "epic:5005"
+        },
+        {
           "bytes": 8083388,
           "delta_bits": 1994480.9673217686,
           "documents": 1536,
@@ -76,6 +85,42 @@
           "model_a_bpb": 0.8090431082441037,
           "model_b_bpb": 0.5623048634237674,
           "name": "fineweb2_multilingual/script/Cyrl"
+        },
+        {
+          "bytes": 85803445,
+          "delta_bits": 1982666.311312133,
+          "documents": 20002,
+          "gap_bpb": 0.023107071182423188,
+          "model_a_bpb": 0.41774465588099213,
+          "model_b_bpb": 0.39463758469856897,
+          "name": "long_tail_ppl"
+        },
+        {
+          "bytes": 84369461,
+          "delta_bits": 1874230.6394980114,
+          "documents": 18666,
+          "gap_bpb": 0.022214562203947366,
+          "model_a_bpb": 0.40967683421157897,
+          "model_b_bpb": 0.38746227200763167,
+          "name": "code_ecosystem"
+        },
+        {
+          "bytes": 84369461,
+          "delta_bits": 1874230.6394980114,
+          "documents": 18666,
+          "gap_bpb": 0.022214562203947366,
+          "model_a_bpb": 0.40967683421157897,
+          "model_b_bpb": 0.38746227200763167,
+          "name": "issue:5254"
+        },
+        {
+          "bytes": 84369461,
+          "delta_bits": 1874230.6394980114,
+          "documents": 18666,
+          "gap_bpb": 0.022214562203947366,
+          "model_a_bpb": 0.40967683421157897,
+          "model_b_bpb": 0.38746227200763167,
+          "name": "long_tail_ppl/code_ecosystem"
         },
         {
           "bytes": 13232651,
@@ -265,15 +310,6 @@
           "model_a_bpb": 0.8565866408810631,
           "model_b_bpb": 0.6073636361154167,
           "name": "fineweb2_multilingual/language/arb"
-        },
-        {
-          "bytes": 30706454,
-          "delta_bits": 318997.68417011277,
-          "documents": 38656,
-          "gap_bpb": 0.010388620065674557,
-          "model_a_bpb": 0.28841605087600997,
-          "model_b_bpb": 0.2780274308103354,
-          "name": "epic:5005"
         },
         {
           "bytes": 1880846,
@@ -985,15 +1021,6 @@
           "model_a_bpb": 0.8604558135589228,
           "model_b_bpb": 0.7583756562298305,
           "name": "web_markup_image_text"
-        },
-        {
-          "bytes": 1433984,
-          "delta_bits": 108435.67181412056,
-          "documents": 1336,
-          "gap_bpb": 0.07561846702203132,
-          "model_a_bpb": 0.8924206394990143,
-          "model_b_bpb": 0.8168021724769831,
-          "name": "long_tail_ppl"
         },
         {
           "bytes": 10809503,
@@ -4220,6 +4247,15 @@
           "name": "fineweb2_multilingual/kor_Hang"
         },
         {
+          "bytes": 1535135,
+          "delta_bits": 202823.33117732697,
+          "documents": 224,
+          "gap_bpb": 0.13212084355924852,
+          "model_a_bpb": 0.9143003687341398,
+          "model_b_bpb": 0.7821795251748913,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_json"
+        },
+        {
           "bytes": 1512436,
           "delta_bits": 190542.8702011015,
           "documents": 256,
@@ -4580,6 +4616,15 @@
           "name": "structured_text/totto"
         },
         {
+          "bytes": 1232929,
+          "delta_bits": -71459.41709654657,
+          "documents": 256,
+          "gap_bpb": -0.057959069092013066,
+          "model_a_bpb": 0.3696782398155511,
+          "model_b_bpb": 0.42763730890756413,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_assembly"
+        },
+        {
           "bytes": 707637,
           "delta_bits": 66480.12686129067,
           "documents": 256,
@@ -4587,6 +4632,15 @@
           "model_a_bpb": 0.9012927563955182,
           "model_b_bpb": 0.8073461045651437,
           "name": "fineweb2_multilingual/por_Latn"
+        },
+        {
+          "bytes": 1856044,
+          "delta_bits": 64888.19383023425,
+          "documents": 256,
+          "gap_bpb": 0.03496048252640253,
+          "model_a_bpb": 0.3416431645446515,
+          "model_b_bpb": 0.30668268201824894,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_zig"
         },
         {
           "bytes": 593175,
@@ -4607,6 +4661,15 @@
           "name": "raw_web_markup/svg_stack/svg_xml_test"
         },
         {
+          "bytes": 2115527,
+          "delta_bits": 62385.882278501165,
+          "documents": 256,
+          "gap_bpb": 0.02948952307321115,
+          "model_a_bpb": 0.44646769408025444,
+          "model_b_bpb": 0.4169781710070433,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_html"
+        },
+        {
           "bytes": 437688,
           "delta_bits": 55636.63532572811,
           "documents": 56,
@@ -4623,6 +4686,15 @@
           "model_a_bpb": 0.664945724506503,
           "model_b_bpb": 0.7695400275750233,
           "name": "paloma/c4_en"
+        },
+        {
+          "bytes": 1232408,
+          "delta_bits": 52513.74439834391,
+          "documents": 256,
+          "gap_bpb": 0.04261068120163445,
+          "model_a_bpb": 0.37811049149735837,
+          "model_b_bpb": 0.33549981029572395,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_lua"
         },
         {
           "bytes": 530695,
@@ -4643,6 +4715,24 @@
           "name": "raw_web_markup/svg_stack/svg_xml_val"
         },
         {
+          "bytes": 2413566,
+          "delta_bits": 50097.14420619761,
+          "documents": 256,
+          "gap_bpb": 0.020756484059767835,
+          "model_a_bpb": 0.3311823547968567,
+          "model_b_bpb": 0.3104258707370888,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_cuda"
+        },
+        {
+          "bytes": 1806025,
+          "delta_bits": 49207.50578532176,
+          "documents": 256,
+          "gap_bpb": 0.02724630378057987,
+          "model_a_bpb": 0.22272266031842117,
+          "model_b_bpb": 0.1954763565378413,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_ada"
+        },
+        {
           "bytes": 635606,
           "delta_bits": -49195.21116913792,
           "documents": 256,
@@ -4650,6 +4740,24 @@
           "model_a_bpb": 0.6048424738638918,
           "model_b_bpb": 0.6822413832025983,
           "name": "uncheatable_eval/wikipedia_english"
+        },
+        {
+          "bytes": 1758775,
+          "delta_bits": 47660.00692040903,
+          "documents": 256,
+          "gap_bpb": 0.027098410496174345,
+          "model_a_bpb": 0.37407234453556726,
+          "model_b_bpb": 0.3469739340393929,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_nim"
+        },
+        {
+          "bytes": 1066691,
+          "delta_bits": 47142.321732016826,
+          "documents": 256,
+          "gap_bpb": 0.04419491842718915,
+          "model_a_bpb": 0.2838418119050138,
+          "model_b_bpb": 0.2396468934778246,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_vue"
         },
         {
           "bytes": 410728,
@@ -4679,6 +4787,24 @@
           "name": "uncheatable_eval/github_cpp"
         },
         {
+          "bytes": 2126947,
+          "delta_bits": 44415.470787703365,
+          "documents": 256,
+          "gap_bpb": 0.020882264949574843,
+          "model_a_bpb": 0.414731645217486,
+          "model_b_bpb": 0.3938493802679111,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_fortran"
+        },
+        {
+          "bytes": 1718348,
+          "delta_bits": 43305.16816495002,
+          "documents": 256,
+          "gap_bpb": 0.025201628636894284,
+          "model_a_bpb": 0.24204616587943548,
+          "model_b_bpb": 0.21684453724254119,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_rust"
+        },
+        {
           "bytes": 1078449,
           "delta_bits": 43174.06663846225,
           "documents": 256,
@@ -4697,6 +4823,15 @@
           "name": "bio_chem/pubchem/pubchem_cid_smiles"
         },
         {
+          "bytes": 761031,
+          "delta_bits": 40279.99250482418,
+          "documents": 256,
+          "gap_bpb": 0.052928188871181565,
+          "model_a_bpb": 0.28266820621086197,
+          "model_b_bpb": 0.2297400173396804,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_scala"
+        },
+        {
           "bytes": 471371,
           "delta_bits": -39533.47016787496,
           "documents": 256,
@@ -4704,6 +4839,24 @@
           "model_a_bpb": 0.6570233388424583,
           "model_b_bpb": 0.7408924571545203,
           "name": "structured_text/wikitablequestions"
+        },
+        {
+          "bytes": 1357979,
+          "delta_bits": 39292.12004600251,
+          "documents": 243,
+          "gap_bpb": 0.02893426190390463,
+          "model_a_bpb": 0.5345638435548427,
+          "model_b_bpb": 0.5056295816509381,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_tcl"
+        },
+        {
+          "bytes": 1042235,
+          "delta_bits": 38900.012190736394,
+          "documents": 256,
+          "gap_bpb": 0.037323647920801346,
+          "model_a_bpb": 0.4109773903167174,
+          "model_b_bpb": 0.37365374239591603,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_racket"
         },
         {
           "bytes": 2681436,
@@ -4715,6 +4868,51 @@
           "name": "gh_archive_structured_output/IssueCommentEvent"
         },
         {
+          "bytes": 945528,
+          "delta_bits": 37133.79974245392,
+          "documents": 256,
+          "gap_bpb": 0.039273083126521814,
+          "model_a_bpb": 0.39596559714441254,
+          "model_b_bpb": 0.35669251401789076,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_clojure"
+        },
+        {
+          "bytes": 1509076,
+          "delta_bits": 36934.95146118843,
+          "documents": 256,
+          "gap_bpb": 0.024475209639003223,
+          "model_a_bpb": 0.3074798839625959,
+          "model_b_bpb": 0.28300467432359266,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_erlang"
+        },
+        {
+          "bytes": 1096304,
+          "delta_bits": 36601.12868782117,
+          "documents": 256,
+          "gap_bpb": 0.03338593007762552,
+          "model_a_bpb": 0.3964454629475461,
+          "model_b_bpb": 0.3630595328699206,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_haskell"
+        },
+        {
+          "bytes": 1332249,
+          "delta_bits": 36217.66956869764,
+          "documents": 256,
+          "gap_bpb": 0.027185360671088992,
+          "model_a_bpb": 0.30811812737844896,
+          "model_b_bpb": 0.28093276670736,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_cpp"
+        },
+        {
+          "bytes": 1263566,
+          "delta_bits": 34759.167851374485,
+          "documents": 256,
+          "gap_bpb": 0.027508786918431238,
+          "model_a_bpb": 0.3111918095027334,
+          "model_b_bpb": 0.28368302258430217,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_f_sharp"
+        },
+        {
           "bytes": 138147,
           "delta_bits": 34684.301112832734,
           "documents": 21,
@@ -4722,6 +4920,51 @@
           "model_a_bpb": 1.2441978615581126,
           "model_b_bpb": 0.993129788325739,
           "name": "fineweb2_multilingual/sat_Olck"
+        },
+        {
+          "bytes": 1566271,
+          "delta_bits": 34568.407330985145,
+          "documents": 256,
+          "gap_bpb": 0.022070514828522743,
+          "model_a_bpb": 0.4017543934546564,
+          "model_b_bpb": 0.3796838786261337,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_perl"
+        },
+        {
+          "bytes": 1374432,
+          "delta_bits": 34115.487835254244,
+          "documents": 173,
+          "gap_bpb": 0.024821517423382344,
+          "model_a_bpb": 0.434602644167937,
+          "model_b_bpb": 0.4097811267445547,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_xml"
+        },
+        {
+          "bytes": 1027484,
+          "delta_bits": 33505.590254512106,
+          "documents": 256,
+          "gap_bpb": 0.03260935474860154,
+          "model_a_bpb": 0.39824437976305666,
+          "model_b_bpb": 0.36563502501445505,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_powershell"
+        },
+        {
+          "bytes": 1911653,
+          "delta_bits": 31609.499808376808,
+          "documents": 256,
+          "gap_bpb": 0.016535166062238704,
+          "model_a_bpb": 0.4948774230445098,
+          "model_b_bpb": 0.4783422569822711,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_tex"
+        },
+        {
+          "bytes": 1408722,
+          "delta_bits": 30995.12068859863,
+          "documents": 256,
+          "gap_bpb": 0.022002297606340093,
+          "model_a_bpb": 0.48438287240517997,
+          "model_b_bpb": 0.46238057479883987,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_scheme"
         },
         {
           "bytes": 681226,
@@ -4742,6 +4985,15 @@
           "name": "formal_methods/tptp"
         },
         {
+          "bytes": 1674700,
+          "delta_bits": 29025.0704370311,
+          "documents": 256,
+          "gap_bpb": 0.01733150441095784,
+          "model_a_bpb": 0.21703313935471286,
+          "model_b_bpb": 0.199701634943755,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_visual_basic_net"
+        },
+        {
           "bytes": 665640,
           "delta_bits": 28586.23176531456,
           "documents": 256,
@@ -4749,6 +5001,15 @@
           "model_a_bpb": 1.0509000777248327,
           "model_b_bpb": 1.0079545940319738,
           "name": "fineweb2_multilingual/dan_Latn"
+        },
+        {
+          "bytes": 1418346,
+          "delta_bits": 28570.209506731586,
+          "documents": 256,
+          "gap_bpb": 0.02014332857196452,
+          "model_a_bpb": 0.3632892144008748,
+          "model_b_bpb": 0.3431458858289103,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_d"
         },
         {
           "bytes": 339439,
@@ -4769,6 +5030,15 @@
           "name": "synthetic_reasoning_ppl/stepmath/algebra_linear_equation_3shot_icl"
         },
         {
+          "bytes": 558227,
+          "delta_bits": 27871.063600283982,
+          "documents": 256,
+          "gap_bpb": 0.049927831509912604,
+          "model_a_bpb": 0.5815487729423856,
+          "model_b_bpb": 0.5316209414324731,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_svelte"
+        },
+        {
           "bytes": 600203,
           "delta_bits": 27482.020883853384,
           "documents": 256,
@@ -4776,6 +5046,24 @@
           "model_a_bpb": 0.9581730684335937,
           "model_b_bpb": 0.9123851918587458,
           "name": "fineweb2_multilingual/nld_Latn"
+        },
+        {
+          "bytes": 1492995,
+          "delta_bits": 26290.627107677974,
+          "documents": 256,
+          "gap_bpb": 0.017609320264085262,
+          "model_a_bpb": 0.4282288714819382,
+          "model_b_bpb": 0.41061955121785293,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_common_lisp"
+        },
+        {
+          "bytes": 433873,
+          "delta_bits": 25139.309235256893,
+          "documents": 33,
+          "gap_bpb": 0.05794163092715355,
+          "model_a_bpb": 0.2815670628550872,
+          "model_b_bpb": 0.22362543192793366,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_yacc"
         },
         {
           "bytes": 1282105,
@@ -4805,6 +5093,15 @@
           "name": "paloma/dolma_100_subreddits"
         },
         {
+          "bytes": 842351,
+          "delta_bits": 24400.22599885608,
+          "documents": 256,
+          "gap_bpb": 0.02896681549479502,
+          "model_a_bpb": 0.2445144414940895,
+          "model_b_bpb": 0.21554762599929445,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_swift"
+        },
+        {
           "bytes": 127072,
           "delta_bits": 23303.92092278511,
           "documents": 256,
@@ -4823,6 +5120,51 @@
           "name": "fineweb2_multilingual/swe_Latn"
         },
         {
+          "bytes": 964530,
+          "delta_bits": 22363.840542398666,
+          "documents": 256,
+          "gap_bpb": 0.023186257081064008,
+          "model_a_bpb": 0.3023943598726043,
+          "model_b_bpb": 0.2792081027915403,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_go"
+        },
+        {
+          "bytes": 901009,
+          "delta_bits": 22121.067216114887,
+          "documents": 256,
+          "gap_bpb": 0.02455143868275998,
+          "model_a_bpb": 0.3841402860982389,
+          "model_b_bpb": 0.359588847415479,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_javascript"
+        },
+        {
+          "bytes": 1141187,
+          "delta_bits": 22032.619396423244,
+          "documents": 256,
+          "gap_bpb": 0.019306756382979514,
+          "model_a_bpb": 0.2224111711574381,
+          "model_b_bpb": 0.2031044147744586,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_java"
+        },
+        {
+          "bytes": 1005783,
+          "delta_bits": -21750.197177016034,
+          "documents": 256,
+          "gap_bpb": -0.021625138998189505,
+          "model_a_bpb": 0.6101336730686604,
+          "model_b_bpb": 0.6317588120668499,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_markdown"
+        },
+        {
+          "bytes": 540685,
+          "delta_bits": 21538.572172624034,
+          "documents": 29,
+          "gap_bpb": 0.03983571242520882,
+          "model_a_bpb": 0.970504414148773,
+          "model_b_bpb": 0.9306687017235641,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_mathematica"
+        },
+        {
           "bytes": 238527,
           "delta_bits": 21325.382389385562,
           "documents": 256,
@@ -4830,6 +5172,24 @@
           "model_a_bpb": 0.7064455424463015,
           "model_b_bpb": 0.6170410624948262,
           "name": "gh_archive_structured_output/PushEvent"
+        },
+        {
+          "bytes": 704146,
+          "delta_bits": 21224.727933165985,
+          "documents": 256,
+          "gap_bpb": 0.030142510123136373,
+          "model_a_bpb": 0.5946434599054831,
+          "model_b_bpb": 0.5645009497823468,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_crystal"
+        },
+        {
+          "bytes": 1214922,
+          "delta_bits": 21038.969188376308,
+          "documents": 135,
+          "gap_bpb": 0.01731713574071118,
+          "model_a_bpb": 0.5562129303344058,
+          "model_b_bpb": 0.5388957945936946,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_pascal"
         },
         {
           "bytes": 133480,
@@ -4841,6 +5201,33 @@
           "name": "fineweb2_multilingual/awa_Deva"
         },
         {
+          "bytes": 980612,
+          "delta_bits": 20682.90923843916,
+          "documents": 256,
+          "gap_bpb": 0.021091837789502025,
+          "model_a_bpb": 0.23077247682050822,
+          "model_b_bpb": 0.2096806390310062,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_dart"
+        },
+        {
+          "bytes": 844761,
+          "delta_bits": 20443.876103432718,
+          "documents": 256,
+          "gap_bpb": 0.024200781171754754,
+          "model_a_bpb": 0.30459644771397293,
+          "model_b_bpb": 0.2803956665422182,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_php"
+        },
+        {
+          "bytes": 724118,
+          "delta_bits": 20397.734186886315,
+          "documents": 256,
+          "gap_bpb": 0.028169074911666765,
+          "model_a_bpb": 0.33200823933296536,
+          "model_b_bpb": 0.3038391644212986,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_elixir"
+        },
+        {
           "bytes": 1237838,
           "delta_bits": -20339.227807533578,
           "documents": 256,
@@ -4848,6 +5235,42 @@
           "model_a_bpb": 0.5666233045176667,
           "model_b_bpb": 0.5830545562707504,
           "name": "uncheatable_eval/arxiv_computer_science"
+        },
+        {
+          "bytes": 1029341,
+          "delta_bits": 20075.862516509962,
+          "documents": 256,
+          "gap_bpb": 0.019503607178291704,
+          "model_a_bpb": 0.28832662194944153,
+          "model_b_bpb": 0.26882301477114984,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_groovy"
+        },
+        {
+          "bytes": 668847,
+          "delta_bits": 19433.372311448464,
+          "documents": 256,
+          "gap_bpb": 0.02905503397854586,
+          "model_a_bpb": 0.2932795764348479,
+          "model_b_bpb": 0.2642245424563021,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_typescript"
+        },
+        {
+          "bytes": 722901,
+          "delta_bits": 18793.42111854455,
+          "documents": 256,
+          "gap_bpb": 0.025997226616845944,
+          "model_a_bpb": 0.3756049203646704,
+          "model_b_bpb": 0.34960769374782447,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_coffeescript"
+        },
+        {
+          "bytes": 1237394,
+          "delta_bits": 18155.415517570404,
+          "documents": 256,
+          "gap_bpb": 0.014672299621276978,
+          "model_a_bpb": 0.3865971250407386,
+          "model_b_bpb": 0.37192482541946165,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_julia"
         },
         {
           "bytes": 1416856,
@@ -4866,6 +5289,24 @@
           "model_a_bpb": 1.0910176183676152,
           "model_b_bpb": 0.9619272243152946,
           "name": "fineweb2_multilingual/brx_Deva"
+        },
+        {
+          "bytes": 685343,
+          "delta_bits": 17545.85737983196,
+          "documents": 256,
+          "gap_bpb": 0.0256015708628117,
+          "model_a_bpb": 0.25212049378729623,
+          "model_b_bpb": 0.22651892292448447,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_kotlin"
+        },
+        {
+          "bytes": 1585788,
+          "delta_bits": 16920.59352778093,
+          "documents": 249,
+          "gap_bpb": 0.010670148549352707,
+          "model_a_bpb": 0.3651281170564634,
+          "model_b_bpb": 0.35445796850711075,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_c"
         },
         {
           "bytes": 826860,
@@ -4895,6 +5336,33 @@
           "name": "diagnostic_logs/logchunks_eval"
         },
         {
+          "bytes": 361008,
+          "delta_bits": 15891.744475681198,
+          "documents": 64,
+          "gap_bpb": 0.044020477318179096,
+          "model_a_bpb": 0.326081324723805,
+          "model_b_bpb": 0.2820608474056259,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_abap"
+        },
+        {
+          "bytes": 161696,
+          "delta_bits": 15748.060544710585,
+          "documents": 34,
+          "gap_bpb": 0.09739301247223546,
+          "model_a_bpb": 1.1318250401033363,
+          "model_b_bpb": 1.034432027631101,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_less"
+        },
+        {
+          "bytes": 1040743,
+          "delta_bits": 15743.211919116702,
+          "documents": 256,
+          "gap_bpb": 0.01512689676425083,
+          "model_a_bpb": 0.21451719549033252,
+          "model_b_bpb": 0.1993902987260817,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_c_sharp"
+        },
+        {
           "bytes": 894900,
           "delta_bits": 15596.262473744837,
           "documents": 256,
@@ -4913,6 +5381,51 @@
           "name": "synthetic_reasoning_ppl/native/n_queens_backtracking_1shot_icl"
         },
         {
+          "bytes": 198088,
+          "delta_bits": 15589.126782343197,
+          "documents": 22,
+          "gap_bpb": 0.07869798666422599,
+          "model_a_bpb": 0.7188517608461967,
+          "model_b_bpb": 0.6401537741819707,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_standard_ml"
+        },
+        {
+          "bytes": 308216,
+          "delta_bits": -14718.00738649674,
+          "documents": 256,
+          "gap_bpb": -0.04775224967716387,
+          "model_a_bpb": 0.7264236236588821,
+          "model_b_bpb": 0.7741758733360461,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_toml"
+        },
+        {
+          "bytes": 486323,
+          "delta_bits": 14575.455875738617,
+          "documents": 256,
+          "gap_bpb": 0.029970731130829955,
+          "model_a_bpb": 0.5039042703363301,
+          "model_b_bpb": 0.47393353920550024,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_shell"
+        },
+        {
+          "bytes": 680028,
+          "delta_bits": 14100.012502904352,
+          "documents": 256,
+          "gap_bpb": 0.020734458732440945,
+          "model_a_bpb": 0.5061765375498604,
+          "model_b_bpb": 0.4854420788174194,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_ini"
+        },
+        {
+          "bytes": 382757,
+          "delta_bits": 14081.438123434002,
+          "documents": 95,
+          "gap_bpb": 0.03678949862036227,
+          "model_a_bpb": 0.39767823953760906,
+          "model_b_bpb": 0.36088874091724676,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_pony"
+        },
+        {
           "bytes": 1028512,
           "delta_bits": 13790.348112428252,
           "documents": 256,
@@ -4922,6 +5435,15 @@
           "name": "structured_text/gittables"
         },
         {
+          "bytes": 345338,
+          "delta_bits": 13758.778930141232,
+          "documents": 57,
+          "gap_bpb": 0.039841485530527285,
+          "model_a_bpb": 0.30902603841920545,
+          "model_b_bpb": 0.26918455288867815,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_antlr"
+        },
+        {
           "bytes": 68195,
           "delta_bits": -13682.880429226401,
           "documents": 256,
@@ -4929,6 +5451,24 @@
           "model_a_bpb": 0.1123894279083956,
           "model_b_bpb": 0.31303288313570554,
           "name": "lm_eval/gsm8k_train"
+        },
+        {
+          "bytes": 657141,
+          "delta_bits": 13459.684618471141,
+          "documents": 256,
+          "gap_bpb": 0.02048218665167923,
+          "model_a_bpb": 0.28465992909437315,
+          "model_b_bpb": 0.264177742442694,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_makefile"
+        },
+        {
+          "bytes": 297169,
+          "delta_bits": 13048.390027431136,
+          "documents": 75,
+          "gap_bpb": 0.043908987907322554,
+          "model_a_bpb": 0.4863277298005655,
+          "model_b_bpb": 0.44241874189324293,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_emacs_lisp"
         },
         {
           "bytes": 524288,
@@ -4958,6 +5498,15 @@
           "name": "raw_web_markup/ocr_vqa/ocr_info_json_validation"
         },
         {
+          "bytes": 584938,
+          "delta_bits": 11277.939179123108,
+          "documents": 256,
+          "gap_bpb": 0.019280571922362898,
+          "model_a_bpb": 0.32420352336367186,
+          "model_b_bpb": 0.304922951441309,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_ruby"
+        },
+        {
           "bytes": 72959,
           "delta_bits": -10825.567650519879,
           "documents": 256,
@@ -4965,6 +5514,15 @@
           "model_a_bpb": 1.550430367826287,
           "model_b_bpb": 1.6988091511226573,
           "name": "game_music/irishman_abc"
+        },
+        {
+          "bytes": 283466,
+          "delta_bits": 10757.777601375908,
+          "documents": 133,
+          "gap_bpb": 0.03795085689774403,
+          "model_a_bpb": 0.5877572137040478,
+          "model_b_bpb": 0.5498063568063036,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_stylus"
         },
         {
           "bytes": 65840,
@@ -4976,6 +5534,33 @@
           "name": "raw_web_markup/ocr_vqa/book_metadata_validation"
         },
         {
+          "bytes": 835781,
+          "delta_bits": 9996.923827413679,
+          "documents": 138,
+          "gap_bpb": 0.011961176226085158,
+          "model_a_bpb": 0.3987676664015062,
+          "model_b_bpb": 0.38680649017542107,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_sql"
+        },
+        {
+          "bytes": 324414,
+          "delta_bits": 9976.921117769518,
+          "documents": 70,
+          "gap_bpb": 0.03075367005668534,
+          "model_a_bpb": 0.259391432189528,
+          "model_b_bpb": 0.22863776213284265,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_elm"
+        },
+        {
+          "bytes": 463365,
+          "delta_bits": 9906.411141104867,
+          "documents": 256,
+          "gap_bpb": 0.021379282296040632,
+          "model_a_bpb": 0.35453444429762493,
+          "model_b_bpb": 0.3331551620015843,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_cmake"
+        },
+        {
           "bytes": 53066,
           "delta_bits": -9784.697550306004,
           "documents": 256,
@@ -4985,6 +5570,24 @@
           "name": "raw_web_markup/textocr/ocr_strings"
         },
         {
+          "bytes": 282132,
+          "delta_bits": 9506.410805769312,
+          "documents": 125,
+          "gap_bpb": 0.033694904533230235,
+          "model_a_bpb": 0.5688976311932096,
+          "model_b_bpb": 0.5352027266599794,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_smalltalk"
+        },
+        {
+          "bytes": 260688,
+          "delta_bits": 9486.18921107553,
+          "documents": 41,
+          "gap_bpb": 0.03638905208937707,
+          "model_a_bpb": 0.874302151057613,
+          "model_b_bpb": 0.837913098968236,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_forth"
+        },
+        {
           "bytes": 236130,
           "delta_bits": 9386.660461994134,
           "documents": 256,
@@ -4992,6 +5595,24 @@
           "model_a_bpb": 0.23962912111653814,
           "model_b_bpb": 0.19987703344451796,
           "name": "synthetic_reasoning_ppl/clrs_style/clrs_floyd_warshall"
+        },
+        {
+          "bytes": 363350,
+          "delta_bits": 9331.794063188092,
+          "documents": 73,
+          "gap_bpb": 0.025682658767546697,
+          "model_a_bpb": 0.42214853214781994,
+          "model_b_bpb": 0.3964658733802733,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_systemverilog"
+        },
+        {
+          "bytes": 330766,
+          "delta_bits": 9172.646089222339,
+          "documents": 83,
+          "gap_bpb": 0.027731526484651804,
+          "model_a_bpb": 0.29277467411801283,
+          "model_b_bpb": 0.265043147633361,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_java_server_pages"
         },
         {
           "bytes": 13227,
@@ -5010,6 +5631,33 @@
           "model_a_bpb": 0.9582584836238854,
           "model_b_bpb": 0.9304997987108039,
           "name": "fineweb2_multilingual/mni_Beng"
+        },
+        {
+          "bytes": 1088118,
+          "delta_bits": 8827.144081304863,
+          "documents": 256,
+          "gap_bpb": 0.008112304071162193,
+          "model_a_bpb": 0.3069739495226863,
+          "model_b_bpb": 0.29886164545152405,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_python"
+        },
+        {
+          "bytes": 1341070,
+          "delta_bits": 8589.14834698755,
+          "documents": 256,
+          "gap_bpb": 0.00640469800009511,
+          "model_a_bpb": 0.391596246959462,
+          "model_b_bpb": 0.3851915489593668,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_r"
+        },
+        {
+          "bytes": 728845,
+          "delta_bits": 8527.574885478185,
+          "documents": 114,
+          "gap_bpb": 0.011700121267866535,
+          "model_a_bpb": 0.4849367076927492,
+          "model_b_bpb": 0.47323658642488264,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_verilog"
         },
         {
           "bytes": 429145,
@@ -5039,6 +5687,15 @@
           "name": "formal_methods/coqgym"
         },
         {
+          "bytes": 267331,
+          "delta_bits": 7535.738509685221,
+          "documents": 103,
+          "gap_bpb": 0.028188794078072583,
+          "model_a_bpb": 0.47468353865628926,
+          "model_b_bpb": 0.44649474457821664,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_gdscript"
+        },
+        {
           "bytes": 6861,
           "delta_bits": -7474.130158678997,
           "documents": 256,
@@ -5055,6 +5712,15 @@
           "model_a_bpb": 1.2365613732798229,
           "model_b_bpb": 1.4312343885008336,
           "name": "paloma/gab"
+        },
+        {
+          "bytes": 281254,
+          "delta_bits": 7264.625210520597,
+          "documents": 27,
+          "gap_bpb": 0.02582941117466986,
+          "model_a_bpb": 0.46637961514720644,
+          "model_b_bpb": 0.4405502039725367,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_modula_2"
         },
         {
           "bytes": 202027,
@@ -5075,6 +5741,24 @@
           "name": "paloma/dolma_100_programing_languages"
         },
         {
+          "bytes": 254540,
+          "delta_bits": 7083.126337031251,
+          "documents": 115,
+          "gap_bpb": 0.02782716404899525,
+          "model_a_bpb": 0.5592091585565765,
+          "model_b_bpb": 0.5313819945075812,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_moonscript"
+        },
+        {
+          "bytes": 170530,
+          "delta_bits": 7018.298658410832,
+          "documents": 37,
+          "gap_bpb": 0.041155800494991096,
+          "model_a_bpb": 0.5445597285639077,
+          "model_b_bpb": 0.5034039280689165,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_augeas"
+        },
+        {
           "bytes": 23040,
           "delta_bits": 6914.00119192021,
           "documents": 256,
@@ -5084,6 +5768,15 @@
           "name": "synthetic_machine_records_ppl/config_manifests/dockerfile"
         },
         {
+          "bytes": 370550,
+          "delta_bits": 6848.604828759211,
+          "documents": 84,
+          "gap_bpb": 0.018482269137118368,
+          "model_a_bpb": 0.3625709149652789,
+          "model_b_bpb": 0.3440886458281605,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_apex"
+        },
+        {
           "bytes": 8466,
           "delta_bits": -6145.075282682909,
           "documents": 256,
@@ -5091,6 +5784,24 @@
           "model_a_bpb": 0.2678499199012615,
           "model_b_bpb": 0.9937033669462543,
           "name": "synthetic_numeric_format_ppl/numeric_transduction/numeric_compare_sort"
+        },
+        {
+          "bytes": 1022723,
+          "delta_bits": -6088.747213575033,
+          "documents": 256,
+          "gap_bpb": -0.005953466592200462,
+          "model_a_bpb": 0.3634710149654756,
+          "model_b_bpb": 0.36942448155767615,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_css"
+        },
+        {
+          "bytes": 289760,
+          "delta_bits": 6014.908421383252,
+          "documents": 136,
+          "gap_bpb": 0.020758242757396645,
+          "model_a_bpb": 0.3868470620127618,
+          "model_b_bpb": 0.3660888192553652,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_thrift"
         },
         {
           "bytes": 7252,
@@ -5147,6 +5858,15 @@
           "name": "synthetic_numeric_format_ppl/dense_numeric_blobs/mmcif_coordinate_tables"
         },
         {
+          "bytes": 153067,
+          "delta_bits": -5736.150745345739,
+          "documents": 15,
+          "gap_bpb": -0.03747477082157316,
+          "model_a_bpb": 2.4035699301244677,
+          "model_b_bpb": 2.441044700946041,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_coq"
+        },
+        {
           "bytes": 31537,
           "delta_bits": -5700.857842625669,
           "documents": 256,
@@ -5192,6 +5912,15 @@
           "name": "asr_ocr_noisy_ppl/hypr_librispeech_without_lm_test_clean/noisy"
         },
         {
+          "bytes": 324211,
+          "delta_bits": 5575.288168124777,
+          "documents": 79,
+          "gap_bpb": 0.017196480588643745,
+          "model_a_bpb": 0.3436974581324899,
+          "model_b_bpb": 0.32650097754384616,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_raku"
+        },
+        {
           "bytes": 64273,
           "delta_bits": 5486.748377362928,
           "documents": 18,
@@ -5199,6 +5928,24 @@
           "model_a_bpb": 0.9795718947082288,
           "model_b_bpb": 0.8942055919471482,
           "name": "fineweb2_multilingual/bpy_Beng"
+        },
+        {
+          "bytes": 279946,
+          "delta_bits": 5462.652974106437,
+          "documents": 256,
+          "gap_bpb": 0.01951323817488529,
+          "model_a_bpb": 0.5053971037825749,
+          "model_b_bpb": 0.4858838656076895,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_dockerfile"
+        },
+        {
+          "bytes": 260535,
+          "delta_bits": 5458.686813259081,
+          "documents": 17,
+          "gap_bpb": 0.020951836848251026,
+          "model_a_bpb": 0.2766408870238592,
+          "model_b_bpb": 0.25568905017560817,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_isabelle"
         },
         {
           "bytes": 690254,
@@ -5237,6 +5984,15 @@
           "name": "synthetic_numeric_format_ppl/numeric_transduction/numeric_range_checksum_base"
         },
         {
+          "bytes": 1198543,
+          "delta_bits": 5244.390234041609,
+          "documents": 256,
+          "gap_bpb": 0.004375637948777481,
+          "model_a_bpb": 0.3101053574736333,
+          "model_b_bpb": 0.30572971952485584,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_yaml"
+        },
+        {
           "bytes": 19917,
           "delta_bits": -5229.144292397988,
           "documents": 256,
@@ -5246,6 +6002,24 @@
           "name": "synthetic_numeric_format_ppl/structured_records/network_ip_port_rows"
         },
         {
+          "bytes": 1220562,
+          "delta_bits": 5222.292683034782,
+          "documents": 256,
+          "gap_bpb": 0.004278596812808184,
+          "model_a_bpb": 0.6511242646368226,
+          "model_b_bpb": 0.6468456678240144,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_matlab"
+        },
+        {
+          "bytes": 289161,
+          "delta_bits": 5156.952379684134,
+          "documents": 163,
+          "gap_bpb": 0.01783419057094191,
+          "model_a_bpb": 0.3131808777674192,
+          "model_b_bpb": 0.2953466871964773,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_hcl"
+        },
+        {
           "bytes": 5892,
           "delta_bits": -5146.819438931193,
           "documents": 256,
@@ -5253,6 +6027,51 @@
           "model_a_bpb": 0.4887785583350718,
           "model_b_bpb": 1.362305279131269,
           "name": "synthetic_numeric_format_ppl/dense_numeric_blobs/json_numeric_arrays"
+        },
+        {
+          "bytes": 382593,
+          "delta_bits": 5094.00338714275,
+          "documents": 97,
+          "gap_bpb": 0.01331441868288952,
+          "model_a_bpb": 0.2688946159572214,
+          "model_b_bpb": 0.2555801972743319,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_qml"
+        },
+        {
+          "bytes": 240735,
+          "delta_bits": 5065.429064428965,
+          "documents": 141,
+          "gap_bpb": 0.02104151479605776,
+          "model_a_bpb": 0.4098128303293648,
+          "model_b_bpb": 0.388771315533307,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_glsl"
+        },
+        {
+          "bytes": 331991,
+          "delta_bits": 5049.081943479864,
+          "documents": 93,
+          "gap_bpb": 0.015208490421366435,
+          "model_a_bpb": 0.4522182817004559,
+          "model_b_bpb": 0.43700979127908945,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_agda"
+        },
+        {
+          "bytes": 365681,
+          "delta_bits": 4965.389940160137,
+          "documents": 51,
+          "gap_bpb": 0.013578473970920383,
+          "model_a_bpb": 0.3408383142932292,
+          "model_b_bpb": 0.3272598403223088,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_xslt"
+        },
+        {
+          "bytes": 260455,
+          "delta_bits": 4872.767940042024,
+          "documents": 100,
+          "gap_bpb": 0.018708674972805376,
+          "model_a_bpb": 0.58147656928553,
+          "model_b_bpb": 0.5627678943127247,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_capn_proto"
         },
         {
           "bytes": 682884,
@@ -5300,6 +6119,33 @@
           "name": "synthetic_science_markup_ppl/scientific_records/sdf_record_closure"
         },
         {
+          "bytes": 356365,
+          "delta_bits": 4552.515185875186,
+          "documents": 99,
+          "gap_bpb": 0.012774866178988358,
+          "model_a_bpb": 0.24995720753157255,
+          "model_b_bpb": 0.23718234135258418,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_hack"
+        },
+        {
+          "bytes": 339005,
+          "delta_bits": 4533.7895170015945,
+          "documents": 78,
+          "gap_bpb": 0.013373813120755135,
+          "model_a_bpb": 0.314636430708089,
+          "model_b_bpb": 0.30126261758733386,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_actionscript"
+        },
+        {
+          "bytes": 302411,
+          "delta_bits": 4429.417023885851,
+          "documents": 103,
+          "gap_bpb": 0.01464701027371971,
+          "model_a_bpb": 0.3779600172081133,
+          "model_b_bpb": 0.36331300693439356,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_protocol_buffer"
+        },
+        {
           "bytes": 42729,
           "delta_bits": 4374.202967170447,
           "documents": 6,
@@ -5345,6 +6191,15 @@
           "name": "synthetic_machine_records_ppl/trace_errors/compiler_errors"
         },
         {
+          "bytes": 426279,
+          "delta_bits": 3992.5125101437093,
+          "documents": 73,
+          "gap_bpb": 0.009365961049321475,
+          "model_a_bpb": 0.388838383918468,
+          "model_b_bpb": 0.37947242286914656,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_robotframework"
+        },
+        {
           "bytes": 464820,
           "delta_bits": -3935.807785796659,
           "documents": 256,
@@ -5363,6 +6218,15 @@
           "name": "synthetic_reasoning_ppl/clrs_style/clrs_lcs_length"
         },
         {
+          "bytes": 364262,
+          "delta_bits": 3872.360756806185,
+          "documents": 112,
+          "gap_bpb": 0.010630701958497413,
+          "model_a_bpb": 0.2614711940716512,
+          "model_b_bpb": 0.2508404921131538,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_twig"
+        },
+        {
           "bytes": 11653,
           "delta_bits": 3798.24882045745,
           "documents": 2,
@@ -5370,6 +6234,15 @@
           "model_a_bpb": 1.5190456506989545,
           "model_b_bpb": 1.1930996436228838,
           "name": "fineweb2_multilingual/skr_Arab"
+        },
+        {
+          "bytes": 258037,
+          "delta_bits": 3772.418314860233,
+          "documents": 35,
+          "gap_bpb": 0.014619679793441379,
+          "model_a_bpb": 0.43268654379684257,
+          "model_b_bpb": 0.4180668640034012,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_stata"
         },
         {
           "bytes": 2545459,
@@ -5417,6 +6290,15 @@
           "name": "synthetic_patch_diff_ppl/failing_test_trace_to_patch"
         },
         {
+          "bytes": 274153,
+          "delta_bits": 3445.987311938534,
+          "documents": 12,
+          "gap_bpb": 0.0125695772504351,
+          "model_a_bpb": 0.36273836305017565,
+          "model_b_bpb": 0.3501687857997405,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_postscript"
+        },
+        {
           "bytes": 340536,
           "delta_bits": 3343.1943543826583,
           "documents": 256,
@@ -5442,6 +6324,15 @@
           "model_a_bpb": 0.8797818169668644,
           "model_b_bpb": 0.6077944942365663,
           "name": "synthetic_machine_records_ppl/service_logs/nginx_access_error"
+        },
+        {
+          "bytes": 866424,
+          "delta_bits": 3312.031286195364,
+          "documents": 256,
+          "gap_bpb": 0.0038226449015670893,
+          "model_a_bpb": 0.2554612106844691,
+          "model_b_bpb": 0.251638565782902,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_objective_c"
         },
         {
           "bytes": 34828,
@@ -5514,6 +6405,15 @@
           "model_a_bpb": 2.29775402467749,
           "model_b_bpb": 2.686915517825893,
           "name": "synthetic_identifier_encoding_ppl/escaped_text/json_unicode_byte_escapes"
+        },
+        {
+          "bytes": 204234,
+          "delta_bits": 2963.8458040313994,
+          "documents": 26,
+          "gap_bpb": 0.014512009773257143,
+          "model_a_bpb": 0.557759486667691,
+          "model_b_bpb": 0.543247476894434,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_webassembly"
         },
         {
           "bytes": 48384,
@@ -5615,6 +6515,15 @@
           "name": "long_tail_ppl_runnable/formal_hardware/verilogeval_prompt"
         },
         {
+          "bytes": 1636083,
+          "delta_bits": 2382.202255468798,
+          "documents": 194,
+          "gap_bpb": 0.0014560399780871739,
+          "model_a_bpb": 0.8330919762150811,
+          "model_b_bpb": 0.831635936236994,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_vhdl"
+        },
+        {
           "bytes": 38288,
           "delta_bits": -2371.7500895290386,
           "documents": 256,
@@ -5631,6 +6540,15 @@
           "model_a_bpb": 1.4272664837117979,
           "model_b_bpb": 1.4916469665917045,
           "name": "asr_ocr_noisy_ppl/rtm_sgt_ocr_v1_train/noisy"
+        },
+        {
+          "bytes": 233627,
+          "delta_bits": -2279.7394185704884,
+          "documents": 81,
+          "gap_bpb": -0.009758030615341928,
+          "model_a_bpb": 0.5812132779634134,
+          "model_b_bpb": 0.5909713085787552,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_rdoc"
         },
         {
           "bytes": 946712,
@@ -5651,6 +6569,15 @@
           "name": "long_tail_ppl_runnable/formal_hardware/verilogeval_canonical_solution"
         },
         {
+          "bytes": 317020,
+          "delta_bits": 2157.345441734447,
+          "documents": 52,
+          "gap_bpb": 0.006805076782961475,
+          "model_a_bpb": 0.281594185252243,
+          "model_b_bpb": 0.27478910846928156,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_cython"
+        },
+        {
           "bytes": 32767,
           "delta_bits": 2089.964808597223,
           "documents": 1,
@@ -5658,6 +6585,15 @@
           "model_a_bpb": 0.9985166157054396,
           "model_b_bpb": 0.9347340048897645,
           "name": "fineweb2_multilingual/kle_Deva"
+        },
+        {
+          "bytes": 512143,
+          "delta_bits": 2049.60078665712,
+          "documents": 256,
+          "gap_bpb": 0.004002008787891507,
+          "model_a_bpb": 0.37996131259100047,
+          "model_b_bpb": 0.37595930380310894,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_scss"
         },
         {
           "bytes": 29842,
@@ -5676,6 +6612,24 @@
           "model_a_bpb": 0.7860455755719487,
           "model_b_bpb": 0.7957288006845876,
           "name": "structured_text/web_data_commons_sample1k"
+        },
+        {
+          "bytes": 982806,
+          "delta_bits": -1996.7483427724956,
+          "documents": 256,
+          "gap_bpb": -0.002031681067039167,
+          "model_a_bpb": 0.5135781285458155,
+          "model_b_bpb": 0.5156098096128547,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_asciidoc"
+        },
+        {
+          "bytes": 310424,
+          "delta_bits": 1952.778935132485,
+          "documents": 109,
+          "gap_bpb": 0.0062906828567781,
+          "model_a_bpb": 0.4899004831253918,
+          "model_b_bpb": 0.48360980026861367,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_alloy"
         },
         {
           "bytes": 50370,
@@ -5775,6 +6729,15 @@
           "model_a_bpb": 5.855090230560381,
           "model_b_bpb": 6.073533139295755,
           "name": "synthetic_identifier_encoding_ppl/identifier_grammars/mixed_case_symbolic_identifiers"
+        },
+        {
+          "bytes": 240485,
+          "delta_bits": 1463.3841534033936,
+          "documents": 132,
+          "gap_bpb": 0.0060851369249782464,
+          "model_a_bpb": 0.44149234464016623,
+          "model_b_bpb": 0.4354072077151879,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_slim"
         },
         {
           "bytes": 22920,
@@ -6299,6 +7262,15 @@
           "name": "synthetic_numeric_format_prompt_ablation_ppl/arrow/numeric_transduction/numeric_copy_increment"
         },
         {
+          "bytes": 145311,
+          "delta_bits": -322.62553509914807,
+          "documents": 12,
+          "gap_bpb": -0.0022202416547897137,
+          "model_a_bpb": 1.818712565910334,
+          "model_b_bpb": 1.820932807565124,
+          "name": "long_tail_ppl/code_ecosystem/stack_v2_solidity"
+        },
+        {
           "bytes": 6656,
           "delta_bits": -302.9714692117856,
           "documents": 256,
@@ -6580,116 +7552,148 @@
       ],
       "pattern_buckets": [
         {
-          "bytes": 54940176,
-          "delta_bits": 9950648.920497915,
-          "documents": 4282009,
-          "gap_bpb": 0.18111789304238696,
-          "model_a_bpb": 0.787145190021118,
-          "model_b_bpb": 0.6060272969787311,
+          "bytes": 56289237,
+          "delta_bits": 10163544.08283984,
+          "documents": 4378533,
+          "gap_bpb": 0.18055927961574322,
+          "model_a_bpb": 0.7856430512401288,
+          "model_b_bpb": 0.6050837716243855,
           "name": "text/non_ascii_word"
         },
         {
-          "bytes": 54187047,
-          "delta_bits": 1506621.65432821,
-          "documents": 10103420,
-          "gap_bpb": 0.027804092264489152,
-          "model_a_bpb": 0.8802924302942163,
-          "model_b_bpb": 0.8524883380297271,
+          "bytes": 101105102,
+          "delta_bits": 2516550.521782644,
+          "documents": 18185905,
+          "gap_bpb": 0.02489044046246691,
+          "model_a_bpb": 0.6605530779317774,
+          "model_b_bpb": 0.6356626374693106,
           "name": "text/word"
         },
         {
-          "bytes": 14210228,
-          "delta_bits": 1167039.149525532,
-          "documents": 14210228,
-          "gap_bpb": 0.08212670124121386,
-          "model_a_bpb": 0.7867398663059931,
-          "model_b_bpb": 0.7046131650647793,
-          "name": "whitespace/single_space"
-        },
-        {
-          "bytes": 11685904,
-          "delta_bits": 1016862.3549801222,
-          "documents": 4806281,
-          "gap_bpb": 0.08701614825691895,
-          "model_a_bpb": 1.0065341348170547,
-          "model_b_bpb": 0.9195179865601357,
+          "bytes": 16401160,
+          "delta_bits": 1322047.7906270197,
+          "documents": 6475054,
+          "gap_bpb": 0.08060696869166692,
+          "model_a_bpb": 1.0550977178174952,
+          "model_b_bpb": 0.9744907491258282,
           "name": "text/number"
         },
         {
-          "bytes": 10893597,
-          "delta_bits": 345301.24455703056,
-          "documents": 7764093,
-          "gap_bpb": 0.0316976334407295,
-          "model_a_bpb": 0.4454858635259605,
-          "model_b_bpb": 0.413788230085231,
+          "bytes": 20021936,
+          "delta_bits": 1289450.2856364548,
+          "documents": 20021936,
+          "gap_bpb": 0.06440187830170144,
+          "model_a_bpb": 0.6786022542259742,
+          "model_b_bpb": 0.6142003759242727,
+          "name": "whitespace/single_space"
+        },
+        {
+          "bytes": 21660507,
+          "delta_bits": 500909.4705783495,
+          "documents": 14864353,
+          "gap_bpb": 0.0231254730361736,
+          "model_a_bpb": 0.396714269740416,
+          "model_b_bpb": 0.37358879670424244,
           "name": "text/punctuation"
         },
         {
-          "bytes": 8501554,
-          "delta_bits": 228060.38828861655,
-          "documents": 25793,
-          "gap_bpb": 0.02682572954175396,
-          "model_a_bpb": 0.24702299785305445,
-          "model_b_bpb": 0.2201972683113005,
+          "bytes": 9302769,
+          "delta_bits": 246932.03210592462,
+          "documents": 38931,
+          "gap_bpb": 0.026543928168690917,
+          "model_a_bpb": 0.2645808816837079,
+          "model_b_bpb": 0.23803695351501702,
           "name": "text/url"
         },
         {
-          "bytes": 3439582,
-          "delta_bits": -101254.59636580436,
-          "documents": 585493,
-          "gap_bpb": -0.029438052753446308,
-          "model_a_bpb": 1.363482520419885,
-          "model_b_bpb": 1.3929205731733316,
-          "name": "text/non_ascii"
-        },
-        {
-          "bytes": 4284315,
-          "delta_bits": 72624.63614050065,
-          "documents": 1690876,
-          "gap_bpb": 0.0169512830266917,
-          "model_a_bpb": 0.07291467718776332,
-          "model_b_bpb": 0.055963394161071614,
+          "bytes": 5533742,
+          "delta_bits": 93513.57278830682,
+          "documents": 1888390,
+          "gap_bpb": 0.01689879520734917,
+          "model_a_bpb": 0.11556303063419593,
+          "model_b_bpb": 0.09866423542684676,
           "name": "whitespace/multi_space"
         },
         {
-          "bytes": 900630,
-          "delta_bits": 69206.87358128214,
-          "documents": 900630,
-          "gap_bpb": 0.07684273628602438,
-          "model_a_bpb": 0.9066918902407296,
-          "model_b_bpb": 0.8298491539547053,
-          "name": "whitespace/newline"
-        },
-        {
-          "bytes": 1587815,
-          "delta_bits": 24466.309607310563,
-          "documents": 355936,
-          "gap_bpb": 0.01540879107913111,
-          "model_a_bpb": 0.27157757126903,
-          "model_b_bpb": 0.2561687801898989,
+          "bytes": 12391570,
+          "delta_bits": 85796.05819553441,
+          "documents": 1607801,
+          "gap_bpb": 0.006923743980426565,
+          "model_a_bpb": 0.13952404386427877,
+          "model_b_bpb": 0.13260029988385222,
           "name": "whitespace/mixed"
         },
         {
-          "bytes": 152557,
-          "delta_bits": -8091.020750512428,
-          "documents": 71397,
-          "gap_bpb": -0.05303605046318706,
-          "model_a_bpb": 0.5661558624497318,
-          "model_b_bpb": 0.6191919129129189,
+          "bytes": 3624971,
+          "delta_bits": -83798.37107350124,
+          "documents": 627835,
+          "gap_bpb": -0.023116976956091852,
+          "model_a_bpb": 1.3201009264908041,
+          "model_b_bpb": 1.343217903446896,
+          "name": "text/non_ascii"
+        },
+        {
+          "bytes": 1339190,
+          "delta_bits": 31362.06613438578,
+          "documents": 1339190,
+          "gap_bpb": 0.023418683035555655,
+          "model_a_bpb": 0.7684202769845802,
+          "model_b_bpb": 0.7450015939490245,
+          "name": "whitespace/newline"
+        },
+        {
+          "bytes": 452921,
+          "delta_bits": -21798.602028993875,
+          "documents": 213268,
+          "gap_bpb": -0.048128927625333946,
+          "model_a_bpb": 0.5629316718458813,
+          "model_b_bpb": 0.6110605994712153,
           "name": "whitespace/multi_newline"
         },
         {
-          "bytes": 525472,
-          "delta_bits": 4713.562494715802,
-          "documents": 266387,
-          "gap_bpb": 0.008970149683933306,
-          "model_a_bpb": 0.6745417342068846,
-          "model_b_bpb": 0.6655715845229513,
+          "bytes": 1555233,
+          "delta_bits": 5921.208788701914,
+          "documents": 551416,
+          "gap_bpb": 0.0038072808310406956,
+          "model_a_bpb": 0.45266322628340605,
+          "model_b_bpb": 0.44885594545236535,
           "name": "whitespace/tab_or_cr"
         }
       ],
       "top_documents": {
         "model_a_worse": [
+          {
+            "bytes": 32768,
+            "dataset": "long_tail_ppl/code_ecosystem/stack_v2_json",
+            "delta_bits": 34837.594174505386,
+            "gap_bpb": 1.063159001907513,
+            "model_a_bpb": 4.778370270439523,
+            "model_b_bpb": 3.71521126853201,
+            "preview": "\u2026WikJAIGeT0paACim+YhfYHXd/dzzSkgDJOKAFooooAKKaXVTgsAfrShlboQfpQAtFFFABRTTIgcIWUOeQueTTqACimebHu2713ZxjIznrT6ACikLAEAnk9\u2026",
+            "row_index": 34,
+            "score_byte_end": 32768,
+            "score_byte_start": 0,
+            "shard": "heldout_jsonl_gz",
+            "worst_bucket": "text/word",
+            "worst_gap_bpb": 1.7718537106437326,
+            "worst_text": "dzzSkgDJOKAFooooAKKaXVTgsAfrShl\u2026"
+          },
+          {
+            "bytes": 32768,
+            "dataset": "long_tail_ppl/code_ecosystem/stack_v2_html",
+            "delta_bits": 25149.70856769405,
+            "gap_bpb": 0.7675081960355851,
+            "model_a_bpb": 3.6401312364206855,
+            "model_b_bpb": 2.8726230403851005,
+            "preview": "\u2026ACEIAABCAwPQEM0PTMmRECEIAABCAAgQ0TwABtWACmhwAEIAABCEBgegIYoOmZMyMEIAABCEAAAhsmgAHasABM759A+56soUzbd2elj45L33ruv+K9GbYv\u2026",
+            "row_index": 82,
+            "score_byte_end": 32768,
+            "score_byte_start": 0,
+            "shard": "heldout_jsonl_gz",
+            "worst_bucket": "text/word",
+            "worst_gap_bpb": 3.5355632051939287,
+            "worst_text": "TwABtWACmhwAEIAABCEBgegIYoOmZMy\u2026"
+          },
           {
             "bytes": 32768,
             "dataset": "fineweb2_multilingual/lit_Latn",
@@ -6705,6 +7709,38 @@
             "worst_bucket": "text/non_ascii_word",
             "worst_gap_bpb": 3.426028043896487,
             "worst_text": "Pa\u0161nib\u017edomis"
+          },
+          {
+            "bytes": 32768,
+            "dataset": "long_tail_ppl/code_ecosystem/stack_v2_json",
+            "delta_bits": 21502.67926097664,
+            "gap_bpb": 0.6562096942436719,
+            "model_a_bpb": 5.0043687881144505,
+            "model_b_bpb": 4.348159093870778,
+            "preview": "\u2026zlc23cy72wLINxIX0HeuW1F54rnYDhRXfX8eYs+npXNXMSMhkddxzgDFFNmkHdHPKxZWmkBDDhaSwsnu2cqRuzxzT9Rdnfy1GMDgVLpsUkDptJ68mt3oje\u2026",
+            "row_index": 223,
+            "score_byte_end": 32768,
+            "score_byte_start": 0,
+            "shard": "heldout_jsonl_gz",
+            "worst_bucket": "text/word",
+            "worst_gap_bpb": 1.177584204053824,
+            "worst_text": "npXNXMSMhkddxzgDFFNmkHdHPKxZWmk\u2026"
+          },
+          {
+            "bytes": 32768,
+            "dataset": "long_tail_ppl/code_ecosystem/stack_v2_tex",
+            "delta_bits": 21447.649267013974,
+            "gap_bpb": 0.6545303121036979,
+            "model_a_bpb": 1.548052999555921,
+            "model_b_bpb": 0.8935226874522231,
+            "preview": "\u2026\u5e1d\uff0c\u539f\u540d\u6731\u91cd\u516b\uff0c\u66fe\u6539\u540d\u6731\u8208\u5b97\uff0c\u6295\u519b\u88ab\u90ed\u5b50\u5174\u53d6\u540d\u5143\u748b\uff0c\u5b57\u56fd\u745e\uff0c\u751f\u65bc\u6fe0\u5dde\u949f\u79bb\u53bf\u3002\u5edf\u865f\u300c\u592a\u7956\u300d\uff0c\u8c25\u865f\u300c\u5f00\u5929\u884c\u9053\u8087\u7eaa\u7acb\u6781\u5927\u5723\u81f3\u795e\u4ec1\u6587\u4e49\u6b66\u4fca\u5fb7\u6210\u529f\u9ad8\u7687\u5e1d\u300d\uff0c\u7d71\u7a31\u300c\u592a\u7956\u9ad8\u7687\u5e1d\u300d\u3002\u5728\u4f4d\u4e09\u5341\u4e00\u5e74\uff0c\u56e0\u5e74\u53f7\u6d2a\u6b66\u4e5f\u4fd7\u7a31\u6d2a\u6b66\u5e1d\u3002\u592a\u7956\u4e4b\u5f8c\u7684\u7687\u5e1d\u9664\u660e\u82f1\u5b97\uff08\u4e8c\u5ea6\u5728\u4f4d\u2026",
+            "row_index": 244,
+            "score_byte_end": 32768,
+            "score_byte_start": 0,
+            "shard": "heldout_jsonl_gz",
+            "worst_bucket": "text/non_ascii_word",
+            "worst_gap_bpb": 2.3134934635139532,
+            "worst_text": "\u5f00\u5929\u884c\u9053\u8087\u7eaa\u7acb\u6781\u5927\u5723\u81f3\u795e\u4ec1\u6587\u4e49\u6b66\u4fca\u5fb7\u6210\u529f\u9ad8\u7687\u5e1d"
           },
           {
             "bytes": 32767,
@@ -6947,6 +7983,22 @@
             "worst_text": "\u0686\u0646\u064a\u0621\u064e"
           },
           {
+            "bytes": 32768,
+            "dataset": "long_tail_ppl/code_ecosystem/stack_v2_html",
+            "delta_bits": 15446.944246566414,
+            "gap_bpb": 0.4714033278371098,
+            "model_a_bpb": 1.3440886005228712,
+            "model_b_bpb": 0.8726852726857615,
+            "preview": "\u2026HAuc3VwcG9ydC5odG1sNUNsb25lJiZhLmlubmVySFRNTCYmIXAudHJpbShiLmlubmVySFRNTCkmJihiLmlubmVySFRNTD1hLmlubmVySFRNTCkpOmM9PT0\u2026",
+            "row_index": 39,
+            "score_byte_end": 32768,
+            "score_byte_start": 0,
+            "shard": "heldout_jsonl_gz",
+            "worst_bucket": "text/word",
+            "worst_gap_bpb": 0.9830934229647742,
+            "worst_text": "lJiZhLmlubmVySFRNTCYmIXAudHJpbS\u2026"
+          },
+          {
             "bytes": 24704,
             "dataset": "fineweb2_multilingual/snd_Arab",
             "delta_bits": 14922.929332920066,
@@ -6961,6 +8013,22 @@
             "worst_bucket": "text/non_ascii_word",
             "worst_gap_bpb": 2.757849618209232,
             "worst_text": "\u0648\u06aa\u064a\u067e\u064a\u068a\u064a\u0627"
+          },
+          {
+            "bytes": 32768,
+            "dataset": "long_tail_ppl/code_ecosystem/stack_v2_less",
+            "delta_bits": 14899.337734207773,
+            "gap_bpb": 0.4546917033144462,
+            "model_a_bpb": 4.244273742243338,
+            "model_b_bpb": 3.789582038928892,
+            "preview": "\u2026EzM11dXV0yETMxMAETHgMXMz4BNxM+ATU0JisBNSEVIyIOAgcBIwMnASMBLgMrATUhFSMiBhUUFhcTHgMXMz4DNxMDz80MGxgUBQYJKB9mCAtDRQ4Bthoe\u2026",
+            "row_index": 33,
+            "score_byte_end": 32768,
+            "score_byte_start": 0,
+            "shard": "heldout_jsonl_gz",
+            "worst_bucket": "text/word",
+            "worst_gap_bpb": 2.956257823014943,
+            "worst_text": "JisBNSEVIyIOAgcBIwMnASMBLgMrATU\u2026"
           },
           {
             "bytes": 23032,
@@ -6993,102 +8061,6 @@
             "worst_bucket": "text/word",
             "worst_gap_bpb": 4.244430538741992,
             "worst_text": "magamaminekut"
-          },
-          {
-            "bytes": 32164,
-            "dataset": "fineweb2_multilingual/hun_Latn",
-            "delta_bits": 14615.52558642916,
-            "gap_bpb": 0.4544063420727882,
-            "model_a_bpb": 1.6591411953251194,
-            "model_b_bpb": 1.204734853252331,
-            "preview": "\u2026elen\u2420megakadsz\u2420a\u2420kilincs\u2420kezel\u00e9s\u00e9ben,\u2420akkor\u2420a\u2420k\u00f6zelben\u2420\u00e1lldog\u00e1l\u00f3\u2420Evan\u2420Dodds\u2420\u2013\u2420Exchange2007\u2420Shell\u2420program\u2420menedzser\u2420\u2013\u2420p\u2026",
-            "row_index": 184,
-            "score_byte_end": 32164,
-            "score_byte_start": 0,
-            "shard": "0000_parquet",
-            "worst_bucket": "text/non_ascii_word",
-            "worst_gap_bpb": 3.2054875261163676,
-            "worst_text": "\u00e1lldog\u00e1l\u00f3"
-          },
-          {
-            "bytes": 32767,
-            "dataset": "fineweb2_multilingual/kaz_Cyrl",
-            "delta_bits": 14446.392465592176,
-            "gap_bpb": 0.4408823653551493,
-            "model_a_bpb": 1.1943780112755733,
-            "model_b_bpb": 0.753495645920424,
-            "preview": "\u2026\u0430\u0441\u0430\u0443\u2420\u04af\u0448\u0456\u043d\u2420\u0448\u0435\u0442\u2420\u0435\u043b\u0433\u0435\u2420\u043e\u049b\u0443\u0493\u0430\u2420(\u0411\u0456\u0440\u0456\u043c\u0436\u0430\u043d\u043e\u0432\u0442\u044b,\u2420\u0411\u0438\u0442\u0456\u043b\u0435\u0443\u043e\u0432\u0442\u0456,\u2420\u041c\u04b1\u04a3\u0430\u0439\u0442\u043f\u0430\u0441\u043e\u0432\u0442\u044b)\u2420\u0436\u0456\u0431\u0435\u0440\u0433\u0435\u043d\u2420\u2013\u2420\u0434\u0435\u0433\u0435\u043d\u2420\u0430\u0439\u044b\u043f\u2420\u0442\u0430\u0493\u044b\u043f,\u2420\u00ab\u0410\u043b\u0430\u0448\u043e\u0440\u0434\u0430\u00bb\u2420\u049b\u0430\u0439\u0440\u0430\u0442\u043a\u0435\u0440\u043b\u2026",
-            "row_index": 63,
-            "score_byte_end": 32767,
-            "score_byte_start": 0,
-            "shard": "0000_parquet",
-            "worst_bucket": "text/non_ascii_word",
-            "worst_gap_bpb": 1.5025664835811978,
-            "worst_text": "\u041c\u04b1\u04a3\u0430\u0439\u0442\u043f\u0430\u0441\u043e\u0432\u0442\u044b"
-          },
-          {
-            "bytes": 32768,
-            "dataset": "fineweb2_multilingual/kaz_Cyrl",
-            "delta_bits": 14249.073601387425,
-            "gap_bpb": 0.43484721683921584,
-            "model_a_bpb": 1.0099406634248733,
-            "model_b_bpb": 0.5750934465856574,
-            "preview": "\u2026\u043e\u049b\u2420\u0435\u0434\u0456.\u23ce\u049a\u0430\u0437\u0456\u0440\u0433\u0456\u2420\u0443\u0430\u049b\u044b\u0442\u0442\u0430\u2420\u0435\u0448\u043a\u0456\u043c\u2420\u0430\u0442\u043e\u043c\u0434\u0430\u0440\u0434\u044b\u04a3\u2420\u0431\u0430\u0440\u2420\u0435\u043a\u0435\u043d\u0456\u043d\u0435\u2420\u043a\u04af\u043c\u04d9\u043d\u0434\u0430\u043d\u0431\u0430\u0439\u0434\u044b.\u2420\u043e\u049b\u0443\u2420\u049b\u04b1\u0440\u0430\u043b\u044b\u2420\u0430\u0442\u043e\u043c\u2420\u0430\u043d\u044b\u049b\u0442\u0430\u043c\u0430\u0441\u044b\u043d\u2420\u04b1\u0441\u044b\u043d\u0430\u0434\u044b\u2420\u00ab\u0430\u0442\u043e\u043c\u044b\u2420-.\u2420\u043e\u043d\u044b\u04a3\u2026",
-            "row_index": 58,
-            "score_byte_end": 32768,
-            "score_byte_start": 0,
-            "shard": "0000_parquet",
-            "worst_bucket": "text/non_ascii_word",
-            "worst_gap_bpb": 1.772859560620097,
-            "worst_text": "\u043a\u04af\u043c\u04d9\u043d\u0434\u0430\u043d\u0431\u0430\u0439\u0434\u044b"
-          },
-          {
-            "bytes": 32768,
-            "dataset": "fineweb2_multilingual/azj_Latn",
-            "delta_bits": 14106.822213152871,
-            "gap_bpb": 0.43050604898537814,
-            "model_a_bpb": 1.6680652990444396,
-            "model_b_bpb": 1.2375592500590615,
-            "preview": "\u2026r\u0259n\u2420amill\u0259rd\u0259n\u2420\u0259n\u2420ba\u015fl\u0131jas\u0131\u2420s\u0259n\u0259tkar\u0131n\u2420d\u00fcnyag\u00f6r\u00fc\u015f\u00fc,\u2420siyasi-f\u0259ls\u0259fi,\u2420etik-estetik,\u2420m\u0259n\u0259vi-\u0259xlaqi\u2420kredosudur.\u2420\u018fslind\u0259\u2420el\u2026",
-            "row_index": 45,
-            "score_byte_end": 32768,
-            "score_byte_start": 0,
-            "shard": "0000_parquet",
-            "worst_bucket": "text/non_ascii_word",
-            "worst_gap_bpb": 2.9368333229559362,
-            "worst_text": "siyasi-f\u0259ls\u0259fi"
-          },
-          {
-            "bytes": 32767,
-            "dataset": "fineweb2_multilingual/kaz_Cyrl",
-            "delta_bits": 14006.015430070223,
-            "gap_bpb": 0.427442714623561,
-            "model_a_bpb": 1.2232585668806426,
-            "model_b_bpb": 0.7958158522570815,
-            "preview": "\u2026\u0442\u0430\u0440\u0438\u0445\u044b.\u2420I-\u0442\u043e\u043c.\u2420\u0410\u043b\u043c.\u24201990.\u23ce\u00ab\u049a\u043e\u0437\u044b\u2420\u041a\u04e9\u0440\u043f\u0435\u0448-\u0411\u0430\u044f\u043d\u2420\u0441\u04b1\u043b\u0443\u00bb\u23ce1.\u2420\u041b\u0438\u0440\u043e-\u044d\u043f\u043e\u0441\u0442\u044b\u049b\u2420\u0436\u044b\u0440\u043b\u0430\u0440.\u23ce2.\u2420\u0416\u044b\u0440\u0434\u044b\u04a3\u2420\u0432\u0430\u0440\u0438\u0430\u043d\u0442\u0442\u0430\u0440\u044b,\u2420\u0437\u0435\u0440\u0442\u0442\u0435\u043b\u0443\u0456.\u23ce3.\u2420\u0416\u0430\u043d\u0430\u049b\u2420\u0436\u2026",
-            "row_index": 167,
-            "score_byte_end": 32767,
-            "score_byte_start": 0,
-            "shard": "0000_parquet",
-            "worst_bucket": "text/non_ascii_word",
-            "worst_gap_bpb": 2.071291557509956,
-            "worst_text": "\u041b\u0438\u0440\u043e-\u044d\u043f\u043e\u0441\u0442\u044b\u049b"
-          },
-          {
-            "bytes": 32768,
-            "dataset": "fineweb2_multilingual/kaz_Cyrl",
-            "delta_bits": 13632.431616209537,
-            "gap_bpb": 0.41602879688139455,
-            "model_a_bpb": 1.4337264015205462,
-            "model_b_bpb": 1.0176976046391517,
-            "preview": "\u2026\u2420\u049b\u0430\u0439\u0431\u0456\u0440\u2420\u0436\u0435\u0442\u0456\u0441\u043a\u0435\u043d\u2420\u0493\u0430\u043b\u044b\u043c\u2420\u0448\u044b\u0493\u0430\u0434\u044b\u2420\u0434\u0435\u0439\u0441\u0456\u04a3\u2420\u0434\u0435\u0434\u0456.\u2420\u041e\u0441\u044b\u2420\u0442\u04b1\u0441\u0442\u0430\u2420\u0414\u0435\u0440\u0442\u0442\u0456\u0431\u0435\u043a\u0442\u0456\u04a3\u2420\u0436\u04af\u0440\u0435\u0433\u0456\u2420\u0434\u04af\u0440\u0441\u0456\u043b\u0434\u0435\u0439\u2420\u0431\u0430\u0441\u0442\u0430\u0434\u044b.\u23ce\u0422\u04b1\u0440\u0430\u0493\u0430\u043b\u0434\u044b\u2420\u0445\u0430\u0442\u0448\u044b\u2420\u049b\u044b\u0437\u0493\u0430\u2420\u049b\u0430\u0440\u0430\u2026",
-            "row_index": 132,
-            "score_byte_end": 32768,
-            "score_byte_start": 0,
-            "shard": "0000_parquet",
-            "worst_bucket": "text/non_ascii_word",
-            "worst_gap_bpb": 2.4676560693314937,
-            "worst_text": "\u0414\u0435\u0440\u0442\u0442\u0456\u0431\u0435\u043a\u0442\u0456\u04a3"
           }
         ],
         "model_b_worse": [
@@ -7151,7 +8123,7 @@
             "row_index": 0,
             "score_byte_end": 32768,
             "score_byte_start": 0,
-            "shard": "physics_hist-ph_jsonl_gz",
+            "shard": "physics_l1_jsonl_gz",
             "worst_bucket": "text/word",
             "worst_gap_bpb": -2.877084711237008,
             "worst_text": "Hermansphan"
@@ -7167,10 +8139,58 @@
             "row_index": 0,
             "score_byte_end": 32768,
             "score_byte_start": 0,
-            "shard": "physics_l1_jsonl_gz",
+            "shard": "physics_hist-ph_jsonl_gz",
             "worst_bucket": "text/word",
             "worst_gap_bpb": -2.877084711237008,
             "worst_text": "Hermansphan"
+          },
+          {
+            "bytes": 32768,
+            "dataset": "long_tail_ppl/code_ecosystem/stack_v2_assembly",
+            "delta_bits": -11348.777851393905,
+            "gap_bpb": -0.3463372147031831,
+            "model_a_bpb": 0.07356586728653805,
+            "model_b_bpb": 0.4199030819897212,
+            "preview": "\u2026\u2420va_arg(ap,\u2420uint64));\u23ce\u2420\u2420\u2420\u2420\u2420\u2420}\u2420else\u2420if(c\u2420==\u2420's'){\u23ce\u24204d8:\u21e507300713\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u21e5li\u21e5a4,115\u23ce\u24204dc:\u21e50ce78663\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u21e5beq\u21e5a5,a4\u2026",
+            "row_index": 172,
+            "score_byte_end": 32768,
+            "score_byte_start": 0,
+            "shard": "heldout_jsonl_gz",
+            "worst_bucket": "text/number",
+            "worst_gap_bpb": -3.7724157345677605,
+            "worst_text": "07300713"
+          },
+          {
+            "bytes": 32768,
+            "dataset": "long_tail_ppl/code_ecosystem/stack_v2_assembly",
+            "delta_bits": -11209.28487833393,
+            "gap_bpb": -0.34208022699993684,
+            "model_a_bpb": 0.07685707257883476,
+            "model_b_bpb": 0.41893729957877157,
+            "preview": "\u2026\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u21e5ecall\u23ce\u2420ret\u23ce\u2420338:\u21e58082\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u21e5ret\u23ce\u23ce000000000000033a\u2420<mknod>:\u23ce.global\u2420mknod\u23cemknod:\u23ce\u2420li\u2420a7,\u2420SYS_mknod\u23ce\u2420\u2026",
+            "row_index": 38,
+            "score_byte_end": 32768,
+            "score_byte_start": 0,
+            "shard": "heldout_jsonl_gz",
+            "worst_bucket": "text/number",
+            "worst_gap_bpb": -4.418234109693141,
+            "worst_text": "000000000000033"
+          },
+          {
+            "bytes": 32768,
+            "dataset": "long_tail_ppl/code_ecosystem/stack_v2_assembly",
+            "delta_bits": -10898.736156628102,
+            "gap_bpb": -0.3326030321236603,
+            "model_a_bpb": 0.07916330498223502,
+            "model_b_bpb": 0.41176633710589533,
+            "preview": "\u2026019c\u2420<stat>:\u23ce\u23ceint\u23cestat(const\u2420char\u2420*n,\u2420struct\u2420stat\u2420*st)\u23ce{\u23ce\u242019c:\u21e51101\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u21e5addi\u21e5sp,sp,-32\u23ce\u242019e:\u21e5ec06\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2420\u2026",
+            "row_index": 12,
+            "score_byte_end": 32768,
+            "score_byte_start": 0,
+            "shard": "heldout_jsonl_gz",
+            "worst_bucket": "text/number",
+            "worst_gap_bpb": -15.891768438072335,
+            "worst_text": "19"
           },
           {
             "bytes": 18304,
@@ -7219,6 +8239,22 @@
             "worst_bucket": "text/word",
             "worst_gap_bpb": -2.486607124506625,
             "worst_text": "materials"
+          },
+          {
+            "bytes": 32768,
+            "dataset": "long_tail_ppl/code_ecosystem/stack_v2_toml",
+            "delta_bits": -9520.658438864364,
+            "gap_bpb": -0.29054743770948377,
+            "model_a_bpb": 0.770373591295863,
+            "model_b_bpb": 1.0609210290053468,
+            "preview": "\u2026s]]\u23cedeps\u2420=\u2420[\"LinearAlgebra\"]\u23cegit-tree-sha1\u2420=\u2420\"485ee0867925449198280d4af84bdb46a2a404d0\"\u23ceuuid\u2420=\u2420\"621f4979-c628-5d54-868\u2026",
+            "row_index": 228,
+            "score_byte_end": 32768,
+            "score_byte_start": 0,
+            "shard": "heldout_jsonl_gz",
+            "worst_bucket": "text/number",
+            "worst_gap_bpb": -4.121276930908943,
+            "worst_text": "0867925449198280"
           },
           {
             "bytes": 17991,
@@ -7301,6 +8337,22 @@
             "worst_text": "sugardaters"
           },
           {
+            "bytes": 31801,
+            "dataset": "long_tail_ppl/code_ecosystem/stack_v2_common_lisp",
+            "delta_bits": -7405.713802396764,
+            "gap_bpb": -0.23287675866786464,
+            "model_a_bpb": 2.195077577645514,
+            "model_b_bpb": 2.4279543363133786,
+            "preview": "\u2026toharp\u23cearabian\u2420drum\u23cecabaca\u23cejazz\u2420band\u23ceHajhuj\u23ceTamburino\u23ceRkang-gling\u23ceElectronic\u2420percussion\u23cepsaltery\u23cejew's\u2420harp\u23cesteel\u2420band\u2026",
+            "row_index": 64,
+            "score_byte_end": 31801,
+            "score_byte_start": 0,
+            "shard": "heldout_jsonl_gz",
+            "worst_bucket": "text/word",
+            "worst_gap_bpb": -3.8405917465680757,
+            "worst_text": "Rkang-gling"
+          },
+          {
             "bytes": 32768,
             "dataset": "paloma/m2d2_s2orc_unsplit",
             "delta_bits": -7288.374629448558,
@@ -7375,7 +8427,7 @@
             "row_index": 0,
             "score_byte_end": 32768,
             "score_byte_start": 0,
-            "shard": "Mathematics_and_logic_jsonl_gz",
+            "shard": "Mathematics_and_logic__Mathematics_jsonl_gz",
             "worst_bucket": "text/number",
             "worst_gap_bpb": -3.754637886156545,
             "worst_text": "190.58"
@@ -7391,7 +8443,7 @@
             "row_index": 0,
             "score_byte_end": 32768,
             "score_byte_start": 0,
-            "shard": "Mathematics_and_logic__Mathematics_jsonl_gz",
+            "shard": "Mathematics_and_logic_jsonl_gz",
             "worst_bucket": "text/number",
             "worst_gap_bpb": -3.754637886156545,
             "worst_text": "190.58"
@@ -7411,86 +8463,6 @@
             "worst_bucket": "text/word",
             "worst_gap_bpb": -3.472698345577932,
             "worst_text": "Kronberg"
-          },
-          {
-            "bytes": 13339,
-            "dataset": "fineweb2_multilingual/fin_Latn",
-            "delta_bits": -6369.9558889352675,
-            "gap_bpb": -0.4775437355825225,
-            "model_a_bpb": 1.1843000953062708,
-            "model_b_bpb": 1.6618438308887935,
-            "preview": "\u2026is\u00e4\u00e4n\u2420helsinki...\u2420Tutvumiskeskus\u2420anaboliset\u2420steroidit\u2420pakkotoisto\u2420Vaimo\u2420Luvalla\u2420Vieraissa\u2420Eroottiset\u2420Vaatteet\u2420Salkkari\u2026",
-            "row_index": 98,
-            "score_byte_end": 13339,
-            "score_byte_start": 0,
-            "shard": "0000_parquet",
-            "worst_bucket": "text/word",
-            "worst_gap_bpb": -3.390282528342691,
-            "worst_text": "pakkotoisto"
-          },
-          {
-            "bytes": 32768,
-            "dataset": "paloma/m2d2_wikipedia_unsplit",
-            "delta_bits": -6314.963142709515,
-            "gap_bpb": -0.19271738106413314,
-            "model_a_bpb": 0.5741650897214321,
-            "model_b_bpb": 0.7668824707855653,
-            "preview": "\u2026forward\u2420without\u2420looking\u2420back.\u2420Their\u2420late\u24202005\u2420single,\u2420\"Sukiyanen,\u2420Osaka/Oh!\u2420Enka/Mugendai\"\u2420had\u2420shown\u2420signs\u2420of\u2420the\u2420grou\u2026",
-            "row_index": 0,
-            "score_byte_end": 32768,
-            "score_byte_start": 0,
-            "shard": "Culture_and_the_arts__The_arts_and_Entertainment_jsonl_gz",
-            "worst_bucket": "text/word",
-            "worst_gap_bpb": -3.3341348389733554,
-            "worst_text": "Sukiyanen"
-          },
-          {
-            "bytes": 32768,
-            "dataset": "paloma/m2d2_s2orc_unsplit",
-            "delta_bits": -6273.772792093611,
-            "gap_bpb": -0.19146035132121617,
-            "model_a_bpb": 0.4530651974782793,
-            "model_b_bpb": 0.6445255487994954,
-            "preview": "\u2026\u2420is\u2420MSER\u2420(mean\u2420squared\u2420error\u2420rule)\u242024\u2420and\u2420the\u2420other\u2420is\u2420min-WREE\u2420(minimization\u2420of\u2420weighted\u2420relative\u2420error\u2420of\u2420the\u2420error)\u2026",
-            "row_index": 0,
-            "score_byte_end": 32768,
-            "score_byte_start": 0,
-            "shard": "physics_comp-ph_jsonl_gz",
-            "worst_bucket": "text/word",
-            "worst_gap_bpb": -5.03376690467785,
-            "worst_text": "min-WREE"
-          },
-          {
-            "bytes": 32766,
-            "dataset": "paloma/m2d2_s2orc_unsplit",
-            "delta_bits": -6174.0591843818975,
-            "gap_bpb": -0.1884288342910913,
-            "model_a_bpb": 0.5012526510556714,
-            "model_b_bpb": 0.6896814853467627,
-            "preview": "\u2026bined\u2420gravitocentrifugal\u2420force\u2420in\u2420the\u2420same\u2420manner\u2420as\u2420the\u2420ARFHD\u2420formulation\u2420(Section\u24202.5),\u2420i.e.\u2420with\u2420rigid-body\u2420rotatio\u2026",
-            "row_index": 0,
-            "score_byte_end": 32766,
-            "score_byte_start": 0,
-            "shard": "astro-ph_SR_jsonl_gz",
-            "worst_bucket": "text/word",
-            "worst_gap_bpb": -4.659615190158272,
-            "worst_text": "ARFHD"
-          },
-          {
-            "bytes": 27913,
-            "dataset": "paloma/wikitext_103",
-            "delta_bits": -6016.7578832219415,
-            "gap_bpb": -0.2155539670842239,
-            "model_a_bpb": 0.5005238669475192,
-            "model_b_bpb": 0.7160778340317431,
-            "preview": "\u2026.\u2420(\u2420The\u2420chronicles\u2420say\u2420that\u2420the\u2420Burmese\u2420army\u2420numbered\u2420400\u2420@,@\u2420000\u2420men\u2420while\u2420the\u2420Mongol\u2420army\u2420numbered\u242020\u2420million\u2420men\u2420an\u2026",
-            "row_index": 21,
-            "score_byte_end": 27913,
-            "score_byte_start": 0,
-            "shard": "val_jsonl_gz",
-            "worst_bucket": "text/punctuation",
-            "worst_gap_bpb": -11.628803886887818,
-            "worst_text": "@,@"
           }
         ]
       }

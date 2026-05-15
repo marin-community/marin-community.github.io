@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "stack_v2.scala_csharp",
+  "title": "Scala and C# span heatmap",
+  "description": "JVM/.NET-adjacent Stack v2 slices from the v0 cut. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "stack_v2",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/marin_32b-1f7795/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/qwen3_32b-c2c5c8/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_scala",
+      "label": "scala",
+      "row_index": 117,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 388,
+      "score_byte_start": 0,
+      "score_byte_end": 388,
+      "marin_bpb": 0.9871,
+      "qwen_bpb": 0.4969,
+      "gap_bpb": 0.4902,
+      "payload": "examples/scala-heldout_jsonl_gz-row-117.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_scala",
+      "label": "scala",
+      "row_index": 125,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 2394,
+      "score_byte_start": 0,
+      "score_byte_end": 2394,
+      "marin_bpb": 0.0305,
+      "qwen_bpb": 0.1365,
+      "gap_bpb": -0.106,
+      "payload": "examples/scala-heldout_jsonl_gz-row-125.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_c_sharp",
+      "label": "c_sharp",
+      "row_index": 21,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 598,
+      "score_byte_start": 0,
+      "score_byte_end": 598,
+      "marin_bpb": 0.8012,
+      "qwen_bpb": 0.2141,
+      "gap_bpb": 0.5871,
+      "payload": "examples/c_sharp-heldout_jsonl_gz-row-21.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_c_sharp",
+      "label": "c_sharp",
+      "row_index": 195,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 873,
+      "score_byte_start": 0,
+      "score_byte_end": 873,
+      "marin_bpb": 0.2486,
+      "qwen_bpb": 0.3069,
+      "gap_bpb": -0.0582,
+      "payload": "examples/c_sharp-heldout_jsonl_gz-row-195.json"
+    }
+  ]
+}

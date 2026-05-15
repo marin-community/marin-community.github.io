@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "stack_v2.proof_math",
+  "title": "Coq and Mathematica span heatmap",
+  "description": "Formal proof and symbolic-math Stack v2 slices with very different surface forms. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "stack_v2",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/marin_32b-1f7795/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/qwen3_32b-c2c5c8/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_coq",
+      "label": "coq",
+      "row_index": 6,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 7651,
+      "score_byte_start": 0,
+      "score_byte_end": 7651,
+      "marin_bpb": 0.4197,
+      "qwen_bpb": 0.3081,
+      "gap_bpb": 0.1115,
+      "payload": "examples/coq-heldout_jsonl_gz-row-6.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_coq",
+      "label": "coq",
+      "row_index": 9,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 588,
+      "score_byte_start": 0,
+      "score_byte_end": 588,
+      "marin_bpb": 0.6129,
+      "qwen_bpb": 0.7579,
+      "gap_bpb": -0.145,
+      "payload": "examples/coq-heldout_jsonl_gz-row-9.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_mathematica",
+      "label": "mathematica",
+      "row_index": 22,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 32768,
+      "score_byte_start": 0,
+      "score_byte_end": 32768,
+      "marin_bpb": 2.4647,
+      "qwen_bpb": 2.1769,
+      "gap_bpb": 0.2877,
+      "payload": "examples/mathematica-heldout_jsonl_gz-row-22.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_mathematica",
+      "label": "mathematica",
+      "row_index": 10,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 11794,
+      "score_byte_start": 0,
+      "score_byte_end": 11794,
+      "marin_bpb": 0.8009,
+      "qwen_bpb": 1.0328,
+      "gap_bpb": -0.2319,
+      "payload": "examples/mathematica-heldout_jsonl_gz-row-10.json"
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "stack_v2.specialty_formats",
+  "title": "high-gap specialty formats span heatmap",
+  "description": "High-absolute-gap Stack v2 v0 slices beyond the obvious Python/TOML cases. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "All available diagnostic slices",
+  "dataset_family": "stack_v2",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/marin_32b-1f7795/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_all_available_diag_50eb41089_v21_stack_v2_code_v0_105/qwen3_32b-c2c5c8/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_less",
+      "label": "less",
+      "row_index": 33,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 32768,
+      "score_byte_start": 0,
+      "score_byte_end": 32768,
+      "marin_bpb": 4.2443,
+      "qwen_bpb": 3.7896,
+      "gap_bpb": 0.4547,
+      "payload": "examples/less-heldout_jsonl_gz-row-33.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_less",
+      "label": "less",
+      "row_index": 0,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 364,
+      "score_byte_start": 0,
+      "score_byte_end": 364,
+      "marin_bpb": 0.8564,
+      "qwen_bpb": 0.902,
+      "gap_bpb": -0.0456,
+      "payload": "examples/less-heldout_jsonl_gz-row-0.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_standard_ml",
+      "label": "standard_ml",
+      "row_index": 16,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 308,
+      "score_byte_start": 0,
+      "score_byte_end": 308,
+      "marin_bpb": 1.663,
+      "qwen_bpb": 1.4393,
+      "gap_bpb": 0.2238,
+      "payload": "examples/standard_ml-heldout_jsonl_gz-row-16.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_standard_ml",
+      "label": "standard_ml",
+      "row_index": 20,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 833,
+      "score_byte_start": 0,
+      "score_byte_end": 833,
+      "marin_bpb": 5.2517,
+      "qwen_bpb": 5.3788,
+      "gap_bpb": -0.1271,
+      "payload": "examples/standard_ml-heldout_jsonl_gz-row-20.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_yacc",
+      "label": "yacc",
+      "row_index": 14,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 2947,
+      "score_byte_start": 0,
+      "score_byte_end": 2947,
+      "marin_bpb": 0.6165,
+      "qwen_bpb": 0.3509,
+      "gap_bpb": 0.2656,
+      "payload": "examples/yacc-heldout_jsonl_gz-row-14.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_yacc",
+      "label": "yacc",
+      "row_index": 4,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 599,
+      "score_byte_start": 0,
+      "score_byte_end": 599,
+      "marin_bpb": 1.1255,
+      "qwen_bpb": 1.143,
+      "gap_bpb": -0.0175,
+      "payload": "examples/yacc-heldout_jsonl_gz-row-4.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_svelte",
+      "label": "svelte",
+      "row_index": 39,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 282,
+      "score_byte_start": 0,
+      "score_byte_end": 282,
+      "marin_bpb": 1.0184,
+      "qwen_bpb": 0.477,
+      "gap_bpb": 0.5414,
+      "payload": "examples/svelte-heldout_jsonl_gz-row-39.json"
+    },
+    {
+      "dataset": "long_tail_ppl/code_ecosystem/stack_v2_svelte",
+      "label": "svelte",
+      "row_index": 105,
+      "shard": "heldout_jsonl_gz",
+      "bytes": 325,
+      "score_byte_start": 0,
+      "score_byte_end": 325,
+      "marin_bpb": 0.7838,
+      "qwen_bpb": 0.8573,
+      "gap_bpb": -0.0735,
+      "payload": "examples/svelte-heldout_jsonl_gz-row-105.json"
+    }
+  ]
+}
