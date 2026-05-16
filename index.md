@@ -14,6 +14,11 @@ Want to jump in?  [Install](https://marin.readthedocs.io/en/latest/tutorials/ins
 
 Want to stay up to date?  Join our [Discord](https://discord.gg/J9CTk7pqcM) or our [mailing list](https://groups.google.com/u/0/g/marin-community/).
 
+## Blogs 📝
+
+- [Async RL from Scratch on TPUs](/blog/2026/03/06/async-rl-from-scratch/)
+- [Introducing Marin: An Open Lab for Building Foundation Models](/blog/2025/05/19/announcement/)
+
 ## Experiments 🧪
 
 Building a foundation model requires countless experiments trying out endless variants of algorithms and datasets.
