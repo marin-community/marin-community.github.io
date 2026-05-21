@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scaling Laws Explorer | Marin</title>
+<meta name="description" content="Interactive explorer of pre-training, post-training, and agent-RL scaling laws drawn from a curated reading list of foundational and 2024–2026 papers.">
+<link rel="canonical" href="https://marin.community/analysis/scaling-laws-analysis/">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --accent: #2563eb;
+    --accent-soft: #dbeafe;
+    --success: #059669;
+    --warn: #d97706;
+    --danger: #dc2626;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+    --shadow-lg: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.03);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 32px 24px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  header p {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 720px;
+  }
+  .tldr {
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    font-size: 14px;
+    color: #1e3a8a;
+  }
+  .tldr strong { font-weight: 600; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .card h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .card .subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .equation {
+    font-family: "SF Mono", Monaco, "Cascadia Mono", "Roboto Mono", monospace;
+    font-size: 14px;
+    padding: 12px 16px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    color: #374151;
+    overflow-x: auto;
+  }
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .legend-icon {
+    font-size: 22px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .legend-content { flex: 1; min-width: 0; }
+  .legend-symbol {
+    font-family: "SF Mono", Monaco, monospace;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--accent);
+  }
+  .legend-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .legend-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 32px;
+  }
+  @media (max-width: 900px) {
+    .panel-grid { grid-template-columns: 1fr; }
+  }
+  .controls { display: flex; flex-direction: column; gap: 20px; }
+  .slider-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .slider-block .label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+  .slider-block .label {
+    font-weight: 500;
+    color: var(--text);
+  }
+  .slider-block .icon { margin-right: 6px; }
+  .slider-block .value {
+    font-family: "SF Mono", Monaco, monospace;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 13px;
+  }
+  .slider-block .value-input {
+    font-family: "SF Mono", Monaco, monospace;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 8px;
+    width: 90px;
+    text-align: right;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .slider-block .value-input:hover { border-color: var(--accent); }
+  .slider-block .value-input:focus { border-color: var(--accent); background: white; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+  .slider-block .value-input.invalid { border-color: var(--danger); color: var(--danger); }
+  .slider-block input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    outline: none;
+  }
+  .slider-block input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .slider-block input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+  }
+  .readout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .readout-item {
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .readout-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+  }
+  .readout-value {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 4px;
+    font-family: "SF Mono", Monaco, monospace;
+  }
+  .readout-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .plot-container { min-height: 360px; }
+  .breakdown {
+    margin-top: 16px;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .breakdown-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+  .breakdown-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .breakdown-bar-wrap {
+    flex: 1;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .breakdown-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.2s ease;
+  }
+  .breakdown-label { width: 130px; }
+  .breakdown-value {
+    width: 70px;
+    text-align: right;
+    font-family: "SF Mono", Monaco, monospace;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  @media (max-width: 700px) {
+    .comparison-grid { grid-template-columns: 1fr; }
+  }
+  .comparison-card {
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .comparison-card .name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .comparison-card .era {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .comparison-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .comparison-row .k {
+    color: var(--text-muted);
+  }
+  .comparison-row .v {
+    font-family: "SF Mono", Monaco, monospace;
+    font-weight: 600;
+  }
+  .citations {
+    margin-top: 32px;
+    padding: 20px 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .citations h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .citations p { margin-bottom: 4px; }
+  .citations strong { color: var(--text); font-weight: 500; }
+  .note {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #fef3c7;
+    border-left: 3px solid var(--warn);
+    border-radius: 6px;
+    font-size: 13px;
+    color: #78350f;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Scaling Laws Explorer</h1>
+  <p>Interactive companion to the canonical scaling-laws literature: explore how model size, training data, and compute determine large-language-model performance — and how the modern prescription has evolved from 2020 (Kaplan) through 2022 (Chinchilla) to 2024+ (inference-aware optimization).</p>
+  <div class="tldr">
+    <strong>Executive summary.</strong> Frontier-model performance is predictable. Loss scales smoothly with parameters and training data along a fitted curve, and the optimal allocation between the two has converged on a roughly 1:1 ratio (Chinchilla 2022). Add expected inference volume and the optimum shifts to smaller, longer-trained models — which is why every model released after 2023 (LLaMA-3, Qwen-2.5, Nemotron-3, OLMo 3) is "over-trained" by the 2020 standard.
+  </div>
+</header>
+
+<!-- LEGEND -->
+<div class="card">
+  <h2>Variable legend</h2>
+  <p class="subtitle">Every quantity used in this dashboard, with its symbol and what it represents.</p>
+  <div class="legend-grid">
+    <div class="legend-item">
+      <div class="legend-icon">🧠</div>
+      <div class="legend-content">
+        <div class="legend-symbol">N</div>
+        <div class="legend-name">Model size</div>
+        <div class="legend-desc">Number of trainable parameters (e.g., 7B, 70B).</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">📚</div>
+      <div class="legend-content">
+        <div class="legend-symbol">D</div>
+        <div class="legend-name">Training tokens</div>
+        <div class="legend-desc">Volume of pretraining data the model sees during training.</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">⚡</div>
+      <div class="legend-content">
+        <div class="legend-symbol">C</div>
+        <div class="legend-name">Compute budget</div>
+        <div class="legend-desc">Total training FLOPs (≈ 6 × N × D for transformers).</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">📉</div>
+      <div class="legend-content">
+        <div class="legend-symbol">L</div>
+        <div class="legend-name">Loss</div>
+        <div class="legend-desc">Cross-entropy in nats per token; lower is better.</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">🎯</div>
+      <div class="legend-content">
+        <div class="legend-symbol">E</div>
+        <div class="legend-name">Bayes floor</div>
+        <div class="legend-desc">Irreducible entropy of natural language; the loss you can never beat.</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">🔍</div>
+      <div class="legend-content">
+        <div class="legend-symbol">PPL</div>
+        <div class="legend-name">Perplexity</div>
+        <div class="legend-desc">exp(L). How many tokens the model is "choosing between" per step.</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">🔄</div>
+      <div class="legend-content">
+        <div class="legend-symbol">Q</div>
+        <div class="legend-name">Inference volume</div>
+        <div class="legend-desc">Expected queries served after training (Sardana 2024).</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">⏱️</div>
+      <div class="legend-content">
+        <div class="legend-symbol">h</div>
+        <div class="legend-name">Capability horizon</div>
+        <div class="legend-desc">Duration of human-expert tasks AI can complete reliably (METR 2025).</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">🧮</div>
+      <div class="legend-content">
+        <div class="legend-symbol">A</div>
+        <div class="legend-name">Capacity prefactor</div>
+        <div class="legend-desc">Strength of the 🧠 model-size term in Chinchilla's loss law. Fit value ≈ 406.4.</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">📐</div>
+      <div class="legend-content">
+        <div class="legend-symbol">α</div>
+        <div class="legend-name">Capacity exponent</div>
+        <div class="legend-desc">How fast loss falls as 🧠 model size grows. Fit value ≈ 0.336.</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">🧮</div>
+      <div class="legend-content">
+        <div class="legend-symbol">B</div>
+        <div class="legend-name">Data prefactor</div>
+        <div class="legend-desc">Strength of the 📚 training-token term in Chinchilla's loss law. Fit value ≈ 410.7.</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">📐</div>
+      <div class="legend-content">
+        <div class="legend-symbol">β</div>
+        <div class="legend-name">Data exponent</div>
+        <div class="legend-desc">How fast loss falls as 📚 training tokens grow. Fit value ≈ 0.283.</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">🏗</div>
+      <div class="legend-content">
+        <div class="legend-symbol">N<sub>total</sub></div>
+        <div class="legend-name">Total parameters (MoE)</div>
+        <div class="legend-desc">All experts plus shared layers (e.g., DeepSeek-V3: 671B).</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">⚙</div>
+      <div class="legend-content">
+        <div class="legend-symbol">N<sub>active</sub></div>
+        <div class="legend-name">Active parameters per token (MoE)</div>
+        <div class="legend-desc">Params actually used per forward pass (e.g., DeepSeek-V3: 37B).</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">✨</div>
+      <div class="legend-content">
+        <div class="legend-symbol">N<sub>eff</sub></div>
+        <div class="legend-name">Effective dense-equivalent</div>
+        <div class="legend-desc">√(N<sub>total</sub> · N<sub>active</sub>) — the dense size whose loss matches the MoE (Clark 2022).</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">◐</div>
+      <div class="legend-content">
+        <div class="legend-symbol">s</div>
+        <div class="legend-name">Sparsity</div>
+        <div class="legend-desc">N<sub>active</sub> / N<sub>total</sub>. Lower = more sparse. Abnar 2025 optimum: ~25% small scale → ~6% at frontier.</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-icon">💎</div>
+      <div class="legend-content">
+        <div class="legend-symbol">q</div>
+        <div class="legend-name">Information per token</div>
+        <div class="legend-desc">Corpus property: 1 token of quality-q data carries q× the usable signal of a baseline token. 0.3 = noisy / unfiltered; 1 = Common Crawl baseline; 2 = DCLM-filtered; 5 = synthetic curated. Shifts D/N optimum as q<sup>−0.91</sup>. <em>Repetition is a separate, training-procedure mechanism</em> (Muennighoff 2023; modeled by the data-wall curve in Panel 2).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 1: LOSS LAW + COMPUTE-OPTIMAL ALLOCATION -->
+<div class="card">
+  <h2>1 · Loss law and the compute-optimal recipe</h2>
+  <p class="subtitle">Set your model size, training tokens, and expected inference volume. The dashboard reports the predicted loss at <em>your</em> chosen (N, D) and overlays the optimal tokens-per-parameter recipe across three eras — Kaplan (2020), Chinchilla (2022), and Sardana (2024).</p>
+  <div class="equation">
+    L(<span style="color:#2563eb">N</span>, <span style="color:#2563eb">D</span>) &nbsp;=&nbsp; 🎯 <span style="color:#059669">E</span> &nbsp;+&nbsp; 🧠 <span style="color:#dc2626">A · N⁻ᵅ</span> &nbsp;+&nbsp; 📚 <span style="color:#d97706">B · D⁻ᵝ</span>
+    &nbsp;&nbsp;<span style="color:#6b7280">[Chinchilla 2022]</span>
+  </div>
+  <div class="panel-grid">
+    <div class="controls">
+      <div class="slider-block">
+        <div class="label-row">
+          <span class="label"><span class="icon">🧠</span>Model size (N)</span>
+          <input type="text" class="value-input" id="input-N" value="8.0 B" spellcheck="false" autocomplete="off">
+        </div>
+        <input type="range" id="slider-N" min="8" max="13" step="0.05" value="9.9">
+        <div class="readout-sub">100M to 10T parameters (log scale) — type values like <code>7B</code>, <code>175B</code>, <code>1.5T</code>, or <code>3e10</code></div>
+      </div>
+      <div class="slider-block">
+        <div class="label-row">
+          <span class="label"><span class="icon">📚</span>Training tokens (D)</span>
+          <input type="text" class="value-input" id="input-D" value="1.4 T" spellcheck="false" autocomplete="off">
+        </div>
+        <input type="range" id="slider-D" min="9" max="14" step="0.05" value="12.15">
+        <div class="readout-sub">1B to 100T tokens (log scale) — type values like <code>300B</code>, <code>15T</code>, or <code>2.5e12</code></div>
+      </div>
+      <div class="slider-block">
+        <div class="label-row">
+          <span class="label"><span class="icon">🔄</span>Expected inference volume (Q)</span>
+          <input type="text" class="value-input" id="input-Q" value="1.0 B" spellcheck="false" autocomplete="off">
+        </div>
+        <input type="range" id="slider-Q" min="0" max="14" step="0.1" value="9">
+        <div class="readout-sub">Lifetime queries served — shifts the Sardana 2024 recipe toward over-training</div>
+      </div>
+      <div class="slider-block">
+        <div class="label-row">
+          <span class="label"><span class="icon">💎</span>Information per token (q)</span>
+          <span class="value" id="val-quality">1.00× <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(web baseline)</span></span>
+        </div>
+        <input type="range" id="slider-quality" min="-0.6" max="0.8" step="0.02" value="0">
+        <div class="readout-sub">A <em>corpus property</em>: how much usable signal each token carries. 0.3 = noisy / unfiltered raw CC; 1.0 = standard Common Crawl (Chinchilla baseline); 2 = DCLM-filtered; 5 = synthetic curated (Phi-style). <strong>Repetition effects are separate</strong> — see Panel 2's data-wall curve.</div>
+      </div>
+      <div class="readout">
+        <div class="readout-item">
+          <div class="readout-label">Predicted loss</div>
+          <div class="readout-value" id="out-loss">—</div>
+          <div class="readout-sub" id="out-ppl-sub">— ppl</div>
+        </div>
+        <div class="readout-item">
+          <div class="readout-label">Compute (≈ 6 N D)</div>
+          <div class="readout-value" id="out-C">—</div>
+          <div class="readout-sub">FLOPs</div>
+        </div>
+        <div class="readout-item">
+          <div class="readout-label">Your D / N</div>
+          <div class="readout-value" id="out-ratio">—</div>
+          <div class="readout-sub">tokens / param</div>
+        </div>
+      </div>
+      <div class="breakdown">
+        <div class="breakdown-title">Loss decomposition (your N, D)</div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">🎯 Bayes floor</span>
+          <div class="breakdown-bar-wrap"><div class="breakdown-bar" id="bar-E" style="background:#059669;width:0%"></div></div>
+          <span class="breakdown-value" id="val-E">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">🧠 Capacity gap</span>
+          <div class="breakdown-bar-wrap"><div class="breakdown-bar" id="bar-A" style="background:#dc2626;width:0%"></div></div>
+          <span class="breakdown-value" id="val-A">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">📚 Data gap</span>
+          <div class="breakdown-bar-wrap"><div class="breakdown-bar" id="bar-B" style="background:#d97706;width:0%"></div></div>
+          <span class="breakdown-value" id="val-B">—</span>
+        </div>
+      </div>
+      <div class="breakdown">
+        <div class="breakdown-title">Optimal D / N at your compute (across eras)</div>
+        <div class="breakdown-row">
+          <span class="breakdown-label" style="color:#6b7280;">Kaplan 2020</span>
+          <span class="breakdown-value" id="rec-kap">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label" style="color:#2563eb;">Chinchilla 2022</span>
+          <span class="breakdown-value" id="rec-chi">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label" style="color:#059669;">Sardana 2024 (at your Q)</span>
+          <span class="breakdown-value" id="rec-sar">—</span>
+        </div>
+        <div class="breakdown-row" style="border-top:1px solid var(--border);padding-top:6px;margin-top:4px;">
+          <span class="breakdown-label" style="color:#dc2626;font-weight:600;">Your D / N</span>
+          <span class="breakdown-value" id="rec-your">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="plot-container" id="plot-alloc"></div>
+  </div>
+  <div class="note">
+    <strong>Reading the plot.</strong> Each line is the prescribed tokens-per-parameter (D/N) at a given training compute budget. <span style="color:#9ca3af;font-weight:600;">Kaplan</span> says under-train; <span style="color:#2563eb;font-weight:600;">Chinchilla</span> says ~20 regardless of compute; <span style="color:#059669;font-weight:600;">Sardana</span> over-trains (line shifts upward as your Q grows).
+    <br><br>
+    Real models appear as <strong>two diamonds connected by a dotted line</strong> when the model is MoE: a <strong>filled diamond</strong> at <code>D/N<sub>active</sub></code> (per-token compute view — what governs training and inference FLOPs) and an <strong>open diamond</strong> at <code>D/N<sub>total</sub></code> (total-capacity view — what governs the loss surface and capacity-floor in Chinchilla's law via N<sub>eff</sub>). For dense models the two coincide so only the filled diamond appears. <em>*</em> = MoE. <em>†</em> = Kimi K2.5 includes ~15T multimodal continual tokens atop K2's text base — text-equivalent comparison is approximate. <strong>Hover any diamond</strong> for the full N<sub>total</sub>, N<sub>active</sub>, D, both D/N ratios, and the source citation.
+    <br><br>
+    The MoE entries (Kimi, DeepSeek-V3/V4, Qwen3.5-397B-A17B, GLM-5) span an order of magnitude or more between active and total — that vertical line height is the visual signature of MoE's "decouple training/inference compute from capacity" trick.
+  </div>
+</div>
+
+<!-- PANEL 2: DATA QUALITY + DATA WALL -->
+<div class="card">
+  <h2>2 · How the data distribution shifts the recipe</h2>
+  <p class="subtitle">Two distinct mechanisms move the Chinchilla optimum off its famous <code>D/N = 20</code>: (1) <strong>corpus quality</strong> — the information-per-token of the underlying dataset — and (2) the <strong>data wall</strong> — what happens when raw token count exceeds the world's supply of fresh natural text, forcing repetition with diminishing returns. The two are mathematically similar but mechanistically distinct: quality is a property of the corpus, repetition is a property of the training procedure.</p>
+  <div class="equation">
+    L(N, D | <span style="color:#2563eb">q</span>) &nbsp;=&nbsp; 🎯 E &nbsp;+&nbsp; A · N⁻ᵅ &nbsp;+&nbsp; B · (<span style="color:#2563eb">q</span> · D)⁻ᵝ
+    &nbsp;&nbsp;⇒&nbsp;&nbsp;
+    (D / N)<sub>opt</sub> &nbsp;=&nbsp; 20 · <span style="color:#2563eb">q</span><sup>−0.91</sup>
+    &nbsp;&nbsp;<span style="color:#6b7280">[derived from ∂L/∂N = 0 on C = 6 N D]</span>
+  </div>
+  <div class="panel-grid">
+    <div class="controls">
+      <div class="breakdown">
+        <div class="breakdown-title">Compute-optimal D / N by corpus information density (q)</div>
+        <div class="breakdown-row">
+          <span class="breakdown-label" style="color:#a16207;">Noisy / unfiltered (q ≈ 0.3)<br><span style="font-size:11px;color:#6b7280;">Raw Common Crawl with minimal cleaning</span></span>
+          <span class="breakdown-value" id="dq-muen-rep">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label" style="color:#9ca3af;">Web baseline (q = 1.0)<br><span style="font-size:11px;color:#6b7280;">Chinchilla 2022 reference corpus</span></span>
+          <span class="breakdown-value" id="dq-baseline">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label" style="color:#7c3aed;">DataDecide top recipe (q ≈ 1.5)<br><span style="font-size:11px;color:#6b7280;">Magnusson 2025: best-ranked of 25 corpora</span></span>
+          <span class="breakdown-value" id="dq-datadecide">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label" style="color:#059669;">DCLM-filtered (q ≈ 2.0)<br><span style="font-size:11px;color:#6b7280;">Li 2024: model-based quality filtering</span></span>
+          <span class="breakdown-value" id="dq-dclm">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label" style="color:#dc2626;">Synthetic curated (q ≈ 5.0)<br><span style="font-size:11px;color:#6b7280;">Phi-3 / TinyStories style</span></span>
+          <span class="breakdown-value" id="dq-synth">—</span>
+        </div>
+      </div>
+      <div class="breakdown">
+        <div class="breakdown-title">Muennighoff 2023 data wall (training-procedure effect)</div>
+        <div style="font-size:11px;color:var(--text-muted);padding:4px 4px 8px;line-height:1.4;">
+          A separate mechanism from q: once raw D exceeds the world's ~20T fresh natural-text tokens, additional D is <em>repeated</em>. Each repeated token converges faster (you've already seen patterns), so it contributes less to loss reduction than a fresh one — but it's still the <em>same data</em>, not "lower quality".
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">Break point at C ≈</span>
+          <span class="breakdown-value" id="dq-break-c">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">Forced D/N at 10× past break</span>
+          <span class="breakdown-value" id="dq-break-r">—</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);padding:8px 4px;line-height:1.5;">
+        <strong style="color:var(--text);">Notable:</strong> the q ≈ 2 (DCLM) line is where you'd land on quality alone — but real models (LLaMA-3-8B at D/N ≈ 1875, Qwen3-8B at 4500) sit far above any of these lines. That additional gap is the <em>Sardana 2024 inference-cost</em> effect (Panel 1's Q slider), not a quality or repetition effect.
+      </div>
+    </div>
+    <div class="plot-container" id="plot-quality"></div>
+  </div>
+  <div class="note">
+    <strong>Reading the plot.</strong> Solid lines are compute-optimal D/N for a fixed corpus information density q (the Panel 1 slider). The dash-dot orange line is the Muennighoff data-wall curve — flat at the web baseline until C ≈ 10²⁶, then bending upward as you exhaust ~20T fresh tokens and are forced to repeat (each repetition contributes diminishing loss reduction, so the math behaves like a steepening cost on additional D, manifesting as a higher required D/N to hit the same effective-tokens target). Real-model anchors show where actual training has landed; the residual gap above even the high-q lines is Sardana inference economics, modeled in Panel 1.
+  </div>
+</div>
+
+<!-- PANEL 3: CAPABILITY HORIZON -->
+<div class="card">
+  <h2>3 · Capability horizon forecast (METR)</h2>
+  <p class="subtitle">Frontier-model agentic capability has its own scaling law: the duration of human-expert tasks AI can complete reliably has doubled roughly every 7 months from 2019 through 2025. Project forward to see when AI crosses task-duration thresholds you care about.</p>
+  <div class="equation">
+    h(<span style="color:#2563eb">t</span>) &nbsp;=&nbsp; 50 min × 2<sup>(<span style="color:#2563eb">t</span> − 2025.25) / 0.583</sup> &nbsp; <span style="color:#6b7280">[t in years, doubling every 7 months]</span>
+  </div>
+  <div class="panel-grid">
+    <div class="controls">
+      <div class="slider-block">
+        <div class="label-row">
+          <span class="label"><span class="icon">⏱️</span>Project to year</span>
+          <span class="value" id="val-T">2026.4</span>
+        </div>
+        <input type="range" id="slider-T" min="2019" max="2035" step="0.05" value="2026.4">
+        <div class="readout-sub">Slide to project frontier capability horizon</div>
+      </div>
+      <div class="readout">
+        <div class="readout-item">
+          <div class="readout-label">Reliable horizon</div>
+          <div class="readout-value" id="out-h">—</div>
+          <div class="readout-sub">at the chosen date</div>
+        </div>
+        <div class="readout-item">
+          <div class="readout-label">Months from today</div>
+          <div class="readout-value" id="out-months">—</div>
+          <div class="readout-sub">today = May 2026</div>
+        </div>
+      </div>
+      <div class="breakdown">
+        <div class="breakdown-title">Crossing dates (historical trend)</div>
+        <div class="breakdown-row"><span class="breakdown-label">10 min</span><span class="breakdown-value" id="cross-10m">—</span></div>
+        <div class="breakdown-row"><span class="breakdown-label">1 hour</span><span class="breakdown-value" id="cross-1h">—</span></div>
+        <div class="breakdown-row"><span class="breakdown-label">1 work day (8 h)</span><span class="breakdown-value" id="cross-8h">—</span></div>
+        <div class="breakdown-row"><span class="breakdown-label">1 work week (40 h)</span><span class="breakdown-value" id="cross-40h">—</span></div>
+        <div class="breakdown-row"><span class="breakdown-label">1 month (160 h)</span><span class="breakdown-value" id="cross-160h">—</span></div>
+      </div>
+    </div>
+    <div class="plot-container" id="plot-horizon"></div>
+  </div>
+  <div class="note">
+    <strong>Caveat.</strong> Unlike Panels 1 and 2 (which fit loss curves with known functional form and tight error bars), this is a Moore's-law-style historical extrapolation. METR notes the trend may have <em>accelerated</em> to a 3-4 month doubling in 2024-2025; the dashed line shows that scenario. Use this for high-level capability forecasting, not for predicting specific model releases.
+  </div>
+</div>
+
+<!-- PANEL 4: MoE ADJUSTMENT -->
+<div class="card">
+  <h2>4 · Mixture-of-Experts adjustment</h2>
+  <p class="subtitle">MoE separates the parameters that influence <em>loss</em> from the parameters that influence <em>cost</em>. Set total and active independently to see how this changes the Chinchilla prediction — and compare against Abnar 2025's compute-optimal sparsity prescription.</p>
+  <div class="equation">
+    ✨ N<sub>eff</sub> &nbsp;=&nbsp; √( 🏗 <span style="color:#2563eb">N<sub>total</sub></span> &nbsp;·&nbsp; ⚙ <span style="color:#2563eb">N<sub>active</sub></span> )
+    &nbsp;&nbsp;<span style="color:#6b7280">[Clark 2022 / geometric-mean approximation]</span>
+    <br>
+    📉 L(N<sub>total</sub>, N<sub>active</sub>, D) &nbsp;=&nbsp; 🎯 E &nbsp;+&nbsp; A · ✨ N<sub>eff</sub><sup>−α</sup> &nbsp;+&nbsp; B · 📚 D<sup>−β</sup>
+  </div>
+  <div class="panel-grid">
+    <div class="controls">
+      <div class="slider-block">
+        <div class="label-row">
+          <span class="label"><span class="icon">🏗</span>Total parameters (N<sub>total</sub>)</span>
+          <input type="text" class="value-input" id="input-Ntotal" value="120 B" spellcheck="false" autocomplete="off">
+        </div>
+        <input type="range" id="slider-Ntotal" min="9" max="13" step="0.05" value="11.08">
+        <div class="readout-sub">1B to 10T total parameters (log scale). Try <code>671B</code> (DeepSeek-V3), <code>120B</code> (Nemotron-3-Super), <code>141B</code> (Mixtral 8×22B).</div>
+      </div>
+      <div class="slider-block">
+        <div class="label-row">
+          <span class="label"><span class="icon">⚙</span>Active per token (N<sub>active</sub>)</span>
+          <input type="text" class="value-input" id="input-Nactive" value="12.7 B" spellcheck="false" autocomplete="off">
+        </div>
+        <input type="range" id="slider-Nactive" min="8" max="13" step="0.05" value="10.10">
+        <div class="readout-sub">Auto-clamped to ≤ N<sub>total</sub>. Try <code>37B</code> (DeepSeek-V3), <code>12.7B</code> (Nemotron-3-Super), <code>39B</code> (Mixtral 8×22B).</div>
+      </div>
+      <div class="slider-block">
+        <div class="label-row">
+          <span class="label"><span class="icon">📚</span>Training tokens (D)</span>
+          <input type="text" class="value-input" id="input-D2" value="15 T" spellcheck="false" autocomplete="off">
+        </div>
+        <input type="range" id="slider-D2" min="9" max="14" step="0.05" value="13.176">
+        <div class="readout-sub">1B to 100T tokens (log scale).</div>
+      </div>
+      <div class="readout">
+        <div class="readout-item">
+          <div class="readout-label">Sparsity (s)</div>
+          <div class="readout-value" id="moe-sparsity">—</div>
+          <div class="readout-sub" id="moe-sparsity-sub">—</div>
+        </div>
+        <div class="readout-item">
+          <div class="readout-label">✨ N<sub>eff</sub></div>
+          <div class="readout-value" id="moe-neff">—</div>
+          <div class="readout-sub">dense-equivalent</div>
+        </div>
+        <div class="readout-item">
+          <div class="readout-label">Predicted loss</div>
+          <div class="readout-value" id="moe-loss">—</div>
+          <div class="readout-sub" id="moe-ppl-sub">— ppl</div>
+        </div>
+        <div class="readout-item">
+          <div class="readout-label">Inference savings</div>
+          <div class="readout-value" id="moe-savings">—</div>
+          <div class="readout-sub">vs matching dense</div>
+        </div>
+      </div>
+      <div class="breakdown">
+        <div class="breakdown-title">Abnar 2025 — optimal sparsity at this compute</div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">⚡ Compute (≈ 6 · N<sub>active</sub> · D)</span>
+          <span class="breakdown-value" id="moe-compute">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">◐ Your sparsity</span>
+          <span class="breakdown-value" id="moe-s-yours">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">◐ Abnar-optimal s</span>
+          <span class="breakdown-value" id="moe-s-opt">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">Verdict</span>
+          <span class="breakdown-value" id="moe-verdict" style="width:140px;font-family:inherit;font-weight:500;">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="plot-container" id="plot-moe"></div>
+  </div>
+  <div class="note">
+    <strong>Reading the plot.</strong> The curve shows predicted loss as you vary N<sub>total</sub> while holding N<sub>active</sub> (your inference cost) fixed. Moving right adds experts at zero additional inference cost — but loss falls only as √N<sub>total</sub> (Clark 2022), so the gain shrinks. The dashed line marks the dense baseline (N<sub>total</sub> = N<sub>active</sub>); the green tick marks Abnar 2025's compute-optimal sparsity for this training budget.
+  </div>
+</div>
+
+<!-- PANEL 5: DATA-TYPE × BENCHMARK SENSITIVITY MATRIX -->
+<div class="card">
+  <h2>5 · Data-type × benchmark-cluster sensitivity matrix (rough)</h2>
+  <p class="subtitle">A rank-4 sketch of how each data category responds across the standard benchmark clusters. Cell values are 0–3 estimates (with <em>−</em> for negative transfer), interpolated from published per-data-type ablations. <strong>Hatched cells (with diagonal stripes and a <code>?</code> suffix on the value) are inferred from indirect evidence;</strong> solid cells are anchored to a named paper (hover for citation). This is meant as a brainstorming target for the M matrix your team would actually fit — not a measured result.</p>
+  <div class="plot-container" id="plot-matrix" style="height:640px;"></div>
+  <div style="font-size:12px;color:var(--text-muted);padding:8px 4px 4px;line-height:1.55;">
+    <strong>Source codes:</strong> <strong>DCLM</strong> = Li 2024 · <strong>DataDecide</strong> = Magnusson 2025 · <strong>OT</strong> = OpenThoughts (Guha 2025) · <strong>DS</strong> = DeepSeek-Math (Shao 2024) · <strong>P</strong> = Phi-3 (Abdin 2024) · <strong>W</strong> = WildChat-1M (Zhao 2024) · <strong>W50</strong> = WildChat-50M (Feuer 2025).
+  </div>
+  <div style="font-size:12px;color:var(--text-muted);padding:0 4px 8px;line-height:1.55;">
+    <strong>Column structure validation — two independent sources:</strong>
+    <br>
+    <strong>Evalchemy (2,300+ models · 10,000+ evals)</strong>: within-category Pearson <strong>0.78</strong> / across-category <strong>0.49</strong> / gap <strong>+0.29</strong>. Top intra-category pairs at 0.94-0.98 (CodeElo ↔ CodeForces, AIME24 ↔ AIME25).
+    <br>
+    <strong>EEE_datastore (20K models · 60+ benchmark configs · 229K eval results, accessed via evaleval/EEE_datastore HF dataset)</strong>: within-cluster <strong>0.72</strong> / across-cluster <strong>0.58</strong> / gap <strong>+0.15</strong>. The smaller EEE gap is exactly what the BAT paper predicts: EEE's population is much more heterogeneous (20K models including weak ones), so the "strong models good at everything" halo effect is diluted relative to Evalchemy's curated frontier set.
+    <br>
+    Both replicate the rank-4 cluster signal. Per-column EEE gaps reveal cluster <em>quality</em> varies sharply: <strong>F</strong> +0.30 (cleanest, IFEval-style is genuinely orthogonal), <strong>S</strong> +0.22 (SWE-bench-like clusters tightly), <strong>K</strong> +0.16, <strong>H</strong> +0.14, <strong>T</strong> +0.09, <strong>R</strong> +0.08 (diffuse — reasoning benchmarks cross-load with knowledge), <strong>M</strong> +0.06 (diffuse — different math difficulties don't track each other), <strong>D</strong> <em>−0.38</em>. Top cross-cluster pairs: BBH ↔ MMLU-Pro at r=0.96 (BBH is half-knowledge); IFEval ↔ MMLU-Pro at r=0.96 (halo effect); MathVista ↔ MMLU-Pro at r=0.95 (math-vision loads on knowledge).
+  </div>
+  <div style="font-size:12px;color:var(--text-muted);padding:0 4px 8px;line-height:1.55;">
+    <strong>* LLM-judge-mediated columns (D-q / D-j / SAFETY):</strong> EEE_datastore's within-D Pearson = <strong>0.18</strong> (anti-correlated with the across-D 0.56) shows the old single "D · Dialogue" column was not a real cluster — it conflated arena-style preference, MT-Bench-style multi-turn quality, reward-model evaluations, and LLM-as-judge benchmarks. Splitting D into <strong>D-q</strong> (chat quality) and <strong>D-j</strong> (LLM-as-judge skill) is principled but doesn't fix the underlying problem: all of D-q, D-j, and SAFETY are LLM-judge- or rule-based-refusal-judge-mediated, so they carry <em>biased + high-variance signal</em>. WildChat-50M (Feuer 2025) documents this for chat benchmarks. SOS-Bench (Feuer 2024) measures the SAFETY column directly via BeaverTails / JailbreakHub / SaladBench / SGXSTest / StrongREJECT / DTToxicity / CDNA — useful signal but treat with the same lower-grade caution as D-q/D-j.
+    <br><br>
+    <strong>A-BB calibration anchor (bias-bounded-evaluation, abb/data 2026):</strong> Post-debiasing rank-correlation with the naive leaderboard varies <em>7×</em> across LLM-judge benchmarks. <strong>FLASK</strong> (factored 12-skill rubric) preserves <strong>~88%</strong> of the model ranking after A-BB removes formatting/length/style/position bias; <strong>MT-Bench</strong> (holistic helpfulness) preserves only <strong>~13%</strong>. The two should not be lumped together — rubric structure, not judge identity, drives signal preservation. Judge intrinsic jitter (test-retest noise) is 14% of range for gpt-5-mini, 33-44% for gpt-3.5-turbo / gpt-4o-mini / deepseek-r1-32b. On MT-Bench-class benchmarks, the within-Llama-3-8B-SFT-variant factor-score spread (helpfulness, accuracy, relevance, depth, creativity, detail) is <em>at-or-below the jitter floor</em> on every individual factor — so D-j cell magnitudes ≤ 1 on integer scale are within the noise band for this benchmark class. Treat D-j cells with |value| ≤ 1 as direction-only on MT-Bench-class benchmarks; FLASK-class benchmarks support ~2× finer cell discrimination. See <code>abb_findings.md</code> for the full tables.
+  </div>
+  <div style="font-size:12px;color:var(--text-muted);padding:0 4px 8px;line-height:1.55;">
+    <strong>SOS-Bench Detailed empirical anchors (rows I and L):</strong> 232 models × 65 benchmarks under a single controlled lm-eval-harness invocation, all hosted at <code>nyu-dice-lab/lm-eval-results-*</code>.
+    <br>
+    <strong>Princeton SFT-preference-method ladder</strong> (same Llama-3-Base-8B-SFT base, 5 preference methods) anchors row L: K/M/R essentially invariant under all preference methods; F drops 15-25% under IPO/KTO/ORPO/RDPO; <strong>SAFETY drops ~60%</strong> under IPO/KTO/ORPO/RDPO (0.681 → 0.23-0.30). DPO appears neutral on every cluster — suspicious near-identity with SFT in Princeton's released checkpoints, worth flagging.
+    <br>
+    <strong>Magpie SFT-data variation</strong> (same Llama-3-8B base, 7 SFT corpora) anchors row I: K/R essentially invariant; F varies 40% (WildChat best at 0.33, Magpie/ShareGPT lowest at ~0.24); M nearly flat ~0.04 (Magpie-Reasoning slight bump to 0.058); SAFETY varies modestly (0.32-0.38, OpenHermes best). Corroborates WildChat-50M's claim that chat-style data dominates IF benchmarks.
+    <br>
+    <strong>Math-SFT models</strong> (NuminaCoT, MetaMath, dart-math; all Llama-3-8B base) anchor row M: <strong>NuminaCoT achieves M=0.123 vs Magpie baseline 0.04</strong> (+2-3× lift on math cluster — clear positive). But math-SFT also <em>degrades</em> F by ~10pp (formal math style displaces chat IF) and leaves BBH (R) flat or slightly lower. K is unchanged. MetaMath-on-Llama-3 shows weak M-cluster transfer (0.035) despite the math-only training — suggests the corpus matters more than just "math" as a label.
+    <br>
+    <strong>Code-only SFT</strong> (ajibawa-2023/Code-Llama-3-8B) shows the <em>specialization tax</em>: every general cluster degrades vs Magpie baselines (K −20%, M −60%, F −36%, R −16%) — but SAFETY actually <em>rises</em> to 0.47 (code-trained models often refuse non-code queries, inflating the safety score). This documents the high-end of the code-proportion axis; SOS-Bench has no H/SWE benchmarks, so positive effects of code data on code-benchmarks can't be anchored here.
+  </div>
+  <div style="font-size:12px;color:var(--text-muted);padding:0 4px 8px;line-height:1.55;">
+    <strong>Scientific-LM empirical anchor (S row):</strong> Three converging lines of evidence.
+    <br>
+    <strong>S × M is real and large.</strong> Llemma (Azerbayev 2024, ICLR): Llemma-7B trained on Proof-Pile-II (55B tokens of arxiv math + math-web + code, initialized from Code-Llama-7B) reaches GSM8K 36.4% / MATH 18% — Llemma-34B reaches GSM8K 51.1% / MATH 25%, a <strong>+20pp GSM8K and +13pp MATH lift</strong> over the Code-Llama base. DeepSeekMath-Base 7B (Shao 2024) does even better with math-web continual pretrain alone (no SFT/RL): GSM8K 64.2% / MATH 36.2%; with SFT+RL → 88.2% / 51.7%. Math-corpus scientific pretrain is one of the cleanest column-targeted data effects in the literature.
+    <br>
+    <strong>S × K lift is real but narrower than generalist data.</strong> Galactica-120B (Taylor 2022, Meta) was the original scientific LM — 106B-token corpus of papers + textbooks + knowledge bases, beat OPT-175B on MMLU-STEM and beat Chinchilla on MATH/MMLU at 1/7 size. Withdrawn from public release after generating plausible-but-wrong scientific text. SciGLM-6B (NeurIPS 2024) and SciDFM-MoE-18.2B continue the line. Modern Phi-3 emphasizes synthetic-curated technical content (Φ row × K).
+    <br>
+    <strong>The biomedical specialization tax (Jeong et al. 2024, arxiv 2408.13833) is the bombshell finding.</strong> Biomedical specialist LMs <em>dramatically underperform</em> same-base generalist Instruct models on clinical case challenges: OpenBioLLM-8B JAMA <strong>17.9% vs Llama-3-8B-Instruct 57.1% (−39pp)</strong>; Meditron-7B JAMA 12.9% vs Llama-2-7B-chat 44.3% (−31pp); BioMistral-7B JAMA 27.9% vs Mistral-7B-Instruct 52.1%; PMC-Llama-7B NEJM 2.3% vs Llama-2-7B-chat 26.8%. At 70B scale: OpenBioLLM-70B LongHealth hallucination resistance 62.9% vs Llama-3-70B-Instruct 91.7% (−29pp). The same "formal-academic-style displaces chat instruction-following" mechanism we saw with NuminaCoT math-SFT and ajibawa Code-LLaMA-only-SFT — but the magnitude here is much larger. Concluding the paper: <em>"fine-tuning LLMs to biomedical data may not provide the expected benefits"</em>; recommend retrieval-augmented generation over continued domain pretraining.
+    <br>
+    <strong>OpenScholar-Llama-3.1-8B</strong> is the abb / MT-Bench anchor for academic-domain SFT: 4.96 on MT-Bench (within-noise of Magpie 5.03, OpenScholar slightly worse on depth/creativity/detail factors). Academic-style SFT does NOT lift D-q.
+    <br>
+    <strong>Updated cell anchors:</strong> S × K (Galactica + SciGLM, kept at 3), S × M (raised 1 → 2 — Llemma/DeepSeekMath), S × F (added −1 — biomedical specialization tax on adjacent IF), S × R (Galactica long-form reasoning), and a row-level caveat: the row values assume <em>moderate</em> scientific-data proportion. At high-proportion specialization (Meditron-style 100% bio-medical), the specialization tax overwhelms positive transfers — same pattern as Code-only SFT row C commentary.
+  </div>
+  <div style="font-size:12px;color:var(--text-muted);padding:0 4px 8px;line-height:1.55;">
+    <strong>OpenThoughts-Agent (NeurIPS 2026 submission) — the strongest controlled agentic-SFT ablation in the open literature:</strong> 95 task-generation strategies, each run as 10K-trajectory SFT on Qwen3-8B, evaluated on SWE-Bench-Verified-100, OT-TBLite, and Terminal-Bench-2. Z-score spread <strong>4σ wide</strong> (best +1.92, worst −2.31) — biggest cleanly-attributable cross-source variation in any data-mix ablation we've cited.
+    <br>
+    <strong>Top-10 sources for agentic SFT (Table 13):</strong> swesmith (synthetic-issues, +1.92, SWE-V 32.3%) · stackexchange-superuser (human-infra, +1.51, TB2 10.9%) · stackexchange-tezos (+1.45) · issue-tasks (+1.37, SWE-V 24.0%) · repo-scaffold (+1.31) · r2egym (+1.17, SWE-V 28.3%) · stackexchange-tor (+1.16) · swegym (+1.14, SWE-V 27.0%) · code-feedback (+1.04) · stackexchange-unix (+1.02). Pattern: <em>synthetic issue-resolution traces lift SWE; human-written infrastructure Q&amp;A lifts Terminal-Bench</em> — they're different sub-skills inside the T cluster.
+    <br>
+    <strong>Bottom of Table 13 (HURTS agentic):</strong> agenttuning-os (−2.31), agenttuning-mind2web (−2.26), agenttuning-db (−1.70), <strong>tulu3-sft-personas-math (−1.35, rank 92/95)</strong>, agenttuning-webshop (−1.31), code-contests (−1.27), all-puzzles (−1.27). Two findings here: (1) <em>math-SFT data is among the WORST sources for agentic SFT</em> — anchors M × S = −1 and M × T = −1 in the matrix; (2) the old AgentTuning corpus is now broadly net-negative vs modern issue-resolution sources.
+    <br>
+    <strong>The bombshell from Table 23: CoT-only SFT contributes ~zero to agentic benchmarks.</strong> Pure-reasoning models at 7-8B scale: <strong>DeepSeek-R1-Distill-Qwen-7B SWE-V 0.0% / TB2 0.7%</strong>, <strong>OpenThinker3-7B SWE-V 0.4% / TB2 0.0%</strong>, Llama3.1-Nemotron-Nano-8B-v1 SWE-V 0.5% / TB2 0.0%. Same base + agent-SFT (Nemotron-Terminal-8B): SWE-V 22.1% / TB2 13.1%. <strong>20+pp gap.</strong> This directly contradicts a naive reading of BFCL/τ²-Bench thinking-model dominance: the "Thinking" branding on frontier models reflects bundled agent+reasoning SFT, not pure CoT. R × S lowered 1 → 0 and R × T lowered 2 → 0 to reflect this controlled finding.
+    <br>
+    <strong>Headline takeaway:</strong> Agentic capability is a <em>tail-skill / mid-training</em> phenomenon (X-row) plus an <em>agentic-trajectory</em> phenomenon (A-row), not a side-effect of reasoning, math, or general SFT. The matrix now reflects this with X × S raised 1 → 2 and A × S raised 2 → 3.
+  </div>
+  <div style="font-size:12px;color:var(--text-muted);padding:0 4px 8px;line-height:1.55;">
+    <strong>BFCL / τ²-Bench empirical anchor (T column):</strong> ToolACE (Liu 2024, ICLR 2025) is the cleanest data-mix ablation for tool-use: synthetic-curated function-calling SFT on LLaMA-3.1-8B-Instruct lifts BFCL-AST <strong>75% → 91% (+16pt)</strong>; on LLaMA-3-8B-Instruct <strong>53% → 88% (+35pt)</strong>; on Qwen1.5-7B <strong>49% → 86% (+37pt)</strong>. ToolACE-8B reaches BFCL-v3 rank 3 (59.22 overall, Sep 2024) — beating xLAM-8x22b-r and Mistral-Large despite being 100× smaller. Crucially, ToolACE Fig 8 shows MMLU / HumanEval / GSM8K / CSQA are <em>unchanged</em> after FC-SFT, so synthetic FC data adds T without a specialization tax — this is the textbook X-row tail-skill / Φ-row synthetic-curated story.
+    <br>
+    <strong>BFCL-v3 leaderboard (May 2026):</strong> Top 7 are all thinking-variants — GLM-4.5 (0.778) · GLM-4.5-Air (0.764) · LongCat-Flash-Thinking (0.744) · Qwen3-Next-80B-A3B-Thinking (0.720) · Qwen3-235B-A22B-Thinking-2507 (0.719) · Qwen3-VL-32B-Thinking (0.717). <strong>τ²-Bench (Sierra, Apr 2026):</strong> Step-3.5-Flash 0.882 · GLM-4.7 0.874 · MiMo-V2-Flash 0.803 · GLM-4.7-Flash 0.795 · MiniMax M2 0.772. <strong>τ²-Telecom:</strong> Claude Opus 4.6 0.993 · LongCat-Flash-Thinking-2601 0.993 · GPT-5.4 0.989. Long-CoT reasoning data (R row) and multi-turn agentic trajectories (A row) are both clearly load-bearing for the multi-turn tool-use side of T.
+    <br>
+    <strong>Updated cell anchors:</strong> X × T (ToolACE/xLAM lift), Φ × T (raised 0 → 2 — synthetic-curated FC data is the canonical winning path), R × T (BFCL/τ²-Bench thinking-model dominance), A × T (τ²-Bench leaderboard), I × T (ToolACE Fig 7: generic SFT raw baseline 53-75% with +16-35pt FC-SFT headroom — generic instruction pairs are NOT a substitute for tool-specific data). C × T and M × T remain weakly inferred — ToolACE Fig 8 actually shows HumanEval unchanged after FC-SFT, suggesting code knowledge isn't the BFCL bottleneck.
+  </div>
+  <div style="font-size:12px;color:var(--text-muted);padding:0 4px 8px;line-height:1.55;">
+    <strong>abb / Bias-Bounded Evaluation empirical anchor (D-j column):</strong> 11 Llama-3.1-8B / Llama-3-8B SFT/DPO/distill/merge variants evaluated on MT-Bench under the gpt-5-mini judge with full A-BB factored decomposition (<code>abb/data/mt_bench/gpt5-mini_debiased.csv</code>).
+    <br>
+    <strong>SUT cluster overall scores (jitter floor = 1.29 on 1-10):</strong> Ref-GPT4 6.94 · Ref-GPT3.5 6.41 · Meta-Instruct 5.41 · FuseChat-SFT 5.31 · Magpie-SFT 5.03 · Tulu-3-DPO 5.01 · OpenScholar 4.96 · Hermes-3-distill 4.64 · Tulu-2-DPO 4.52 · WildChat 4.30 · Princeton-zephyr-SFT 4.01. The 8 SFT/DPO/merge Llama variants span 1.30 points = exactly 1× jitter, with only helpfulness/depth/detail factors marginally above the noise floor. Most discriminating factor is <em>detail</em> (range 1.51), least is <em>creativity</em> (0.54).
+    <br>
+    <strong>Surprises:</strong> WildChat is near-bottom on MT-Bench (4.30) despite winning IFEval in the Magpie/SOS-Bench ladder — chat data tunes IF, not multi-turn coherence judges. Princeton's Llama-3-Base-8B-SFT lands dead-last (4.01) despite being mid-pack on SOS-Bench rule-based clusters. Pref-Tulu3 (5.01) ≈ SFT-Magpie (5.03), so DPO is again indistinguishable from SFT-only — same DPO≈SFT identity flagged from Princeton's release pipeline.
+    <br>
+    <strong>Why no new cell values:</strong> the within-Llama-3-8B-SFT spread is at-or-below the judge noise floor on every individual factor. We can't anchor specific D-j cell magnitudes with new numbers; we can only calibrate the existing cells' confidence band. FLASK <em>does</em> support ~2× finer discrimination (88% signal-survival), but the corresponding ajudge job on FLASK's Llama-3-8B SUT set has not been run (empty <code>results.jsonl</code>).
+  </div>
+  <div style="font-size:12px;color:var(--text-muted);padding:0 4px 8px;line-height:1.55;">
+    <strong>DataDecide ablation coverage (Magnusson 2025, 25 data recipes × 14 sizes × 8 OLMES tasks):</strong> Row C cells (especially C × K, C × M, C × R) and row M cells (M × K, M × R) are anchored by Dolma 1.7's ± code and ± math/code subset ablations. I × F anchored by ± Flan. L × D-q anchored by ± Reddit. Multiple row W cells anchored by DCLM-Baseline + FineWeb-Edu / DCLM-classifier filter ratio ablations.
+  </div>
+  <div style="font-size:12px;color:var(--text-muted);padding:0 4px 8px;line-height:1.55;">
+    <strong>Row X — Tail-skill / mid-training patches:</strong> a fundamentally different bucket. These are focused bursts of targeted training data that correct high-perplexity tail behaviors: protocol learning (MCP, function-calling schemas), format compliance (JSON/XML structured outputs), long-context handling and summarization triggers, anti-spam / context-garbage management, refusal-pattern learning. The literature mostly treats these as engineering recipes rather than scaling-law subjects, hence the row's heavy hatching — almost every cell is currently inferred. Yet operationally these often dominate model usability (a Sonnet-class base that can't follow MCP is useless for agentic deployment regardless of its MMLU). Row X loads primarily on the interactional/format axis (F, T) with secondary contributions to D and procedural columns.
+  </div>
+  <div style="font-size:12px;color:var(--text-muted);padding:0 4px 8px;line-height:1.55;">
+    <strong>Latent rank-4 fit, refined by EEE gap analysis:</strong>
+    <br>
+    <strong>Cleanest single-cluster columns (anchor a latent axis):</strong> <strong>F · IF</strong> (gap +0.30) anchors the format/alignment axis; <strong>S · SWE</strong> (gap +0.22) anchors the procedure axis. These are the highest-confidence dimensions of M.
+    <br>
+    <strong>Moderate-quality clusters (axis members):</strong> <strong>K · Knowledge</strong> (+0.16) and <strong>H · Code-gen</strong> (+0.14) — K loads on knowledge axis, H loads with S on procedure axis.
+    <br>
+    <strong>Diffuse clusters (cross-load between axes):</strong> <strong>R · Reasoning</strong> (+0.08), <strong>M · Math</strong> (+0.06), <strong>T · Tool-use</strong> (+0.09) — these three are NOT cleanly separable from each other in EEE. The high BBH ↔ MMLU correlation (r=0.96) suggests R is part-knowledge; the MATH ↔ Reward-Bench Reasoning correlation (r=0.95) suggests M and R share a reasoning axis. Most plausibly, M+R+T collapse into a unified "reasoning + procedure" axis under any reasonable factorization, not three separate axes.
+    <br>
+    <strong>Lowest-quality columns (load weakly on any axis):</strong> <strong>D-q</strong> and <strong>D-j</strong> — both are LLM-judge-mediated, both are noisy, and the rank-4 model places them on the same interactional axis as F (alignment), but with much higher within-axis variance.
+    <br>
+    <strong>So the honest rank-4 axes are:</strong> Knowledge (K) · Reasoning + Procedure (M + R + T + H + S, dominated by S as the cleanest member) · Format / Alignment (F + D-q + D-j) · Tail-skill (X, partly bridging procedure ↔ format). Row attribution to axes: pretraining-dominated for axes 1-2, mid/post-training-dominated for axes 3-4.
+  </div>
+  <div class="note" style="background:#f3f4f6;border-left-color:#6b7280;color:#4b5563;">
+    <strong>Footnote — unimodal scope.</strong> This matrix considers text-only pretraining data and text-only benchmarks. Effects from mixed modalities (vision-language, audio-text, tabular grounding) are not modeled here. Adding modality as an additional axis would likely introduce at least one more latent factor — a "perception" or "multimodal grounding" axis — with strong cross-loadings on grounded-reasoning benchmarks (MMMU, ChartQA, scientific-diagram tasks) and weak loadings on the existing four axes. Tabular reasoning is similarly missing and would likely cluster with procedure / agentic. The benchmark columns also currently omit dedicated long-context evaluations (RULER, NIAH-at-N, BABILong); these would deserve their own column with strong loading on row X.
+  </div>
+</div>
+
+<!-- PANEL 6: CAPACITY FLOORS & TASK HORIZON -->
+<div class="card">
+  <h2>6 · Capacity floors: when is a model "too small" for a task?</h2>
+  <p class="subtitle">Loss-side scaling laws don't capture an obvious property of benchmarks: <em>some capabilities require minimum capacity to fit at all</em>. A 1B model can memorize MMLU; it cannot be a general-purpose agent. This panel visualizes the capacity-vs-horizon frontier — the boundary between "model can complete this task with ≥50% reliability" and "model fails." Slide task difficulty to see how the frontier moves.</p>
+  <div class="equation">
+    H<sub>s</sub>(<span style="color:#2563eb">p</span>) &nbsp;=&nbsp; ln(s) / ln(<span style="color:#2563eb">p</span>)
+    &nbsp;&nbsp;<span style="color:#6b7280">[Sinha 2025 Proposition 1 — theoretical horizon under IID constant step accuracy p, no self-correction; s = success threshold (default 0.5)]</span>
+    <br>
+    Composite extension below:&nbsp;&nbsp; p(<span style="color:#2563eb">N</span>) &nbsp;=&nbsp; 1 − <span style="color:#2563eb">A</span> · N<sup>−α</sup>
+    &nbsp;&nbsp;<span style="color:#6b7280">[Chinchilla-style power-law for per-step capacity-limited error — NOT in Sinha; combined here for visualization]</span>
+  </div>
+  <div class="panel-grid">
+    <div class="controls">
+      <div class="slider-block">
+        <div class="label-row">
+          <span class="label"><span class="icon">🎚️</span>Task difficulty (A)</span>
+          <span class="value" id="val-task-diff">3.0 <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(multi-step reasoning)</span></span>
+        </div>
+        <input type="range" id="slider-task-diff" min="-1" max="2" step="0.05" value="0.48">
+        <div class="readout-sub">Per-step error scale. Higher A = harder task class. 0.3 ≈ MMLU-style recall; 3 ≈ MATH multi-step; 30 ≈ long-horizon agentic.</div>
+      </div>
+      <div class="readout">
+        <div class="readout-item">
+          <div class="readout-label">At N = 8 B</div>
+          <div class="readout-value" id="cap-h-8b">—</div>
+          <div class="readout-sub">max steps @ 50% reliability</div>
+        </div>
+        <div class="readout-item">
+          <div class="readout-label">At N = 70 B</div>
+          <div class="readout-value" id="cap-h-70b">—</div>
+          <div class="readout-sub">max steps @ 50% reliability</div>
+        </div>
+        <div class="readout-item">
+          <div class="readout-label">At N = 1 T</div>
+          <div class="readout-value" id="cap-h-1t">—</div>
+          <div class="readout-sub">max steps @ 50% reliability</div>
+        </div>
+      </div>
+      <div class="breakdown">
+        <div class="breakdown-title">What the literature says about capacity floors</div>
+        <div style="font-size:11px;color:var(--text-muted);padding:4px 4px 8px;line-height:1.5;">
+          <strong>Allen-Zhu &amp; Li 2024 (Physics 3.3)</strong>: ~2 bits of knowledge per parameter at saturation, even quantized to int8. A 7B model can store ~14B bits — exceeding all of English Wikipedia + textbooks combined. Below capacity, accuracy is bounded by storage.
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);padding:0 4px 8px;line-height:1.5;">
+          <strong>Elhage et al. 2022 (Superposition)</strong>: models pack &gt; N features into N dimensions via superposition, but with interference cost. For complex tasks needing many simultaneously-active features (agentic working memory), interference dominates below threshold N.
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);padding:0 4px 8px;line-height:1.5;">
+          <strong>Merrill &amp; Sabharwal 2023 (Expressive power of CoT)</strong>: transformers with depth d solve problems of bounded complexity per forward pass. CoT extends this — but CoT length must scale at least linearly with problem size for tasks like Parity, Reachability, Multiplication.
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);padding:0 4px 8px;line-height:1.5;">
+          <strong>Sinha et al. 2025 (Illusion of Diminishing Returns, arXiv:2509.09677)</strong>: <em>this</em> is the rollout-depth-vs-capacity paper. Marginal gains in single-step accuracy compound into <strong>exponential gains in task length</strong>. They identify a "self-conditioning effect" — errors in context make subsequent errors more likely. Thinking mitigates self-conditioning.
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);padding:0 4px 8px;line-height:1.5;">
+          <strong>Kandpal et al. 2022 (Long-Tail Knowledge)</strong>: rare facts need ~10× more parameters than common ones for equivalent accuracy. Memorization is capacity-bounded.
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);padding:0 4px 8px;line-height:1.5;">
+          <strong>Scaling Agent Systems 2025 (arXiv:2512.08296)</strong>: empirical quantitative scaling for agent systems across Finance-Agent / BrowseComp-Plus / PlanCraft / Workbench. Shows the capacity floors are real and measurable, but doesn't unify them with loss-side laws.
+        </div>
+      </div>
+    </div>
+    <div class="plot-container" id="plot-capacity"></div>
+  </div>
+  <div class="note">
+    <strong>Reading the heatmap.</strong> Each cell is the <em>theoretical</em> success probability under Sinha's Proposition 1 (IID step accuracy, no self-correction) for a task with the chosen difficulty A at model size N (x-axis) running for K sequential steps (y-axis). Green = success likely; red = task is beyond capacity. Black contour = 50% reliability frontier.
+    <br><br>
+    <strong>Theory vs observation gap (Sinha 2025's actual contribution).</strong> The heatmap shows the theoretical baseline. Sinha's empirical measurements deviate sharply:
+    <ul style="margin-top:6px;padding-left:24px;font-size:13px;line-height:1.6;">
+      <li><strong style="color:#dc2626;">Red circles — non-thinking frontier models fall BELOW theory.</strong> DeepSeek-V3 without CoT manages only 4 steps despite frontier-scale N. The naive `p^K` compounding overpredicts capability because of the <em>self-conditioning effect</em>: each error in context increases the probability of subsequent errors. Self-conditioning <strong>does not improve with N alone</strong> — bigger non-thinking models hit the same wall.</li>
+      <li><strong style="color:#059669;">Green stars — thinking models often EXCEED theory.</strong> DeepSeek-R1 (thinking version of V3) reaches ≥100 steps; Claude-4-Sonnet hits 432; GPT-5-thinking (codenamed "Horizon") executes 2100. Test-time CoT compute partially breaks the self-conditioning loop, recovering the theoretical compounding (and sometimes exceeding it because thinking is a form of distributed search).</li>
+    </ul>
+    <strong>What the equation IS vs ISN'T.</strong> The relation <code>H<sub>s</sub>(p) = ln(s)/ln(p)</code> is Sinha 2025 Proposition 1. The parameterization <code>p(N) = 1 − A·N<sup>−α</sup></code> is a Chinchilla-style composite I added for visualization — Sinha treats p as the empirical observable, not as a derived function of N.
+    <br><br>
+    <strong>What's still not solved.</strong> The literature has formalized capacity floors for (i) factual storage (Allen-Zhu — ~2 bits/param), (ii) feature representation (superposition), (iii) CoT computational depth (Merrill), and (iv) horizon execution under self-conditioning (Sinha). Nobody has unified these into a single per-benchmark <code>(γ<sub>b</sub>, α<sub>b</sub>)</code> capacity-threshold fit across the Harbor-Mix / Evalchemy taxonomy — that's the empirical agenda that closes the gap with the data-side scaling laws of Panels 1-5.
+  </div>
+</div>
+
+<div class="citations">
+  <h3>References</h3>
+  <p><strong>Hoffmann et al. 2022</strong> — "Training Compute-Optimal Large Language Models" (Chinchilla). arXiv:2203.15556. Provides the L(N, D) = E + A·N⁻ᵅ + B·D⁻ᵝ functional form used in Panel 1; default parameters from their Table A3 (E ≈ 1.69, A ≈ 406.4, α ≈ 0.336, B ≈ 410.7, β ≈ 0.283).</p>
+  <p><strong>Kaplan et al. 2020</strong> — "Scaling Laws for Neural Language Models". arXiv:2001.08361. Source of the N ∝ C^0.73 / D ∝ C^0.27 compute-optimal scaling shown for the "Kaplan era" in Panel 2.</p>
+  <p><strong>Sardana et al. 2024</strong> — "Beyond Chinchilla-Optimal: Accounting for Inference". arXiv:2401.00448. Provides the inference-aware compute-optimal recipe shown in Panel 2.</p>
+  <p><strong>Clark et al. 2022</strong> — "Unified Scaling Laws for Routed Language Models". arXiv:2202.01169. Source of the effective-parameter approximation N<sub>eff</sub> ≈ N<sub>dense</sub> · (E/E<sub>base</sub>)<sup>c</sup> with c ≈ 0.5 used in Panel 4; the geometric-mean form √(N<sub>total</sub> · N<sub>active</sub>) is the simplest closed-form consistent with their fit.</p>
+  <p><strong>Abnar et al. 2025</strong> — "Parameters vs FLOPs: Scaling Laws for Optimal Sparsity for Mixture-of-Experts Language Models". arXiv:2501.12370. Source of the compute-dependent optimal-sparsity prescription in Panel 4 (~25% active at small compute → ~6% at frontier).</p>
+  <p><strong>Kwa et al. (METR) 2025</strong> — "Measuring AI Ability to Complete Long Tasks". arXiv:2503.14499. Source of the 7-month doubling time in Panel 3.</p>
+  <p><strong>Li et al. 2024</strong> — "DataComp-LM" (DCLM). arXiv:2406.11794. Source of the q ≈ 2 data-quality estimate for model-based-filtered Common Crawl in Panel 2.</p>
+  <p><strong>Magnusson et al. 2025</strong> — "DataDecide: How to Predict Best Pretraining Data with Small Experiments". arXiv:2504.11393. Source of the DataDecide top-recipe q ≈ 1.5 estimate in Panel 2.</p>
+  <p><strong>Muennighoff et al. 2023</strong> — "Scaling Data-Constrained Language Models". arXiv:2305.16264. Source of the repetition diminishing-returns model and the data-wall curve in Panel 2.</p>
+  <p><strong>DeepSeek-AI 2024</strong> — "DeepSeek LLM: Scaling Open-Source Language Models with Longtermism". arXiv:2401.02954. Provides the explicit data-quality variable that motivates the q parameter in the modified loss law L(N, D | q).</p>
+  <p><strong>Abdin et al. 2024</strong> — "Phi-3 Technical Report". arXiv:2404.14219. Existence-proof for synthetic + heavily-filtered data delivering benchmark performance far above Chinchilla loss-law predictions; source of multiple cells in row Φ of Panel 5.</p>
+  <p><strong>Ye et al. 2024</strong> — "Data Mixing Laws: Optimizing Data Mixtures by Predicting Language Modeling Performance". arXiv:2403.16952 (ICLR 2025). Fits parametric Loss = g(mixture_weights, N, D) — the closest existing formalism to the M matrix in Panel 5.</p>
+  <p><strong>Shao et al. 2024</strong> — "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models". arXiv:2402.03300. Clean math-data → math-benchmark ablation; source of row M and several cross-cells in Panel 5.</p>
+  <p><strong>Zhao et al. 2024</strong> — "WildChat: 1M ChatGPT Interaction Logs in the Wild". arXiv:2405.01470. The canonical real-user conversation corpus; anchors row L of Panel 5.</p>
+  <p><strong>Feuer et al. 2025</strong> — "WildChat-50M: A Deep Dive Into the Role of Synthetic Data in Post-Training". arXiv:2501.18511. Provides the post-training scaling-law structure used for the alignment-axis cells in row L of Panel 5; the Re-Wild SFT mix beats Tulu-3 with 40% as many samples. Also documents the LLM-judge bias and high run-to-run variance that motivates Panel 5's chat-column caveat.</p>
+  <p><strong>Perlitz et al. 2024 (BAT paper)</strong> — "Benchmark Agreement Testing Done Right". Local PDF: <code>245_Benchmark_Agreement_Testin.pdf</code>. NeurIPS 2025 submission. Methodological caveats for interpreting benchmark correlations: insufficient model counts → ~0.25 std-deviation in correlation; "strong models good everywhere" halo inflates within-cluster correlations independent of actual benchmark agreement. Releases BenchBench package. Applied throughout Panel 5's correlation-based column validation.</p>
+  <p><strong>EvalEval Coalition 2026</strong> — "Every Eval Ever" datastore. HuggingFace: <code>evaleval/EEE_datastore</code>. ~229K (model, benchmark) results across 60+ benchmark configs and 20K unique models. Used in Panel 5 for independent replication of Evalchemy's column-clustering signal (within-cluster Pearson 0.72 vs across-cluster 0.58, gap +0.15) and for the empirical finding that the legacy "D · Dialogue" column was not a real cluster (within-D = 0.18). Local processing scripts: <code>eee_correlate.py</code>, <code>eee_cluster_analysis.py</code>.</p>
+  <p><strong>Allen-Zhu &amp; Li 2024</strong> — "Physics of Language Models: Part 3.3, Knowledge Capacity Scaling Laws". arXiv:2404.05405 (ICLR 2025). The canonical ~2 bits/parameter knowledge-storage bound used in Panel 6 to anchor the capacity-floor argument. A 7B model stores ~14B bits — exceeds Wikipedia + textbooks combined. Below capacity, accuracy is hard-bounded by storage.</p>
+  <p><strong>Elhage et al. 2022 (Anthropic)</strong> — "Toy Models of Superposition". arXiv:2209.10652. Formalizes how neural nets pack &gt;N features into N dimensions via superposition, with interference cost. Mechanism behind Panel 6's "complex tasks need many simultaneously-active features → interference dominates below threshold N" claim.</p>
+  <p><strong>Kandpal et al. 2022</strong> — "Large Language Models Struggle to Learn Long-Tail Knowledge". arXiv:2211.08411. Quantifies that rare facts require ~10× more parameters than common ones for equivalent accuracy. Directly supports Panel 6's "memorization is capacity-bounded" argument.</p>
+  <p><strong>Merrill &amp; Sabharwal 2023</strong> — "The Expressive Power of Transformers with Chain of Thought". arXiv:2310.07923. Formalizes that transformers with depth d solve problems of bounded complexity per forward pass, and that CoT length must scale at least linearly in problem size for tasks like Parity, Reachability, Multiplication. The computational-depth basis for Panel 6.</p>
+  <p><strong>Sinha et al. 2025</strong> — "The Illusion of Diminishing Returns: Measuring Long Horizon Execution in LLMs". arXiv:2509.09677. <em>The</em> capacity-vs-rollout-depth paper. Marginal gains in single-step accuracy compound exponentially into task-length capability; identifies a "self-conditioning effect" where errors in context cause more errors; shows thinking mitigates this. Directly motivates Panel 6's frontier visualization.</p>
+  <p><strong>Various 2025</strong> — "Towards a Science of Scaling Agent Systems". arXiv:2512.08296. Empirical quantitative scaling for agent systems across 180 (architecture × LLM × benchmark) configurations on Finance-Agent / BrowseComp-Plus / PlanCraft / Workbench. Shows agentic capacity floors are real and measurable, but doesn't unify with loss-side laws — the gap Panel 6 highlights.</p>
+  <p><strong>SOS-Bench Detailed 2024-2026</strong> — 232 open SFT / preference / merge models on Mistral-7B and Llama-3-8B bases, each evaluated under a single controlled lm-eval-harness invocation across 65 benchmarks (including BBH subtasks, GPQA, IFEval, MMLU-Pro, plus safety: BeaverTails / JailbreakHub / SaladBench / SGXSTest / StrongREJECT / DTToxicity / CDNA). Hosted at HF collection <code>nyu-dice-lab/sos-bench-detailed</code>. Anchors Panel 5 rows I and L from Princeton's SFT-preference-method ladder and Magpie's SFT-data variation. Empirical pipeline: <code>sosbench_extract.py</code>, <code>sosbench_attribution.py</code>; raw findings: <code>sosbench_findings.md</code>.</p>
+</div>
+
+</div>
+
+<script>
+// ============================================================
+// Constants — Chinchilla parametric fit (Hoffmann 2022 Table A3)
+// ============================================================
+const CHIN = { E: 1.69, A: 406.4, alpha: 0.336, B: 410.7, beta: 0.283 };
+
+// Reference anchor: Chinchilla itself — 70B params, 1.4T tokens
+const N_REF = 70e9;
+const D_REF = 1.4e12;
+const C_REF = 6 * N_REF * D_REF; // ≈ 5.88 × 10^23 FLOPs
+
+// METR anchor: March 2025, 50-minute horizon, doubling every 7 months (0.583 yr)
+const METR_T0 = 2025.25;
+const METR_H0 = 50; // minutes
+const METR_DOUBLE_YR = 7 / 12; // 0.583 years
+const METR_DOUBLE_YR_FAST = 3.5 / 12; // accelerated scenario
+
+// ============================================================
+// Math functions
+// ============================================================
+function chinchillaLoss(N, D, q = 1) {
+  // q is the data-quality multiplier (DeepSeek-2024 / Muennighoff-2023 framing):
+  // 1 token of quality-q data is worth q baseline tokens.
+  return CHIN.E + CHIN.A * Math.pow(N, -CHIN.alpha) + CHIN.B * Math.pow(q * D, -CHIN.beta);
+}
+function chinchillaDecomp(N, D, q = 1) {
+  return {
+    floor: CHIN.E,
+    capacity: CHIN.A * Math.pow(N, -CHIN.alpha),
+    data: CHIN.B * Math.pow(q * D, -CHIN.beta),
+  };
+}
+// Compute-optimal D/N shifts with data quality. From minimizing the modified loss law
+// at fixed C = 6 N D, the optimum D/N scales as q^(-2β/(α+β)) ≈ q^(-0.914) with
+// Chinchilla's fitted exponents.
+const DN_QUALITY_EXP = -2 * CHIN.beta / (CHIN.alpha + CHIN.beta);  // ≈ -0.914
+function chinchillaOptimalDN(q = 1) {
+  return 20 * Math.pow(q, DN_QUALITY_EXP);
+}
+// Muennighoff 2023 data-wall: once raw D exceeds the unique-token cap, additional D is
+// repeated tokens with diminishing effective contribution. Bends D/N upward past the break.
+const MUENN_D_CAP = 2e13; // ~20T fresh natural-text tokens available worldwide
+function muennighoffOptimalDN(C) {
+  const N_break = MUENN_D_CAP / 20;          // N at which Chinchilla-optimal D = cap
+  const C_break = 6 * N_break * MUENN_D_CAP; // ≈ 1.2e26 FLOPs
+  return 20 * Math.max(1, Math.sqrt(C / C_break));
+}
+function chinchillaOptimal(C) {
+  const r = C / C_REF;
+  // Hoffmann reports ~N ∝ C^0.5, D ∝ C^0.5; 20 tokens/param at ref point
+  return { N: N_REF * Math.sqrt(r), D: D_REF * Math.sqrt(r) };
+}
+function kaplanOptimal(C) {
+  // Anchored so it crosses Chinchilla at C_REF but follows Kaplan's exponents
+  const r = C / C_REF;
+  return { N: N_REF * Math.pow(r, 0.73), D: D_REF * Math.pow(r, 0.27) };
+}
+function sardanaOptimal(C, Q) {
+  // Inference-aware: at low Q ≈ Chinchilla; at high Q over-train aggressively.
+  // Anchored to reproduce LLaMA-3-8B-style D/N ≈ 1875 at C ≈ 7e23 and Q ≈ 1e12.
+  const dn_ratio = sardanaTokensPerParam(Q);
+  // C = 6 * N * D and D/N = ratio  →  N = sqrt(C / (6 * ratio)), D = N * ratio
+  const N = Math.sqrt(C / (6 * dn_ratio));
+  const D = N * dn_ratio;
+  return { N, D };
+}
+// Tokens-per-parameter optima — closed forms used by the combined plot
+function kaplanTokensPerParam(C) {
+  // From Kaplan exponents: D/N ∝ C^(0.27 - 0.73) = C^(-0.46), anchored at GPT-3
+  // (175B params, 300B tokens, C ≈ 3e23 → D/N ≈ 1.71).
+  return 1.71 * Math.pow(C / 3e23, -0.46);
+}
+function chinchillaTokensPerParam() {
+  return 20; // constant across all C
+}
+function sardanaTokensPerParam(Q) {
+  // Inference-aware over-training. Q < 1e7: behave like Chinchilla.
+  // Smoothly rises so Q ≈ 1e12 lands near D/N ≈ 1000-2000 (LLaMA-3 regime).
+  const Q_thr = 1e7, k = 0.4;
+  if (Q < Q_thr) return 20;
+  return 20 * Math.pow(Q / Q_thr, k);
+}
+function metrHorizon(year, fast=false) {
+  const dt = year - METR_T0;
+  const dbl = fast ? METR_DOUBLE_YR_FAST : METR_DOUBLE_YR;
+  return METR_H0 * Math.pow(2, dt / dbl);
+}
+function metrYearAtHorizon(minutes, fast=false) {
+  const dbl = fast ? METR_DOUBLE_YR_FAST : METR_DOUBLE_YR;
+  return METR_T0 + dbl * Math.log2(minutes / METR_H0);
+}
+
+// ============================================================
+// Formatting helpers
+// ============================================================
+function fmtParams(n) {
+  if (n >= 1e12) return (n / 1e12).toFixed(2) + ' T';
+  if (n >= 1e9)  return (n / 1e9).toFixed(2) + ' B';
+  if (n >= 1e6)  return (n / 1e6).toFixed(0) + ' M';
+  return n.toFixed(0);
+}
+function fmtTokens(n) {
+  if (n >= 1e12) return (n / 1e12).toFixed(2) + ' T';
+  if (n >= 1e9)  return (n / 1e9).toFixed(1) + ' B';
+  if (n >= 1e6)  return (n / 1e6).toFixed(0) + ' M';
+  return n.toFixed(0);
+}
+function fmtFlops(c) {
+  const exp = Math.floor(Math.log10(c));
+  const mant = c / Math.pow(10, exp);
+  return mant.toFixed(1) + ' × 10' + supDigits(exp);
+}
+function supDigits(n) {
+  const map = { '-': '⁻', '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹' };
+  return n.toString().split('').map(c => map[c] || c).join('');
+}
+function fmtDuration(min) {
+  if (min < 1) return (min * 60).toFixed(0) + ' s';
+  if (min < 60) return min.toFixed(1) + ' min';
+  if (min < 60 * 24) return (min / 60).toFixed(1) + ' hr';
+  if (min < 60 * 24 * 30) return (min / 60 / 24).toFixed(1) + ' day';
+  if (min < 60 * 24 * 365) return (min / 60 / 24 / 30).toFixed(1) + ' mo';
+  return (min / 60 / 24 / 365).toFixed(1) + ' yr';
+}
+function fmtYear(y) {
+  const year = Math.floor(y);
+  const monthFrac = (y - year) * 12;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const m = Math.min(11, Math.floor(monthFrac));
+  return months[m] + ' ' + year;
+}
+
+// Parse user input like "7B", "175B", "1.5T", "300M", "2.5e10" → number
+function parseSizeInput(s) {
+  if (typeof s !== 'string') return null;
+  s = s.trim().replace(/[\s,_]/g, '');
+  if (!s) return null;
+  const m = s.match(/^([\d.]+(?:[eE][+\-]?\d+)?)([KMBT])?$/i);
+  if (!m) return null;
+  const num = parseFloat(m[1]);
+  if (!isFinite(num) || num <= 0) return null;
+  const suffix = (m[2] || '').toUpperCase();
+  const mult = { '': 1, 'K': 1e3, 'M': 1e6, 'B': 1e9, 'T': 1e12 }[suffix];
+  return num * mult;
+}
+
+// ============================================================
+// Plotly default layout
+// ============================================================
+const PLOT_FONT = { family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', size: 12, color: '#374151' };
+const PLOT_CONFIG = { displayModeBar: false, responsive: true };
+function defaultLayout(title) {
+  return {
+    title: { text: title, font: { ...PLOT_FONT, size: 13, color: '#6b7280' }, x: 0, xanchor: 'left' },
+    font: PLOT_FONT,
+    paper_bgcolor: 'white',
+    plot_bgcolor: '#fafbfc',
+    margin: { l: 70, r: 30, t: 40, b: 60 },
+    xaxis: { gridcolor: '#e5e7eb', linecolor: '#d1d5db', tickfont: { size: 11 } },
+    yaxis: { gridcolor: '#e5e7eb', linecolor: '#d1d5db', tickfont: { size: 11 } },
+    showlegend: true,
+    legend: { font: { size: 11 }, bgcolor: 'rgba(255,255,255,0.8)', bordercolor: '#e5e7eb', borderwidth: 1 },
+  };
+}
+
+// ============================================================
+// PANEL 1 — combined loss law + compute-optimal recipe
+// ============================================================
+function updatePanel1() {
+  const logN = parseFloat(document.getElementById('slider-N').value);
+  const logD = parseFloat(document.getElementById('slider-D').value);
+  const logQ = parseFloat(document.getElementById('slider-Q').value);
+  const logQual = parseFloat(document.getElementById('slider-quality').value);
+  const N = Math.pow(10, logN);
+  const D = Math.pow(10, logD);
+  const Q = Math.pow(10, logQ);
+  const q = Math.pow(10, logQual);
+  const decomp = chinchillaDecomp(N, D, q);
+  const L = decomp.floor + decomp.capacity + decomp.data;
+  const ppl = Math.exp(L);
+  const C = 6 * N * D;
+  const yourRatio = D / N;
+  // Friendly label for the quality slider — strictly corpus quality, not repetition.
+  let qualLabel = 'custom';
+  if (q < 0.4) qualLabel = 'noisy / unfiltered';
+  else if (q < 0.8) qualLabel = 'lightly cleaned';
+  else if (q < 1.2) qualLabel = 'web baseline';
+  else if (q < 1.8) qualLabel = 'DataDecide top recipe';
+  else if (q < 3) qualLabel = 'DCLM-filtered';
+  else qualLabel = 'synthetic curated';
+  document.getElementById('val-quality').innerHTML = q.toFixed(2) + '× <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(' + qualLabel + ')</span>';
+
+  // Sync canonical values into inputs (skip whichever input is currently focused)
+  const focused = document.activeElement;
+  const inN = document.getElementById('input-N');
+  const inD = document.getElementById('input-D');
+  const inQ = document.getElementById('input-Q');
+  if (focused !== inN) inN.value = fmtParams(N);
+  if (focused !== inD) inD.value = fmtTokens(D);
+  if (focused !== inQ) inQ.value = fmtParams(Q); // Q is a count, same formatting as params
+
+  // Headline readouts
+  document.getElementById('out-loss').textContent = L.toFixed(3);
+  document.getElementById('out-ppl-sub').textContent = 'PPL ≈ ' + ppl.toFixed(1);
+  document.getElementById('out-C').textContent = fmtFlops(C);
+  document.getElementById('out-ratio').textContent = yourRatio < 10 ? yourRatio.toFixed(1) : yourRatio.toFixed(0);
+
+  // Loss decomposition bars
+  const total = L;
+  document.getElementById('val-E').textContent = decomp.floor.toFixed(3);
+  document.getElementById('val-A').textContent = decomp.capacity.toFixed(3);
+  document.getElementById('val-B').textContent = decomp.data.toFixed(3);
+  document.getElementById('bar-E').style.width = (decomp.floor / total * 100) + '%';
+  document.getElementById('bar-A').style.width = (decomp.capacity / total * 100) + '%';
+  document.getElementById('bar-B').style.width = (decomp.data / total * 100) + '%';
+
+  // Recipe-optimal D/N at the user's compute, Q, and data-quality q.
+  // Chinchilla and Sardana both follow the same q-shift (same loss surface);
+  // Kaplan's prescription was independent of any data-quality argument, so it stays put.
+  const kapR = kaplanTokensPerParam(C);
+  const qShift = Math.pow(q, DN_QUALITY_EXP);
+  const chiR = chinchillaTokensPerParam() * qShift;
+  const sarR = sardanaTokensPerParam(Q) * qShift;
+  document.getElementById('rec-kap').textContent = kapR < 10 ? kapR.toFixed(2) : kapR.toFixed(0);
+  document.getElementById('rec-chi').textContent = chiR.toFixed(0);
+  document.getElementById('rec-sar').textContent = sarR < 10 ? sarR.toFixed(1) : sarR.toFixed(0);
+  document.getElementById('rec-your').textContent = yourRatio < 10 ? yourRatio.toFixed(1) : yourRatio.toFixed(0);
+
+  // Combined plot: D/N as a function of compute, three recipe lines + your point
+  const C_MIN = 1e20, C_MAX = 1e27;
+  // Kaplan varies with C — sample the curve. Chinchilla and Sardana are constant in C,
+  // so define them as 2-point line segments to avoid log-scale rendering issues with
+  // long arrays of identical Y values.
+  const kapCs = [];
+  const kapYs = [];
+  for (let lg = 20; lg <= 27; lg += 0.1) {
+    const c = Math.pow(10, lg);
+    kapCs.push(c);
+    kapYs.push(kaplanTokensPerParam(c));
+  }
+  const sarRatio = sardanaTokensPerParam(Q) * qShift;
+  const chiRatio = chinchillaTokensPerParam() * qShift;
+  // Real-model anchors. MoE entries (marked *) use N = N_active for D/N.
+  // Each row carries full N_total / N_active / D / C / citation so the hover tooltip
+  // can show the reported numbers from the tech report for cross-checking.
+  const refs = [
+    { name: 'GPT-3',                 N: 175e9,  Na: 175e9, D: 300e9,    C: 3.14e23, dn: 1.71, cite: 'Brown 2020 (arXiv:2005.14165) — dense 175B, 300B tokens' },
+    { name: 'Chinchilla',            N: 70e9,   Na: 70e9,  D: 1.4e12,   C: 5.88e23, dn: 20,   cite: 'Hoffmann 2022 (arXiv:2203.15556) — dense 70B, 1.4T tokens' },
+    { name: 'LLaMA-3 8B',            N: 8e9,    Na: 8e9,   D: 15e12,    C: 7.20e23, dn: 1875, cite: 'Dubey 2024 (arXiv:2407.21783) — dense 8B, 15T tokens' },
+    { name: 'LLaMA-3 70B',           N: 70e9,   Na: 70e9,  D: 15e12,    C: 6.30e24, dn: 214,  cite: 'Dubey 2024 (arXiv:2407.21783) — dense 70B, 15T tokens' },
+    { name: 'Qwen2.5 7B',            N: 7e9,    Na: 7e9,   D: 18e12,    C: 7.56e23, dn: 2571, cite: 'Yang 2024 (arXiv:2412.15115) — dense 7B, 18T tokens' },
+    { name: 'Qwen3 8B',              N: 8e9,    Na: 8e9,   D: 36e12,    C: 1.73e24, dn: 4500, cite: 'Qwen Team 2025 (arXiv:2505.09388) — dense 8B, 36T tokens' },
+    { name: 'Qwen3.5-9B',            N: 9e9,    Na: 9e9,   D: 36e12,    C: 1.94e24, dn: 4000, cite: 'Qwen Team 2026 (HF card, dense 9B, ~36T tokens; est.)' },
+    { name: 'Qwen3.5-397B-A17B*',    N: 397e9,  Na: 17e9,  D: 36e12,    C: 3.67e24, dn: 2118, cite: 'Qwen Team 2026 (HF card Qwen3.5-397B-A17B, MoE 17B active / 397B total, ~36T tokens)' },
+    { name: 'Kimi K2*',              N: 1000e9, Na: 32e9,  D: 15.5e12,  C: 2.98e24, dn: 484,  cite: 'Moonshot 2025 (arXiv:2507.20534) — MoE 32B active / 1T total, 15.5T tokens' },
+    { name: 'Kimi K2.5*†',           N: 1000e9, Na: 32e9,  D: 30.5e12,  C: 5.86e24, dn: 953,  cite: 'Moonshot 2026 (arXiv:2602.02276) — K2 base + ~15T visual+text continual (cumulative ~30.5T; multimodal — text-equivalent comparison only approximate)' },
+    { name: 'DeepSeek-V3*',          N: 671e9,  Na: 37e9,  D: 14.8e12,  C: 3.29e24, dn: 400,  cite: 'DeepSeek-AI 2024 (arXiv:2412.19437) — MoE 37B active / 671B total, 14.8T tokens' },
+    { name: 'DeepSeek-V4-Flash*',    N: 284e9,  Na: 13e9,  D: 32e12,    C: 2.50e24, dn: 2462, cite: 'DeepSeek-AI 2026 — MoE 13B active / 284B total, 32T tokens (HF: deepseek-ai/DeepSeek-V4-Flash)' },
+    { name: 'DeepSeek-V4-Pro*',      N: 1600e9, Na: 49e9,  D: 33e12,    C: 9.70e24, dn: 673,  cite: 'DeepSeek-AI 2026 — MoE 49B active / 1.6T total, 33T tokens (HF: deepseek-ai/DeepSeek-V4-Pro)' },
+    { name: 'GLM-5*',                N: 355e9,  Na: 32e9,  D: 22e12,    C: 4.22e24, dn: 687,  cite: 'Z.AI 2025 (GLM-5 model card) — MoE 32B active / 355B total, ~22T tokens (est.)' },
+  ];
+  // What each recipe would prescribe at the user's compute
+  const kapAtC = kaplanTokensPerParam(C);
+  const chiAtC = chiRatio;
+  const sarAtC = sarRatio;
+  const traces = [
+    // Vertical guideline at user's compute — drawn first so it sits behind everything
+    { x: [C, C], y: [0.05, 10000], name: 'Your compute',
+      mode: 'lines', type: 'scatter',
+      line: { color: '#dc2626', width: 1, dash: 'dot' },
+      opacity: 0.5,
+      hoverinfo: 'skip',
+      showlegend: false },
+    // Recipe lines
+    { x: kapCs, y: kapYs, name: 'Kaplan 2020',
+      mode: 'lines', type: 'scatter',
+      line: { color: '#9ca3af', width: 2.5 } },
+    { x: [C_MIN, C_MAX], y: [chiRatio, chiRatio], name: 'Chinchilla 2022 (at your q)',
+      mode: 'lines', type: 'scatter',
+      line: { color: '#2563eb', width: 3 } },
+    { x: [C_MIN, C_MAX], y: [sarRatio, sarRatio], name: 'Sardana 2024 (at your Q)',
+      mode: 'lines', type: 'scatter',
+      line: { color: '#059669', width: 2.5, dash: 'dot' } },
+    // Recipe-optimum markers at user's compute — small dots on each line at C=user
+    { x: [C, C, C], y: [kapAtC, chiAtC, sarAtC],
+      mode: 'markers', type: 'scatter',
+      marker: {
+        color: ['#9ca3af', '#2563eb', '#059669'],
+        size: 10,
+        symbol: 'circle',
+        line: { color: 'white', width: 2 },
+      },
+      text: ['Kaplan optimum', 'Chinchilla optimum', 'Sardana optimum'],
+      hovertemplate: '%{text}<br>D/N = %{y:.1f}<extra></extra>',
+      showlegend: false },
+    // Real-model anchors — D/N_active (filled diamond, per-token compute view)
+    { x: refs.map(r => r.C), y: refs.map(r => r.dn), text: refs.map(r => r.name),
+      customdata: refs.map(r => [
+        fmtParams(r.N),
+        r.Na !== r.N ? fmtParams(r.Na) : '—',
+        fmtTokens(r.D),
+        r.cite,
+        (r.D / r.N).toFixed(1),
+      ]),
+      mode: 'markers+text', type: 'scatter',
+      marker: { color: 'rgba(120, 53, 15, 0.85)', size: 9, symbol: 'diamond' },
+      textposition: 'top center',
+      textfont: { size: 10, color: '#7c2d12' },
+      name: 'D/N_active (per-token compute view)',
+      hovertemplate: '<b>%{text}</b><br>' +
+        'N_total = %{customdata[0]}  ·  N_active = %{customdata[1]}<br>' +
+        'D = %{customdata[2]} tokens<br>' +
+        'C = %{x:.2e} FLOPs<br>' +
+        'D/N_active = %{y:.0f}  ·  D/N_total = %{customdata[4]}<br>' +
+        '<i>%{customdata[3]}</i><extra></extra>' },
+    // Real-model anchors — D/N_total (open diamond, total-capacity view); MoE only
+    { x: refs.filter(r => r.Na !== r.N).map(r => r.C),
+      y: refs.filter(r => r.Na !== r.N).map(r => r.D / r.N),
+      text: refs.filter(r => r.Na !== r.N).map(r => r.name),
+      customdata: refs.filter(r => r.Na !== r.N).map(r => [
+        fmtParams(r.N), fmtParams(r.Na), fmtTokens(r.D), r.cite,
+        r.dn.toFixed(0),
+      ]),
+      mode: 'markers', type: 'scatter',
+      marker: { color: 'rgba(255,255,255,0)', size: 11, symbol: 'diamond-open', line: { color: '#7c2d12', width: 1.4 } },
+      name: 'D/N_total (total-capacity view)',
+      hovertemplate: '<b>%{text}</b><br>' +
+        'N_total = %{customdata[0]}  ·  N_active = %{customdata[1]}<br>' +
+        'D = %{customdata[2]} tokens<br>' +
+        'C = %{x:.2e} FLOPs<br>' +
+        'D/N_total = %{y:.1f}  ·  D/N_active = %{customdata[4]}<br>' +
+        '<i>%{customdata[3]}</i><extra></extra>' },
+    // Your model — drawn last so it sits on top
+    { x: [C], y: [yourRatio], name: 'Your model',
+      mode: 'markers', type: 'scatter',
+      marker: { color: '#dc2626', size: 14, line: { color: 'white', width: 2 } },
+      hovertemplate: 'Your model<br>C = %{x:.2e} FLOPs<br>D/N = %{y:.1f}<extra></extra>' },
+  ];
+  const layout = defaultLayout('Compute-optimal tokens per parameter (D / N) across compute budgets');
+  layout.xaxis.title = '⚡ Training compute C (FLOPs, log scale)';
+  layout.xaxis.type = 'log';
+  layout.xaxis.range = [Math.log10(C_MIN), Math.log10(C_MAX)];
+  layout.xaxis.tickvals = [1e20, 1e21, 1e22, 1e23, 1e24, 1e25, 1e26, 1e27];
+  layout.yaxis.title = 'Tokens / parameter — active or total (D / N, log scale)';
+  layout.yaxis.type = 'log';
+  layout.yaxis.range = [Math.log10(0.05), Math.log10(10000)];
+  layout.yaxis.tickvals = [0.1, 1, 10, 100, 1000, 10000];
+  // Connect each MoE model's D/N_total and D/N_active with a vertical dotted line.
+  layout.shapes = refs.filter(r => r.Na !== r.N).map(r => ({
+    type: 'line', xref: 'x', yref: 'y',
+    x0: r.C, x1: r.C,
+    y0: r.D / r.N, y1: r.dn,
+    line: { color: 'rgba(120, 53, 15, 0.45)', width: 1, dash: 'dot' },
+    layer: 'below',
+  }));
+  Plotly.react('plot-alloc', traces, layout, PLOT_CONFIG);
+}
+
+// ============================================================
+// PANEL 2 — data quality variance (DCLM / DataDecide / Muennighoff)
+// ============================================================
+function updatePanel2() {
+  const C_MIN = 1e20, C_MAX = 1e27;
+  // Anchor each regime with its quality multiplier q
+  const regimes = [
+    { name: 'Heavy repetition (q≈0.3)',     q: 0.3, color: '#a16207', dash: 'longdash' },
+    { name: 'Web baseline (q=1.0)',         q: 1.0, color: '#9ca3af', dash: 'solid'    },
+    { name: 'DataDecide top (q≈1.5)',       q: 1.5, color: '#7c3aed', dash: 'solid'    },
+    { name: 'DCLM-filtered (q≈2.0)',        q: 2.0, color: '#059669', dash: 'solid'    },
+    { name: 'Synthetic curated (q≈5.0)',    q: 5.0, color: '#dc2626', dash: 'solid'    },
+  ];
+  // Update the readout column
+  document.getElementById('dq-muen-rep').textContent  = chinchillaOptimalDN(0.3).toFixed(1);
+  document.getElementById('dq-baseline').textContent  = chinchillaOptimalDN(1.0).toFixed(1);
+  document.getElementById('dq-datadecide').textContent = chinchillaOptimalDN(1.5).toFixed(1);
+  document.getElementById('dq-dclm').textContent      = chinchillaOptimalDN(2.0).toFixed(1);
+  document.getElementById('dq-synth').textContent     = chinchillaOptimalDN(5.0).toFixed(1);
+
+  // Muennighoff break point and forced ratio
+  const N_break = MUENN_D_CAP / 20;
+  const C_break = 6 * N_break * MUENN_D_CAP;
+  document.getElementById('dq-break-c').textContent = fmtFlops(C_break);
+  document.getElementById('dq-break-r').textContent = muennighoffOptimalDN(10 * C_break).toFixed(1);
+
+  // Build traces — flat quality lines + Muennighoff data-wall curve + real models
+  const traces = regimes.map(r => {
+    const dn = chinchillaOptimalDN(r.q);
+    return {
+      x: [C_MIN, C_MAX], y: [dn, dn], name: r.name,
+      mode: 'lines', type: 'scatter',
+      line: { color: r.color, width: 2.5, dash: r.dash },
+    };
+  });
+  // Muennighoff data-wall curve (separate, since it's C-dependent)
+  const muenCs = [];
+  const muenYs = [];
+  for (let lg = 20; lg <= 27; lg += 0.05) {
+    const c = Math.pow(10, lg);
+    muenCs.push(c);
+    muenYs.push(muennighoffOptimalDN(c));
+  }
+  traces.push({
+    x: muenCs, y: muenYs, name: 'Muennighoff data-wall (~20T fresh)',
+    mode: 'lines', type: 'scatter',
+    line: { color: '#ea580c', width: 2.5, dash: 'dashdot' },
+  });
+  // Vertical line at the data-wall break
+  traces.push({
+    x: [C_break, C_break], y: [0.05, 10000], name: 'Data wall break',
+    mode: 'lines', type: 'scatter',
+    line: { color: '#ea580c', width: 1, dash: 'dot' },
+    opacity: 0.5, hoverinfo: 'skip', showlegend: false,
+  });
+  // Real-model anchors (same set as Panel 1, full N/D/citation for hover cross-check)
+  const refs = [
+    { name: 'GPT-3',              N: 175e9,  Na: 175e9, D: 300e9,    C: 3.14e23, dn: 1.71, cite: 'Brown 2020 (arXiv:2005.14165) — dense 175B, 300B tokens' },
+    { name: 'Chinchilla',         N: 70e9,   Na: 70e9,  D: 1.4e12,   C: 5.88e23, dn: 20,   cite: 'Hoffmann 2022 (arXiv:2203.15556) — dense 70B, 1.4T tokens' },
+    { name: 'LLaMA-3 8B',         N: 8e9,    Na: 8e9,   D: 15e12,    C: 7.20e23, dn: 1875, cite: 'Dubey 2024 (arXiv:2407.21783) — dense 8B, 15T tokens' },
+    { name: 'LLaMA-3 70B',        N: 70e9,   Na: 70e9,  D: 15e12,    C: 6.30e24, dn: 214,  cite: 'Dubey 2024 (arXiv:2407.21783) — dense 70B, 15T tokens' },
+    { name: 'Qwen2.5 7B',         N: 7e9,    Na: 7e9,   D: 18e12,    C: 7.56e23, dn: 2571, cite: 'Yang 2024 (arXiv:2412.15115) — dense 7B, 18T tokens' },
+    { name: 'Qwen3 8B',           N: 8e9,    Na: 8e9,   D: 36e12,    C: 1.73e24, dn: 4500, cite: 'Qwen Team 2025 (arXiv:2505.09388) — dense 8B, 36T tokens' },
+    { name: 'Qwen3.5-9B',         N: 9e9,    Na: 9e9,   D: 36e12,    C: 1.94e24, dn: 4000, cite: 'Qwen Team 2026 (HF card, dense 9B, ~36T tokens; est.)' },
+    { name: 'Qwen3.5-397B-A17B*', N: 397e9,  Na: 17e9,  D: 36e12,    C: 3.67e24, dn: 2118, cite: 'Qwen Team 2026 (HF Qwen3.5-397B-A17B, MoE 17B active / 397B total, ~36T tokens)' },
+    { name: 'Kimi K2*',           N: 1000e9, Na: 32e9,  D: 15.5e12,  C: 2.98e24, dn: 484,  cite: 'Moonshot 2025 (arXiv:2507.20534) — MoE 32B active / 1T total, 15.5T tokens' },
+    { name: 'Kimi K2.5*†',        N: 1000e9, Na: 32e9,  D: 30.5e12,  C: 5.86e24, dn: 953,  cite: 'Moonshot 2026 (arXiv:2602.02276) — K2 base + ~15T visual+text continual (cumulative ~30.5T; multimodal)' },
+    { name: 'DeepSeek-V3*',       N: 671e9,  Na: 37e9,  D: 14.8e12,  C: 3.29e24, dn: 400,  cite: 'DeepSeek-AI 2024 (arXiv:2412.19437) — MoE 37B active / 671B total, 14.8T tokens' },
+    { name: 'DeepSeek-V4-Flash*', N: 284e9,  Na: 13e9,  D: 32e12,    C: 2.50e24, dn: 2462, cite: 'DeepSeek-AI 2026 — MoE 13B active / 284B total, 32T tokens (HF: deepseek-ai/DeepSeek-V4-Flash)' },
+    { name: 'DeepSeek-V4-Pro*',   N: 1600e9, Na: 49e9,  D: 33e12,    C: 9.70e24, dn: 673,  cite: 'DeepSeek-AI 2026 — MoE 49B active / 1.6T total, 33T tokens (HF: deepseek-ai/DeepSeek-V4-Pro)' },
+    { name: 'GLM-5*',             N: 355e9,  Na: 32e9,  D: 22e12,    C: 4.22e24, dn: 687,  cite: 'Z.AI 2025 (GLM-5 model card) — MoE 32B active / 355B total, ~22T tokens (est.)' },
+  ];
+  // D/N_active diamond — per-token compute view
+  traces.push({
+    x: refs.map(r => r.C), y: refs.map(r => r.dn), text: refs.map(r => r.name),
+    customdata: refs.map(r => [
+      fmtParams(r.N),
+      r.Na !== r.N ? fmtParams(r.Na) : '—',
+      fmtTokens(r.D),
+      r.cite,
+      (r.D / r.N).toFixed(1),
+    ]),
+    mode: 'markers+text', type: 'scatter',
+    marker: { color: 'rgba(120, 53, 15, 0.85)', size: 9, symbol: 'diamond' },
+    textposition: 'top center',
+    textfont: { size: 10, color: '#7c2d12' },
+    name: 'D/N_active (per-token compute view)',
+    hovertemplate: '<b>%{text}</b><br>' +
+      'N_total = %{customdata[0]}  ·  N_active = %{customdata[1]}<br>' +
+      'D = %{customdata[2]} tokens<br>' +
+      'C = %{x:.2e} FLOPs<br>' +
+      'D/N_active = %{y:.0f}  ·  D/N_total = %{customdata[4]}<br>' +
+      '<i>%{customdata[3]}</i><extra></extra>',
+  });
+  // D/N_total open-diamond — total-capacity view (MoE models only)
+  const moeRefs = refs.filter(r => r.Na !== r.N);
+  traces.push({
+    x: moeRefs.map(r => r.C),
+    y: moeRefs.map(r => r.D / r.N),
+    text: moeRefs.map(r => r.name),
+    customdata: moeRefs.map(r => [fmtParams(r.N), fmtParams(r.Na), fmtTokens(r.D), r.cite, r.dn.toFixed(0)]),
+    mode: 'markers', type: 'scatter',
+    marker: { color: 'rgba(255,255,255,0)', size: 11, symbol: 'diamond-open', line: { color: '#7c2d12', width: 1.4 } },
+    name: 'D/N_total (total-capacity view)',
+    hovertemplate: '<b>%{text}</b><br>' +
+      'N_total = %{customdata[0]}  ·  N_active = %{customdata[1]}<br>' +
+      'D = %{customdata[2]} tokens<br>' +
+      'C = %{x:.2e} FLOPs<br>' +
+      'D/N_total = %{y:.1f}  ·  D/N_active = %{customdata[4]}<br>' +
+      '<i>%{customdata[3]}</i><extra></extra>',
+  });
+
+  const layout = defaultLayout('Compute-optimal D / N under different data regimes');
+  layout.xaxis.title = '⚡ Training compute C (FLOPs, log scale)';
+  layout.xaxis.type = 'log';
+  layout.xaxis.range = [Math.log10(C_MIN), Math.log10(C_MAX)];
+  layout.xaxis.tickvals = [1e20, 1e21, 1e22, 1e23, 1e24, 1e25, 1e26, 1e27];
+  layout.yaxis.title = 'Tokens / parameter — active or total (log scale)';
+  layout.yaxis.type = 'log';
+  layout.yaxis.range = [Math.log10(0.5), Math.log10(10000)];
+  layout.yaxis.tickvals = [1, 10, 100, 1000, 10000];
+  // Connect each MoE model's D/N_total and D/N_active with a vertical dotted line
+  layout.shapes = (layout.shapes || []).concat(
+    refs.filter(r => r.Na !== r.N).map(r => ({
+      type: 'line', xref: 'x', yref: 'y',
+      x0: r.C, x1: r.C,
+      y0: r.D / r.N, y1: r.dn,
+      line: { color: 'rgba(120, 53, 15, 0.45)', width: 1, dash: 'dot' },
+      layer: 'below',
+    }))
+  );
+  Plotly.react('plot-quality', traces, layout, PLOT_CONFIG);
+}
+
+// ============================================================
+// PANEL 3 — capability horizon
+// ============================================================
+function updatePanel3() {
+  const T = parseFloat(document.getElementById('slider-T').value);
+  document.getElementById('val-T').textContent = fmtYear(T);
+  const h = metrHorizon(T);
+  document.getElementById('out-h').textContent = fmtDuration(h);
+  const today = 2026 + 5 / 12;
+  const monthsDiff = (T - today) * 12;
+  document.getElementById('out-months').textContent = (monthsDiff >= 0 ? '+' : '') + monthsDiff.toFixed(0);
+  // Crossings
+  document.getElementById('cross-10m').textContent = fmtYear(metrYearAtHorizon(10));
+  document.getElementById('cross-1h').textContent = fmtYear(metrYearAtHorizon(60));
+  document.getElementById('cross-8h').textContent = fmtYear(metrYearAtHorizon(8 * 60));
+  document.getElementById('cross-40h').textContent = fmtYear(metrYearAtHorizon(40 * 60));
+  document.getElementById('cross-160h').textContent = fmtYear(metrYearAtHorizon(160 * 60));
+
+  const years = [];
+  for (let y = 2019; y <= 2035; y += 0.1) years.push(y);
+  const horiz = years.map(y => metrHorizon(y, false));
+  const horizFast = years.map(y => metrHorizon(y, true));
+  // Historical anchor points
+  const ANCH = [
+    { y: 2019.5, m: 0.05, name: 'GPT-2' },
+    { y: 2020.5, m: 0.5, name: 'GPT-3' },
+    { y: 2022.9, m: 4, name: 'GPT-3.5' },
+    { y: 2023.2, m: 8, name: 'GPT-4' },
+    { y: 2024.3, m: 30, name: 'Sonnet 3.5' },
+    { y: 2025.25, m: 50, name: 'Sonnet 3.7' },
+  ];
+  const traces = [
+    { x: years, y: horiz, name: '7-month doubling (historical)', mode: 'lines', line: { color: '#2563eb', width: 2.5 }, type: 'scatter' },
+    { x: years, y: horizFast, name: '3.5-month doubling (recent)', mode: 'lines', line: { color: '#dc2626', width: 1.5, dash: 'dash' }, type: 'scatter' },
+    { x: ANCH.map(a => a.y), y: ANCH.map(a => a.m), text: ANCH.map(a => a.name),
+      mode: 'markers+text', type: 'scatter',
+      marker: { color: '#374151', size: 8 },
+      textposition: 'top center',
+      textfont: { size: 10, color: '#374151' },
+      name: 'Frontier models', },
+    { x: [T], y: [h], mode: 'markers', type: 'scatter',
+      marker: { color: '#059669', size: 14, line: { color: 'white', width: 2 } },
+      name: 'Your projection', },
+  ];
+  const layout = defaultLayout('Frontier-model 50%-task-completion horizon over time');
+  layout.xaxis.title = '📅 Year';
+  layout.xaxis.range = [2019, 2035];
+  layout.yaxis.title = '⏱️ Reliable horizon (minutes, log scale)';
+  layout.yaxis.type = 'log';
+  layout.yaxis.tickvals = [0.1, 1, 10, 60, 480, 2400, 9600, 1e5, 1e6];
+  layout.yaxis.ticktext = ['6 s', '1 min', '10 min', '1 hr', '8 hr', '40 hr', '160 hr', '~2 mo', '~2 yr'];
+  Plotly.react('plot-horizon', traces, layout, PLOT_CONFIG);
+}
+
+// ============================================================
+// PANEL 4 — MoE adjustment (Clark 2022 + Abnar 2025)
+// ============================================================
+// Clark 2022 — effective dense-equivalent (geometric mean approximation)
+function moeNEff(N_total, N_active) {
+  return Math.sqrt(N_total * Math.max(1, Math.min(N_total, N_active)));
+}
+// Abnar 2025 — optimal sparsity decreases with compute.
+// Anchored: ~25% active at C ≈ 1e21 FLOPs → ~6% active at C ≈ 1e24.
+function abnarOptimalSparsity(C) {
+  const s = 0.25 * Math.pow(1e21 / Math.max(1e15, C), 0.2);
+  return Math.max(0.03, Math.min(0.5, s));
+}
+
+function updatePanel4() {
+  const logNT = parseFloat(document.getElementById('slider-Ntotal').value);
+  let   logNA = parseFloat(document.getElementById('slider-Nactive').value);
+  const logD2 = parseFloat(document.getElementById('slider-D2').value);
+  let N_total = Math.pow(10, logNT);
+  let N_active = Math.pow(10, logNA);
+  const D = Math.pow(10, logD2);
+  // Clamp N_active to N_total
+  if (N_active > N_total) {
+    N_active = N_total;
+    document.getElementById('slider-Nactive').value = Math.log10(N_active);
+  }
+  const N_eff = moeNEff(N_total, N_active);
+  const L = chinchillaLoss(N_eff, D);
+  const ppl = Math.exp(L);
+  const s = N_active / N_total;
+  const C_train = 6 * N_active * D; // MoE training compute (per-token FLOPs × tokens)
+  const s_opt = abnarOptimalSparsity(C_train);
+  const inferenceSavings = N_eff / N_active; // dense_equivalent_cost / moe_cost
+
+  // Reflect canonical values into the inputs (skip whichever one is currently focused)
+  const focused = document.activeElement;
+  const nt = document.getElementById('input-Ntotal');
+  const na = document.getElementById('input-Nactive');
+  const d2 = document.getElementById('input-D2');
+  if (focused !== nt) nt.value = fmtParams(N_total);
+  if (focused !== na) na.value = fmtParams(N_active);
+  if (focused !== d2) d2.value = fmtTokens(D);
+
+  document.getElementById('moe-sparsity').textContent = (s * 100).toFixed(1) + '%';
+  document.getElementById('moe-sparsity-sub').textContent = '1 in ' + (1 / s).toFixed(1) + ' params active';
+  document.getElementById('moe-neff').textContent = fmtParams(N_eff);
+  document.getElementById('moe-loss').textContent = L.toFixed(3);
+  document.getElementById('moe-ppl-sub').textContent = 'PPL ≈ ' + ppl.toFixed(1);
+  document.getElementById('moe-savings').textContent = inferenceSavings.toFixed(1) + '×';
+  document.getElementById('moe-compute').textContent = fmtFlops(C_train);
+  document.getElementById('moe-s-yours').textContent = (s * 100).toFixed(1) + '%';
+  document.getElementById('moe-s-opt').textContent = (s_opt * 100).toFixed(1) + '%';
+
+  // Verdict — qualitative pointer
+  const ratio = s / s_opt;
+  const verdictEl = document.getElementById('moe-verdict');
+  if (ratio < 0.5) {
+    verdictEl.textContent = 'too sparse'; verdictEl.style.color = '#d97706';
+  } else if (ratio > 2.0) {
+    verdictEl.textContent = 'too dense'; verdictEl.style.color = '#d97706';
+  } else if (ratio >= 0.7 && ratio <= 1.4) {
+    verdictEl.textContent = 'near optimum'; verdictEl.style.color = '#059669';
+  } else {
+    verdictEl.textContent = 'in range'; verdictEl.style.color = '#374151';
+  }
+
+  // Plot: loss as a function of N_total at fixed N_active and D
+  const NTs = [];
+  const lossNT = [];
+  for (let lg = Math.log10(N_active); lg <= Math.log10(N_active) + 2.5; lg += 0.05) {
+    const nt = Math.pow(10, lg);
+    NTs.push(nt);
+    lossNT.push(chinchillaLoss(moeNEff(nt, N_active), D));
+  }
+  // Abnar optimum: at this compute the optimal sparsity is s_opt, so N_total_opt = N_active / s_opt
+  const N_total_opt = N_active / s_opt;
+  const L_opt = chinchillaLoss(moeNEff(N_total_opt, N_active), D);
+
+  const traceCurve = {
+    x: NTs, y: lossNT,
+    type: 'scatter', mode: 'lines',
+    name: 'Loss vs N_total (fixed N_active, D)',
+    line: { color: '#2563eb', width: 2.5 },
+  };
+  const tracePoint = {
+    x: [N_total], y: [L],
+    type: 'scatter', mode: 'markers',
+    name: 'Your MoE',
+    marker: { color: '#dc2626', size: 12, line: { color: 'white', width: 2 } },
+  };
+  const traceDense = {
+    x: [N_active], y: [chinchillaLoss(N_active, D)],
+    type: 'scatter', mode: 'markers',
+    name: 'Dense baseline (N_total = N_active)',
+    marker: { color: '#9ca3af', size: 10, symbol: 'square', line: { color: 'white', width: 1.5 } },
+  };
+  const traceAbnar = {
+    x: [N_total_opt], y: [L_opt],
+    type: 'scatter', mode: 'markers',
+    name: 'Abnar-optimal sparsity',
+    marker: { color: '#059669', size: 12, symbol: 'diamond', line: { color: 'white', width: 2 } },
+  };
+  const traceFloor = {
+    x: NTs, y: NTs.map(() => CHIN.E + CHIN.B * Math.pow(D, -CHIN.beta)),
+    type: 'scatter', mode: 'lines',
+    name: 'Floor at this D (E + data term)',
+    line: { color: '#059669', width: 1.2, dash: 'dot' },
+  };
+  const layout = defaultLayout('MoE loss at fixed inference cost (vary N_total only)');
+  layout.xaxis.title = '🏗 Total parameters N_total (log scale)';
+  layout.xaxis.type = 'log';
+  layout.xaxis.tickvals = [1e9, 1e10, 1e11, 1e12, 1e13];
+  layout.xaxis.ticktext = ['1B', '10B', '100B', '1T', '10T'];
+  layout.yaxis.title = '📉 Loss (nats / token)';
+  Plotly.react('plot-moe', [traceFloor, traceCurve, traceDense, traceAbnar, tracePoint], layout, PLOT_CONFIG);
+}
+
+// ============================================================
+// PANEL 5 — Data-type × benchmark-cluster sensitivity matrix
+// ============================================================
+function updatePanel5() {
+  // Rows: data types (top to bottom in display)
+  const rowLabels = [
+    'W · Filtered web',
+    'C · Code',
+    'M · Math',
+    'R · Long-CoT reasoning',
+    'S · Scientific',
+    'Φ · Synthetic curated',
+    'X · Tail-skill / mid-training patches',
+    'I · SFT instruction pairs',
+    'A · Agentic trajectories',
+    'L · Alignment / chat / preference',
+  ];
+  // Columns: benchmark clusters. D split into D-q (chat-quality) and D-j (LLM-as-judge)
+  // after EEE_datastore (Feb 2026) showed within-D Pearson=0.18 vs across-D=0.56 — i.e.,
+  // the old "D" lumped together mechanistically different things and was not a real cluster.
+  // Asterisk on both new columns: chat-class benchmarks are LLM-judge-mediated, so they
+  // carry biased + high-variance signal (WildChat-50M Feuer 2025 documents this directly).
+  const colLabels = [
+    'K · Knowledge<br><span style="font-size:10px;color:#6b7280">MMLU · GPQA</span>',
+    'M · Math multi-step<br><span style="font-size:10px;color:#6b7280">MATH · AIME</span>',
+    'H · Code-gen<br><span style="font-size:10px;color:#6b7280">HumanEval · LCB</span>',
+    'S · SWE / repo<br><span style="font-size:10px;color:#6b7280">SWE-bench</span>',
+    'F · IF<br><span style="font-size:10px;color:#6b7280">IFEval · IFBench</span>',
+    'R · Reasoning chains<br><span style="font-size:10px;color:#6b7280">BBH · ARC-C · HLE</span>',
+    'T · Tool-use agentic<br><span style="font-size:10px;color:#6b7280">τ²-Bench · TermB</span>',
+    'D-q · Chat quality*<br><span style="font-size:10px;color:#6b7280">MT-Bench · Arena · Alpaca</span>',
+    'D-j · LLM-as-judge*<br><span style="font-size:10px;color:#6b7280">reward-bench · judgebench</span>',
+    'SAFETY · Refusal / harm*<br><span style="font-size:10px;color:#6b7280">BeaverTails · JailbreakHub · SaladBench</span>',
+  ];
+  // Values: rows × cols, range [-1, 3]. SOS-Bench-anchored cells updated for rows I and L.
+  const M = [
+    [3, 1, 1, 0, 1, 2, 0,  1,  0,  0],  // W
+    [1, 2, 3, 3, 1, 2, 1,  0,  0,  0],  // C
+    [0, 3, 1,-1,-1, 1,-1, -1,  0,  0],  // M  ← updated: K=1→0, R=2→1, F=0→−1 (NuminaCoT); S=0→−1, T=0→−1 (OT-Agent Table 13: tulu3-sft-personas-math rank 92/95 z=−1.35 on agentic)
+    [1, 3, 2, 0, 1, 3, 0,  0,  1,  1],  // R  ← updated S=1→0, T=2→0 (OT-Agent Table 23: R1-Distill-Qwen-7B TB2=0.7% SWE-V=0%, OpenThinker3-7B TB2=0% SWE-V=0.4% — pure CoT-SFT does NOT transfer to agentic)
+    [3, 2, 0, 0,-1, 2, 0,  0,  0,  0],  // S  ← updated M=1→2 (Llemma +20pp GSM8K, DeepSeekMath +50pp GSM8K) and F=0→−1 (biomedical-LM specialization tax on instruction-following per Jeong 2024)
+    [2, 2, 2, 0, 2, 2, 2,  2,  1,  2],  // Φ  ← updated T=0→2: ToolACE/xLAM synthetic-curated FC-SFT gives +16-37pt BFCL-AST lift on 7-8B bases
+    [0, 0, 1, 2, 3, 1, 3,  1,  0,  2],  // X  ← updated S=1→2 (OT-Agent: targeted SWE-data SFT on Qwen3-32B reaches SWE-V 55.7% from 5.3% raw, biggest tail-skill lift in literature)
+    [0, 0, 1, 0, 2, 0, 1,  2,  1,  1],  // I  ← updated: F=3→2, R=1→0, M=1→0 (Magpie series, no movement on K/M/R; F range 0.24-0.33)
+    [0, 0, 1, 3, 1, 1, 3,  1,  0,  0],  // A  ← updated S=2→3 (OT-Agent Table 13: r2egym 28.3% / swegym 27.0% / issue-tasks 24.0% on SWE-V at 8B/10K controlled; OpenThinkerAgent-32B SWE-V 55.7 vs Qwen3-32B raw 5.3 = +50pp)
+    [0, 0, 0, 0, 0, 0, 1,  3,  3, -1],  // L  ← updated: F=2→0, R=1→0, SAFETY=−1 (Princeton ladder: IPO/KTO/ORPO/RDPO erode safety ~60%; DPO neutral)
+  ];
+  const Src = [
+    // W · Filtered web
+    [
+      'DCLM (Li 2024) + DataDecide (Magnusson 2025)',
+      'DataDecide — math benchmarks under DCLM/Dolma filter variants',
+      'DataDecide — MBPP/HumanEval under filter variants',
+      '(inferred — DataDecide doesn\'t test SWE)',
+      'DCLM',
+      'DataDecide — ARC/HellaSwag rank-preservation across recipes',
+      '(inferred)',
+      '(inferred — chat-class signal noisy per WildChat-50M)',
+      '(inferred)',
+      '(inferred — pretraining doesn\'t move safety much per SOS-Bench)'
+    ],
+    // C · Code
+    [
+      'DataDecide — Dolma1.7 ± code ablation, MMLU effect',
+      'Phi-3 / DeepSeek-Math + DataDecide ± math/code',
+      'Phi-3 (Abdin 2024) + DataDecide MBPP/HumanEval',
+      '(inferred from code → SWE practice)',
+      '(inferred)',
+      'Phi-3 + DataDecide ± code on ARC',
+      '(inferred)',
+      'SOS-Bench Detailed (ajibawa Code-Llama-3-8B): code-only SFT degrades F by 36% — formal code style displaces chat style, expected same direction on MT-Bench-class D-q',
+      'SOS-Bench Detailed: same code-style displacement applies to LLM-judge chat-class benchmarks',
+      '(inferred — pretraining doesn\'t move safety much)'
+    ],
+    // M · Math
+    [
+      'SOS-Bench Detailed (NuminaCoT, MetaMath): math-SFT does NOT move K (NuminaCoT K=0.30, baseline=0.30)',
+      'DeepSeek-Math + SOS-Bench (NuminaCoT M=0.123 vs Magpie baseline 0.04 = +2-3× lift)',
+      '(inferred)',
+      'OpenThoughts-Agent Table 13 (95-source controlled SFT, Qwen3-8B / 10K trajectories): tulu3-sft-personas-math ranks 92/95 with z=−1.35 on agentic average — pure math-SFT data HURTS SWE-Bench Verified (3.00%) compared to top sources (32.33%)',
+      'SOS-Bench Detailed (NuminaCoT, MetaMath): math-SFT degrades IF — NuminaCoT F=0.18 vs Magpie baseline 0.28 (math formal style displaces chat IF)',
+      'DeepSeek-Math + SOS-Bench (math-SFT slightly NEGATIVE on BBH: NuminaCoT R=0.465 vs Magpie baseline 0.49)',
+      'OpenThoughts-Agent Table 13: tulu3-sft-personas-math scores 2.62 on Terminal-Bench-2 (vs 10.86 for stackexchange-superuser, +1.51 z-score); math-SFT data is among the WORST sources for agentic / tool-use SFT',
+      'SOS-Bench Detailed (NuminaCoT): math-SFT degrades F by 10pp via formal-style displacement; same mechanism predicts negative on MT-Bench / D-q (chat-style benchmark)',
+      'SOS-Bench Detailed: math-style displacement on chat-class extends to LLM-as-judge benchmarks (reward-bench Chat sub-score)',
+      '(inferred)'
+    ],
+    // R · Long-CoT reasoning
+    [
+      'OpenThoughts (Guha 2025)',
+      'OpenThoughts',
+      'OpenThoughts',
+      'OpenThoughts-Agent Table 23: pure CoT-SFT does NOT transfer to SWE — DeepSeek-R1-Distill-Qwen-7B SWE-V=0.0%, OpenThinker3-7B SWE-V=0.4%, vs same-base agent-SFT models 22-37% — long-CoT data alone gives ~zero on repo-level code',
+      'OpenThoughts',
+      'OpenThoughts',
+      'OpenThoughts-Agent Table 23: CoT-SFT does NOT transfer to agentic — R1-Distill-Qwen-7B Terminal-Bench-2=0.7%, OpenThinker3-7B TB2=0.0%, Llama3.1-Nemotron-Nano-8B-v1 TB2=0.0%; vs same-base agent-SFT 13-25% TB2. BFCL/τ²-Bench thinking-variants score high because they bundle agent+reasoning SFT, not pure CoT',
+      '(inferred)',
+      'EEE_datastore (Feb 2026): MATH ↔ reward-bench Reasoning correlation r=0.95 → long-CoT reasoning data lifts the LLM-judge Reasoning sub-score directly',
+      '(inferred — CoT may improve safety judgment / refusal reasoning)'
+    ],
+    // S · Scientific
+    [
+      'Galactica (Taylor 2022, Meta): 120B model on 106B-token scientific corpus (arxiv + textbooks + KBs) beat OPT-175B on MMLU-STEM and beat Chinchilla on MATH/MMLU at 1/7 size. SciGLM-6B / SciDFM-18B both report MMLU lifts from scientific instruction tuning. K-lift is real but narrower than generalist data',
+      'Llemma (Azerbayev 2024, ICLR 2024): Llemma-7B GSM8K 36.4% vs Code-Llama-7B baseline (mid-single-digit MATH); Llemma-34B GSM8K 51.1% MATH 25% = +20pp GSM8K / +13pp MATH over Code-Llama-34B. 55B-token Proof-Pile-II (arxiv + math-web + code). DeepSeekMath-Base 7B (Shao 2024) achieves GSM8K 64.2% / MATH 36.2% from math-web continual pretrain alone',
+      '(inferred — arxiv contains some code but small fraction of mix)',
+      '(inferred)',
+      'Jeong et al. 2024 (arxiv 2408.13833): biomedical specialist LMs underperform same-base generalist Instruct models on clinical case challenges — OpenBioLLM-8B JAMA 17.9% vs Llama-3-8B-Instruct 57.1% (−39pp); Meditron-7B 12.9% vs Llama-2-7B-chat 44.3% (−31pp); PMC-Llama-7B NEJM 2.3% vs Llama-2-7B-chat 26.8%. Pure scientific specialization = formal/academic style displaces instruction-following',
+      'Galactica + Llemma + DeepSeekMath: long-form derivations in scientific text contribute to multi-step reasoning (BBH/ARC-C); EEE r=0.95 MATH ↔ Reward-Bench Reasoning suggests math-anchored R also moves',
+      '(inferred — scientific text doesn\'t target tool schemas)',
+      '(inferred — formal academic style is not chat-friendly; same direction as math-SFT M × D-q)',
+      '(inferred)',
+      '(inferred — scientific corpus is broadly neutral on refusal/harm patterns)'
+    ],
+    // Φ · Synthetic curated
+    [
+      'Phi-3',
+      'Phi-3',
+      'Phi-3',
+      '(inferred)',
+      'Phi-3',
+      'Phi-3',
+      'ToolACE (Liu 2024, ICLR 2025): synthetic-curated function-calling SFT lifts LLaMA-3-8B BFCL-AST from 53% raw → 88% (+35pt); LLaMA-3.1-8B 75% → 91% (+16pt); on Qwen1.5-7B 49% → 86% (+37pt). ToolACE-8B reaches BFCL-v3 rank 3 (59.22) beating xLAM-8x22b-r — synthetic FC data is the strongest known T-cluster lift',
+      'Phi-3 (MT-Bench score)',
+      '(inferred)',
+      'Phi-3 (emphasizes safety in synthetic data curation)'
+    ],
+    // X · Tail-skill / mid-training patches
+    [
+      '(inferred)',
+      '(inferred)',
+      'ToolACE / xLAM / Functionary: function-calling SFT data also improves structured-code-output reliability (same JSON-args skill); BFCL-AST gains overlap with code-gen formatting',
+      'OpenThoughts-Agent (2025, NeurIPS 2026 submission): targeted 100K SWE-trajectory SFT on Qwen3-32B reaches SWE-Bench-Verified 55.7% from 5.3% raw (+50pp) and Terminal-Bench-2 26.2% from 4.9% raw — best published open-data tail-skill lift',
+      '(inferred — IFBench, format patches)',
+      '(inferred)',
+      'ToolACE (Liu 2024, ICLR 2025): +16 to +37pt BFCL-AST lift on 7-8B models after 60K-instance function-calling SFT; OpenThoughts-Agent: Terminal-Bench-2 4.9 → 26.2 (+21pp) at 32B from agent-trajectory SFT. ToolACE Fig 8: MMLU/GSM8K/HumanEval unchanged after FC-SFT → tail-skill patches add T without specialization tax',
+      '(inferred — anti-spam, summarization)',
+      '(inferred)',
+      '(inferred — refusal patterns, red-team data, anti-spam)'
+    ],
+    // I · SFT instruction pairs
+    [
+      '(inferred)',
+      'SOS-Bench Detailed (Magpie series): F=2 — WildChat best (+9pp), Magpie/ShareGPT worst; range 0.24-0.33',
+      '(inferred)',
+      '(inferred)',
+      'SOS-Bench Detailed (Magpie series): SFT-data choice matters substantially for IF',
+      '(inferred)',
+      'ToolACE Fig 7 baseline: LLaMA-3.1-8B-Instruct (Meta\'s generic SFT) scores 75% AST raw; LLaMA-3-8B-Instruct 53% — generic SFT yields modest BFCL above pretrained-base, but the +16 to +35pt headroom for FC-SFT shows general instruction-pair SFT is NOT a substitute for tool-specific data',
+      'abb / MT-Bench (gpt-5-mini A-BB): 8 SFT-Llama-3-8B variants score 4.01-5.31 — overall lifts above base by ~1 point but intra-SFT spread (1.30) sits at the judge jitter floor; WildChat near-bottom (4.30) contradicts F-cluster ordering, so I × D-q is real-but-modest',
+      'abb / MT-Bench (gpt-5-mini A-BB): same SFT-Llama-3-8B set on factor-level scores; helpfulness/depth/detail factors marginally above jitter, accuracy/relevance/creativity at-or-below noise — I × D-j signal at ~13% post-debiasing rank-survival',
+      'SOS-Bench Detailed (Magpie series): SFT modestly improves safety vs base; OpenHermes best at +0.04'
+    ],
+    // A · Agentic trajectories
+    [
+      '(inferred)',
+      '(inferred)',
+      '(inferred)',
+      'OpenThoughts-Agent Table 13 (controlled 95-source ablation at Qwen3-8B / 10K): issue-resolution trajectory sources dominate SWE-Bench — swesmith #1 (32.33%), issue-tasks #4 (24.0%), r2egym #6 (28.33%), swegym #8 (27.0%), all far above non-agentic sources. At 32B / 100K, OpenThinkerAgent reaches 55.7% (vs Qwen3-32B raw 5.3%)',
+      '(inferred)',
+      '(inferred)',
+      'OpenThoughts-Agent Table 13: stackexchange-superuser/tezos/tor/unix (human infrastructure) lead Terminal-Bench-2 at 8.6-10.9%; OpenThinkerAgent-32B TB2 reaches 26.2% from 4.9% raw (+21pp). τ²-Bench leaderboard (May 2026): top spots dominated by reasoning+agentic-trained models — Step-3.5-Flash 0.882, GLM-4.7 0.874, Claude Opus 4.6 τ²-Telecom 0.993',
+      '(inferred)',
+      '(inferred)',
+      '(inferred)'
+    ],
+    // L · Alignment / chat / preference
+    [
+      'WildChat-1M (Zhao 2024)',
+      'WildChat-1M',
+      'WildChat-1M',
+      'WildChat-1M',
+      'SOS-Bench Detailed (Princeton ladder): preference methods do NOT improve IF; IPO/KTO/ORPO/RDPO degrade it 15-25%',
+      'SOS-Bench Detailed (Princeton ladder): K/M/R invariant under all preference methods',
+      'WildChat-50M',
+      'WildChat-50M + DataDecide ± Reddit ablation',
+      'WildChat-50M + EEE_datastore reward-bench evidence',
+      'SOS-Bench Detailed (Princeton ladder): IPO/KTO/ORPO/RDPO erode SAFETY ~60% vs SFT baseline (0.68 → 0.23-0.30); DPO appears neutral. Net aggregate negative.'
+    ],
+  ];
+  // Is a cell anchored to a real paper, or only inferred?
+  const isInferred = (s) =>
+    s.toLowerCase().includes('inferred') ||
+    s.toLowerCase().includes('standard') ||
+    s.toLowerCase().includes('engineering');
+
+  // Use numeric x/y so we can overlay diagonal stripes on inferred cells
+  // via layout.shapes (Plotly heatmaps don't support pattern fills natively).
+  const xi = colLabels.map((_, j) => j);
+  const yi = rowLabels.map((_, i) => i);
+
+  const trace = {
+    z: M,
+    x: xi,
+    y: yi,
+    type: 'heatmap',
+    colorscale: [
+      [0.00, '#fca5a5'],  // z = -1 → light red (negative transfer)
+      [0.25, '#fef3c7'],  // z =  0 → pale yellow (no effect)
+      [0.50, '#bbf7d0'],  // z =  1 → light green (moderate)
+      [0.75, '#4ade80'],  // z =  2 → medium green (strong)
+      [1.00, '#15803d'],  // z =  3 → dark green (direct hit)
+    ],
+    zmin: -1,
+    zmax: 3,
+    customdata: Src,
+    hovertemplate: '<b>%{y}  →  %{x}</b><br>M = %{z}<br>Source: %{customdata}<extra></extra>',
+    colorbar: {
+      title: { text: 'Marginal<br>benefit', font: { size: 11 } },
+      tickvals: [-1, 0, 1, 2, 3],
+      ticktext: ['−1 negative', '0 none', '1 moderate', '2 strong', '3 direct'],
+      thickness: 14,
+      len: 0.85,
+      tickfont: { size: 10 },
+    },
+    xgap: 2,
+    ygap: 2,
+  };
+
+  // Cell-text annotations — value, with '?' suffix for inferred cells.
+  const annotations = [];
+  const shapes = [];
+  for (let i = 0; i < M.length; i++) {
+    for (let j = 0; j < M[i].length; j++) {
+      const v = M[i][j];
+      const inferred = isInferred(Src[i][j]);
+      const txt = (v < 0 ? '−' : v.toString()) + (inferred ? '?' : '');
+      annotations.push({
+        x: j, y: i,
+        text: txt,
+        showarrow: false,
+        font: {
+          color: v >= 2 ? 'white' : '#374151',
+          size: 14,
+          family: 'SF Mono, Monaco, monospace',
+        },
+      });
+      // Hatched diagonals on inferred cells
+      if (inferred) {
+        // Each cell at (j, i) occupies [j-0.5, j+0.5] × [i-0.5, i+0.5].
+        // Draw 3 parallel back-slash diagonals; color picks white on dark cells, dark on light cells.
+        const stripeCol = v >= 2 ? 'rgba(255,255,255,0.55)' : 'rgba(55,65,81,0.40)';
+        const stripeWidth = 1.1;
+        const diagonals = [
+          // main diagonal across full cell
+          [-0.46, -0.46,  0.46,  0.46],
+          // upper-right parallel (shorter, shifted up-right)
+          [-0.10, -0.46,  0.46,  0.10],
+          // lower-left parallel (shorter, shifted down-left)
+          [-0.46, -0.10,  0.10,  0.46],
+        ];
+        for (const [dx0, dy0, dx1, dy1] of diagonals) {
+          shapes.push({
+            type: 'line',
+            xref: 'x', yref: 'y',
+            x0: j + dx0, y0: i + dy0,
+            x1: j + dx1, y1: i + dy1,
+            line: { color: stripeCol, width: stripeWidth },
+            layer: 'above',
+          });
+        }
+      }
+    }
+  }
+
+  const layout = defaultLayout('Data-type × benchmark-cluster sensitivity matrix');
+  layout.xaxis.title = '';
+  layout.yaxis.title = '';
+  layout.xaxis.side = 'top';
+  layout.xaxis.gridcolor = 'transparent';
+  layout.yaxis.gridcolor = 'transparent';
+  layout.xaxis.tickfont = { size: 11 };
+  layout.yaxis.tickfont = { size: 11, family: 'SF Mono, Monaco, monospace' };
+  layout.xaxis.tickmode = 'array';
+  layout.xaxis.tickvals = xi;
+  layout.xaxis.ticktext = colLabels;
+  layout.yaxis.tickmode = 'array';
+  layout.yaxis.tickvals = yi;
+  layout.yaxis.ticktext = rowLabels;
+  layout.yaxis.autorange = 'reversed';  // row 0 at top, matches our matrix
+  layout.annotations = annotations;
+  layout.shapes = shapes;
+  layout.margin = { l: 260, r: 100, t: 100, b: 30 };
+  Plotly.react('plot-matrix', [trace], layout, PLOT_CONFIG);
+}
+
+// ============================================================
+// PANEL 6 — Capacity floors: model-size vs task-horizon frontier
+// ============================================================
+function updatePanel6() {
+  const logA = parseFloat(document.getElementById('slider-task-diff').value);
+  const A = Math.pow(10, logA);
+  const ALPHA = 0.30; // per-step error decays as A · N^(-α)
+
+  // Labels for friendly UI
+  let label = 'custom';
+  if (A < 0.5) label = 'memorization / single-step recall';
+  else if (A < 1.5) label = 'short reasoning chain';
+  else if (A < 6) label = 'multi-step reasoning (MATH-style)';
+  else if (A < 20) label = 'long reasoning / SWE-bench-style';
+  else label = 'long-horizon agentic';
+  document.getElementById('val-task-diff').innerHTML =
+    A.toFixed(2) + ' <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(' + label + ')</span>';
+
+  // Heatmap grid: N (params, log) × K (steps, log)
+  const nGrid = [], kGrid = [];
+  for (let lg = 8; lg <= 12; lg += 0.05) nGrid.push(Math.pow(10, lg));   // 100M → 1T
+  for (let lg = 0; lg <= 3.3; lg += 0.05) kGrid.push(Math.pow(10, lg));   // 1 → 2000 steps
+
+  function perStepError(N) { return Math.min(0.999, A * Math.pow(N, -ALPHA)); }
+  function success(N, K) {
+    const p = 1 - perStepError(N);
+    return Math.pow(p, K);
+  }
+
+  const z = kGrid.map(k => nGrid.map(n => success(n, k)));
+
+  // Update readouts: max horizon at 50% reliability for 3 reference N values
+  function maxHorizon50(N) {
+    const eps = perStepError(N);
+    if (eps >= 0.5) return 0;
+    return Math.log(0.5) / Math.log(1 - eps);
+  }
+  function fmtHorizon(h) {
+    if (h < 1) return '< 1 step';
+    if (h < 10) return h.toFixed(1) + ' steps';
+    return Math.round(h).toString() + ' steps';
+  }
+  document.getElementById('cap-h-8b').textContent = fmtHorizon(maxHorizon50(8e9));
+  document.getElementById('cap-h-70b').textContent = fmtHorizon(maxHorizon50(70e9));
+  document.getElementById('cap-h-1t').textContent = fmtHorizon(maxHorizon50(1e12));
+
+  // Build the frontier curve (50% success contour)
+  const frontierN = [], frontierK = [];
+  for (const n of nGrid) {
+    const h = maxHorizon50(n);
+    if (h >= 1 && h <= 2000) {
+      frontierN.push(n);
+      frontierK.push(h);
+    }
+  }
+
+  // Two anchor sets: (1) rough benchmark placements, (2) Sinha's reported empirical H_0.5
+  const benchmarkAnchors = [
+    { name: 'MMLU @ LLaMA-3.1-8B',  N: 8e9,   K: 1,    note: 'Single-step recall' },
+    { name: 'MATH @ LLaMA-3.1-70B', N: 70e9,  K: 8,    note: 'Multi-step math chain' },
+    { name: 'SWE-bench @ Sonnet',   N: 200e9, K: 50,   note: 'Multi-file code edit' },
+    { name: 'τ-bench @ Sonnet',     N: 200e9, K: 30,   note: 'Multi-turn tool use' },
+  ];
+  // Sinha 2025 reported H_0.5 on their controlled-execution task (Add-and-Match style)
+  // Non-thinking models — observed << theory due to self-conditioning
+  const sinhaNonThinking = [
+    { name: 'DeepSeek-V3 (no CoT)', N: 37e9, K: 4,  note: 'Sinha 2025: fails at 4 steps without CoT' },
+  ];
+  // Thinking models — exceed Proposition-1 theory because CoT breaks self-conditioning
+  const sinhaThinking = [
+    { name: 'DeepSeek-R1',          N: 37e9,  K: 100,  note: 'Sinha 2025: ≥100 steps (thinking version of V3)' },
+    { name: 'Claude-4 Sonnet (think)', N: 200e9, K: 432, note: 'Sinha 2025: 432 steps measured' },
+    { name: 'GPT-5 thinking (Horizon)', N: 500e9, K: 2100, note: 'Sinha 2025: 2100 steps — current frontier' },
+  ];
+
+  const traces = [
+    {
+      z: z,
+      x: nGrid,
+      y: kGrid,
+      type: 'heatmap',
+      colorscale: [
+        [0, '#fca5a5'],     // red — fails
+        [0.3, '#fde68a'],   // amber
+        [0.5, '#bef264'],   // light green at 0.5 threshold
+        [0.8, '#4ade80'],
+        [1, '#15803d'],     // dark green — succeeds
+      ],
+      zmin: 0, zmax: 1,
+      colorbar: {
+        title: { text: 'Success<br>probability', font: { size: 11 } },
+        thickness: 14, len: 0.8,
+        tickvals: [0, 0.25, 0.5, 0.75, 1],
+        ticktext: ['0', '0.25', '0.5', '0.75', '1'],
+      },
+      hovertemplate: 'N = %{x:.2e}<br>K = %{y:.0f} steps<br>Success ≈ %{z:.2f}<extra></extra>',
+    },
+    {
+      x: frontierN, y: frontierK,
+      type: 'scatter', mode: 'lines',
+      line: { color: 'black', width: 2 },
+      name: '50% reliability frontier',
+      hovertemplate: 'N = %{x:.2e}<br>Max horizon @ 50%: %{y:.0f}<extra></extra>',
+    },
+    {
+      x: benchmarkAnchors.map(b => b.N),
+      y: benchmarkAnchors.map(b => b.K),
+      text: benchmarkAnchors.map(b => b.name),
+      customdata: benchmarkAnchors.map(b => b.note),
+      type: 'scatter', mode: 'markers+text',
+      marker: { color: '#1e293b', size: 8, symbol: 'diamond', line: { color: 'white', width: 1.5 } },
+      textposition: 'top right',
+      textfont: { size: 9, color: '#1e293b' },
+      name: 'Rough benchmark anchors',
+      hovertemplate: '<b>%{text}</b><br>N ≈ %{x:.2e}<br>~%{y} steps<br><i>%{customdata}</i><extra></extra>',
+    },
+    // Sinha 2025 empirical anchors — non-thinking (red, below theory due to self-conditioning)
+    {
+      x: sinhaNonThinking.map(b => b.N),
+      y: sinhaNonThinking.map(b => b.K),
+      text: sinhaNonThinking.map(b => b.name),
+      customdata: sinhaNonThinking.map(b => b.note),
+      type: 'scatter', mode: 'markers+text',
+      marker: { color: '#dc2626', size: 12, symbol: 'circle', line: { color: 'white', width: 2 } },
+      textposition: 'bottom right',
+      textfont: { size: 10, color: '#7f1d1d' },
+      name: 'Sinha empirical — non-thinking (below theory)',
+      hovertemplate: '<b>%{text}</b><br>N ≈ %{x:.2e}<br>H_0.5 = %{y} steps<br><i>%{customdata}</i><extra></extra>',
+    },
+    // Sinha 2025 empirical anchors — thinking (green, often above Proposition-1 theory)
+    {
+      x: sinhaThinking.map(b => b.N),
+      y: sinhaThinking.map(b => b.K),
+      text: sinhaThinking.map(b => b.name),
+      customdata: sinhaThinking.map(b => b.note),
+      type: 'scatter', mode: 'markers+text',
+      marker: { color: '#059669', size: 12, symbol: 'star', line: { color: 'white', width: 2 } },
+      textposition: 'top right',
+      textfont: { size: 10, color: '#14532d' },
+      name: 'Sinha empirical — thinking models',
+      hovertemplate: '<b>%{text}</b><br>N ≈ %{x:.2e}<br>H_0.5 = %{y} steps<br><i>%{customdata}</i><extra></extra>',
+    },
+  ];
+
+  const layout = defaultLayout('Capacity-horizon frontier — max task length at given model size');
+  layout.xaxis.title = '🧠 Model size N (parameters, log scale)';
+  layout.xaxis.type = 'log';
+  layout.xaxis.range = [Math.log10(1e8), Math.log10(1e12)];
+  layout.xaxis.tickvals = [1e8, 1e9, 1e10, 1e11, 1e12];
+  layout.xaxis.ticktext = ['100M', '1B', '10B', '100B', '1T'];
+  layout.yaxis.title = '⏱ Task horizon K (sequential steps, log scale)';
+  layout.yaxis.type = 'log';
+  layout.yaxis.range = [Math.log10(1), Math.log10(2000)];
+  layout.yaxis.tickvals = [1, 10, 100, 1000];
+  layout.yaxis.ticktext = ['1', '10', '100', '1000'];
+  Plotly.react('plot-capacity', traces, layout, PLOT_CONFIG);
+}
+
+// ============================================================
+// Wire up all controls
+// ============================================================
+// Generic input-slider sync for any numeric size input
+function wireSizeInput(inputId, sliderId, updateFn) {
+  const input = document.getElementById(inputId);
+  const slider = document.getElementById(sliderId);
+  function commit() {
+    const val = parseSizeInput(input.value);
+    if (val === null) { input.classList.add('invalid'); return; }
+    let logV = Math.log10(val);
+    const sMin = parseFloat(slider.min), sMax = parseFloat(slider.max);
+    if (logV < sMin) logV = sMin;
+    if (logV > sMax) logV = sMax;
+    slider.value = logV;
+    input.classList.remove('invalid');
+    updateFn();  // re-render readouts AND canonical input values from slider state
+  }
+  // 'change' fires on commit (Enter or focus loss with value diff).
+  input.addEventListener('change', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); input.blur(); }
+  });
+  input.addEventListener('input', () => {
+    const val = parseSizeInput(input.value);
+    if (val === null && input.value.trim() !== '') input.classList.add('invalid');
+    else input.classList.remove('invalid');
+  });
+}
+
+// Panel 1 (combined loss + optimum)
+['slider-N', 'slider-D', 'slider-Q', 'slider-quality'].forEach(id => document.getElementById(id).addEventListener('input', () => { updatePanel1(); updatePanel2(); }));
+wireSizeInput('input-N', 'slider-N', () => { updatePanel1(); updatePanel2(); });
+wireSizeInput('input-D', 'slider-D', () => { updatePanel1(); updatePanel2(); });
+wireSizeInput('input-Q', 'slider-Q', () => { updatePanel1(); updatePanel2(); });
+
+// Panel 3 (capability horizon)
+document.getElementById('slider-T').addEventListener('input', updatePanel3);
+
+// Panel 4 (MoE)
+['slider-Ntotal', 'slider-Nactive', 'slider-D2'].forEach(id => document.getElementById(id).addEventListener('input', updatePanel4));
+wireSizeInput('input-Ntotal',  'slider-Ntotal',  updatePanel4);
+wireSizeInput('input-Nactive', 'slider-Nactive', updatePanel4);
+wireSizeInput('input-D2',      'slider-D2',      updatePanel4);
+
+// Panel 6 (capacity floors)
+document.getElementById('slider-task-diff').addEventListener('input', updatePanel6);
+
+// Initial render
+updatePanel1();
+updatePanel2();
+updatePanel3();
+updatePanel4();
+updatePanel5();
+updatePanel6();
+</script>
+</body>
+</html>
