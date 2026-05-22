@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "mcqa_fever.mmlu_race",
+  "title": "MCQA/FEVER: MMLU auxiliary and RACE span heatmap",
+  "description": "Longer MCQA slices with 5-shot ICL and whole-answer-string targets in both demonstrations and held-out rows. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "MCQA 5-shot train/dev + FEVER factuality validation",
+  "dataset_family": "lm_eval",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text/marin_32b-7a9b10/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text/qwen3_32b-206ba9/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "lm_eval/mmlu_auxiliary_train",
+      "label": "mmlu_auxiliary_train",
+      "row_index": 123,
+      "shard": "staged_jsonl_gz",
+      "bytes": 43,
+      "score_byte_start": 2039,
+      "score_byte_end": 2082,
+      "marin_bpb": 0.2246,
+      "qwen_bpb": 0.0355,
+      "gap_bpb": 0.1891,
+      "payload": "examples/mmlu_auxiliary_train-staged_jsonl_gz-row-123.json"
+    },
+    {
+      "dataset": "lm_eval/mmlu_auxiliary_train",
+      "label": "mmlu_auxiliary_train",
+      "row_index": 18,
+      "shard": "staged_jsonl_gz",
+      "bytes": 9,
+      "score_byte_start": 2431,
+      "score_byte_end": 2440,
+      "marin_bpb": 1.2565,
+      "qwen_bpb": 2.5302,
+      "gap_bpb": -1.2737,
+      "payload": "examples/mmlu_auxiliary_train-staged_jsonl_gz-row-18.json"
+    },
+    {
+      "dataset": "lm_eval/race_train",
+      "label": "race_train",
+      "row_index": 239,
+      "shard": "staged_jsonl_gz",
+      "bytes": 37,
+      "score_byte_start": 13153,
+      "score_byte_end": 13190,
+      "marin_bpb": 0.0469,
+      "qwen_bpb": 0.0004,
+      "gap_bpb": 0.0464,
+      "payload": "examples/race_train-staged_jsonl_gz-row-239.json"
+    },
+    {
+      "dataset": "lm_eval/race_train",
+      "label": "race_train",
+      "row_index": 8,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 13907,
+      "score_byte_end": 13909,
+      "marin_bpb": 2.1079,
+      "qwen_bpb": 5.0184,
+      "gap_bpb": -2.9105,
+      "payload": "examples/race_train-staged_jsonl_gz-row-8.json"
+    },
+    {
+      "dataset": "lm_eval/race_dev",
+      "label": "race_dev",
+      "row_index": 122,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 11732,
+      "score_byte_end": 11734,
+      "marin_bpb": 0.4135,
+      "qwen_bpb": 0.1515,
+      "gap_bpb": 0.262,
+      "payload": "examples/race_dev-staged_jsonl_gz-row-122.json"
+    },
+    {
+      "dataset": "lm_eval/race_dev",
+      "label": "race_dev",
+      "row_index": 109,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 11979,
+      "score_byte_end": 11981,
+      "marin_bpb": 2.8766,
+      "qwen_bpb": 3.8559,
+      "gap_bpb": -0.9793,
+      "payload": "examples/race_dev-staged_jsonl_gz-row-109.json"
+    }
+  ]
+}

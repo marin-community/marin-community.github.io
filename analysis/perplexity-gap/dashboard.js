@@ -1,4 +1,4 @@
-const ASSET_VERSION = '20260515-v25-stack-v2-v0';
+const ASSET_VERSION = '20260522-v32-booksum-lima';
 const response = await fetch(`./data.json?v=${ASSET_VERSION}`);
 if (!response.ok) {
   throw new Error(`Failed to load dashboard data: ${response.status} ${response.statusText}`);
@@ -161,6 +161,8 @@ const SPOTLIGHTS = [
       followup: 'Follow-up slices',
       wave2: 'Wave 2 slices',
       all_available: 'All available diagnostic slices',
+      mcqa_fever: 'MCQA + FEVER validation',
+      long_context: 'Long-context 32k',
     };
 
     const CODE_TAKEAWAY_BUCKETS = [
@@ -300,6 +302,14 @@ const SPOTLIGHTS = [
       if (name === 'issue:5061') displayName = 'package_metadata';
       if (name === 'issue:5254') displayName = 'Stack v2 code ecosystem';
       if (name === 'code_ecosystem') displayName = 'Stack v2 code ecosystem';
+      if (name === 'issue:5825') displayName = 'long-context validation';
+      if (name === 'epic:5819') displayName = 'AA surrogate coverage';
+      if (name === 'long_context') displayName = 'long-context 32k';
+      if (name === 'kind:raw_long_doc') displayName = 'long-context raw documents';
+      if (name === 'kind:supervised_qa') displayName = 'long-context supervised QA';
+      if (name.startsWith('long_context/')) {
+        displayName = `Long context: ${name.slice('long_context/'.length)}`;
+      }
       if (name.startsWith('long_tail_ppl/code_ecosystem/stack_v2_')) {
         displayName = `Stack v2: ${name.slice('long_tail_ppl/code_ecosystem/stack_v2_'.length)}`;
       }
@@ -399,6 +409,9 @@ const SPOTLIGHTS = [
       if (name === 'code_ecosystem' || name === 'issue:5254' || name.startsWith('long_tail_ppl/code_ecosystem')) {
         pushRef(refs, 'issue #5254', issueUrl(5254), 'issue');
         pushRef(refs, 'The Stack v2', DATASET_LINKS.stackV2, 'dataset');
+      }
+      if (name === 'long_context' || name === 'issue:5825' || name === 'epic:5819' || name.startsWith('long_context/')) {
+        pushRef(refs, 'issue #5825', issueUrl(5825), 'issue');
       }
 
       if (name === 'gh_archive_structured_output' || name.startsWith('gh_archive_structured_output/')) {

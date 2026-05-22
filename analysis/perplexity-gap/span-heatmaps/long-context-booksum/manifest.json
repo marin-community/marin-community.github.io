@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "long_context.booksum",
+  "title": "BookSum validation/test span heatmap",
+  "description": "BookSum validation and test rows from the clean Chapter/Summary target-only render. Examples are cropped around the scored summary target.",
+  "corpus": "Long-context 32k validation slices",
+  "dataset_family": "long_context",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "long_context_32k",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/long_context_32k/marin_32b-b3aae8/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/long_context_32k/qwen3_32b-187b77/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "long_context/booksum_validation",
+      "label": "booksum_validation Marin worse",
+      "row_index": 19,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2217,
+      "score_byte_start": 10783,
+      "score_byte_end": 13000,
+      "marin_bpb": 0.8532,
+      "qwen_bpb": 0.7603,
+      "gap_bpb": 0.0929,
+      "payload": "examples/booksum_validation-Marin-worse-staged_jsonl_gz-row-19.json"
+    },
+    {
+      "dataset": "long_context/booksum_validation",
+      "label": "booksum_validation Qwen worse",
+      "row_index": 13,
+      "shard": "staged_jsonl_gz",
+      "bytes": 1531,
+      "score_byte_start": 11469,
+      "score_byte_end": 13000,
+      "marin_bpb": 0.7131,
+      "qwen_bpb": 0.8126,
+      "gap_bpb": -0.0995,
+      "payload": "examples/booksum_validation-Qwen-worse-staged_jsonl_gz-row-13.json"
+    },
+    {
+      "dataset": "long_context/booksum_test",
+      "label": "booksum_test Marin worse",
+      "row_index": 9,
+      "shard": "staged_jsonl_gz",
+      "bytes": 424,
+      "score_byte_start": 12576,
+      "score_byte_end": 13000,
+      "marin_bpb": 0.9001,
+      "qwen_bpb": 0.8401,
+      "gap_bpb": 0.06,
+      "payload": "examples/booksum_test-Marin-worse-staged_jsonl_gz-row-9.json"
+    },
+    {
+      "dataset": "long_context/booksum_test",
+      "label": "booksum_test Qwen worse",
+      "row_index": 25,
+      "shard": "staged_jsonl_gz",
+      "bytes": 952,
+      "score_byte_start": 2878,
+      "score_byte_end": 3830,
+      "marin_bpb": 0.7975,
+      "qwen_bpb": 0.9349,
+      "gap_bpb": -0.1374,
+      "payload": "examples/booksum_test-Qwen-worse-staged_jsonl_gz-row-25.json"
+    }
+  ]
+}
