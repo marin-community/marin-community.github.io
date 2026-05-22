@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "mcqa_fever.high_gap_mcqa",
+  "title": "MCQA/FEVER: QASC and CommonSenseQA span heatmap",
+  "description": "Largest aggregate Marin-better MCQA slices from the corrected 32B MCQA/FEVER 5-shot run. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "MCQA 5-shot train/dev + FEVER factuality validation",
+  "dataset_family": "lm_eval",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text/marin_32b-7a9b10/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text/qwen3_32b-206ba9/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "lm_eval/qasc_dev",
+      "label": "qasc_dev",
+      "row_index": 184,
+      "shard": "staged_jsonl_gz",
+      "bytes": 5,
+      "score_byte_start": 1009,
+      "score_byte_end": 1014,
+      "marin_bpb": 0.55,
+      "qwen_bpb": 0.0434,
+      "gap_bpb": 0.5066,
+      "payload": "examples/qasc_dev-staged_jsonl_gz-row-184.json"
+    },
+    {
+      "dataset": "lm_eval/qasc_dev",
+      "label": "qasc_dev",
+      "row_index": 167,
+      "shard": "staged_jsonl_gz",
+      "bytes": 6,
+      "score_byte_start": 1034,
+      "score_byte_end": 1040,
+      "marin_bpb": 0.1239,
+      "qwen_bpb": 1.1671,
+      "gap_bpb": -1.0433,
+      "payload": "examples/qasc_dev-staged_jsonl_gz-row-167.json"
+    },
+    {
+      "dataset": "lm_eval/qasc_train",
+      "label": "qasc_train",
+      "row_index": 121,
+      "shard": "staged_jsonl_gz",
+      "bytes": 4,
+      "score_byte_start": 1359,
+      "score_byte_end": 1363,
+      "marin_bpb": 2.1894,
+      "qwen_bpb": 1.3336,
+      "gap_bpb": 0.8558,
+      "payload": "examples/qasc_train-staged_jsonl_gz-row-121.json"
+    },
+    {
+      "dataset": "lm_eval/qasc_train",
+      "label": "qasc_train",
+      "row_index": 42,
+      "shard": "staged_jsonl_gz",
+      "bytes": 4,
+      "score_byte_start": 1368,
+      "score_byte_end": 1372,
+      "marin_bpb": 2.0991,
+      "qwen_bpb": 4.3742,
+      "gap_bpb": -2.2751,
+      "payload": "examples/qasc_train-staged_jsonl_gz-row-42.json"
+    },
+    {
+      "dataset": "lm_eval/commonsenseqa_dev",
+      "label": "commonsenseqa_dev",
+      "row_index": 95,
+      "shard": "staged_jsonl_gz",
+      "bytes": 13,
+      "score_byte_start": 1062,
+      "score_byte_end": 1075,
+      "marin_bpb": 0.6384,
+      "qwen_bpb": 0.0631,
+      "gap_bpb": 0.5753,
+      "payload": "examples/commonsenseqa_dev-staged_jsonl_gz-row-95.json"
+    },
+    {
+      "dataset": "lm_eval/commonsenseqa_dev",
+      "label": "commonsenseqa_dev",
+      "row_index": 142,
+      "shard": "staged_jsonl_gz",
+      "bytes": 6,
+      "score_byte_start": 1038,
+      "score_byte_end": 1044,
+      "marin_bpb": 0.3512,
+      "qwen_bpb": 2.1842,
+      "gap_bpb": -1.833,
+      "payload": "examples/commonsenseqa_dev-staged_jsonl_gz-row-142.json"
+    },
+    {
+      "dataset": "lm_eval/commonsenseqa_train",
+      "label": "commonsenseqa_train",
+      "row_index": 145,
+      "shard": "staged_jsonl_gz",
+      "bytes": 6,
+      "score_byte_start": 1006,
+      "score_byte_end": 1012,
+      "marin_bpb": 0.8729,
+      "qwen_bpb": 0.0621,
+      "gap_bpb": 0.8109,
+      "payload": "examples/commonsenseqa_train-staged_jsonl_gz-row-145.json"
+    },
+    {
+      "dataset": "lm_eval/commonsenseqa_train",
+      "label": "commonsenseqa_train",
+      "row_index": 225,
+      "shard": "staged_jsonl_gz",
+      "bytes": 4,
+      "score_byte_start": 967,
+      "score_byte_end": 971,
+      "marin_bpb": 0.7231,
+      "qwen_bpb": 3.2733,
+      "gap_bpb": -2.5502,
+      "payload": "examples/commonsenseqa_train-staged_jsonl_gz-row-225.json"
+    }
+  ]
+}

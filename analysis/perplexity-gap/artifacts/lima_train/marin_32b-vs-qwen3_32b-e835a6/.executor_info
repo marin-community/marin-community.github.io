@@ -1,0 +1,247 @@
+{
+  "name": "analysis/perplexity_gap/lima_train/marin_32b-vs-qwen3_32b",
+  "fn_name": "<function find_model_perplexity_gap at 0x1354c27a0>",
+  "config": {
+    "name": "lima_train/marin_32b-vs-qwen3_32b",
+    "model_a_name": "marin-community/marin-32b-base",
+    "model_b_name": "Qwen/Qwen3-32B",
+    "model_a_scores_path": "gs://marin-us-central1/analysis/model_perplexity_scores/lima_train/marin_32b-19d5fe",
+    "model_b_scores_path": "gs://marin-us-central1/analysis/model_perplexity_scores/lima_train/qwen3_32b-33b06f",
+    "output_path": "gs://marin-us-central1/analysis/perplexity_gap/lima_train/marin_32b-vs-qwen3_32b-e835a6",
+    "wandb_tags": [
+      "eval=perplexity-gap",
+      "dataset_bundle=lima_train",
+      "model_a=marin-community/marin-32b-base",
+      "model_b=Qwen/Qwen3-32B"
+    ],
+    "cache_key": {
+      "name": "lima_train/marin_32b-vs-qwen3_32b",
+      "model_a_name": "marin-community/marin-32b-base",
+      "model_b_name": "Qwen/Qwen3-32B",
+      "wandb_tags": [
+        "eval=perplexity-gap",
+        "dataset_bundle=lima_train",
+        "model_a=marin-community/marin-32b-base",
+        "model_b=Qwen/Qwen3-32B"
+      ]
+    }
+  },
+  "override_output_path": null,
+  "version": {
+    "name": "analysis/perplexity_gap/lima_train/marin_32b-vs-qwen3_32b",
+    "config": {
+      "model_a_scores_path": "DEP[0]",
+      "model_b_scores_path": "DEP[1]",
+      "cache_key": {
+        "name": "lima_train/marin_32b-vs-qwen3_32b",
+        "model_a_name": "marin-community/marin-32b-base",
+        "model_b_name": "Qwen/Qwen3-32B",
+        "wandb_tags": [
+          "eval=perplexity-gap",
+          "dataset_bundle=lima_train",
+          "model_a=marin-community/marin-32b-base",
+          "model_b=Qwen/Qwen3-32B"
+        ]
+      }
+    },
+    "dependencies": [
+      {
+        "name": "analysis/model_perplexity_scores/lima_train/marin_32b",
+        "config": {
+          "datasets.instruction_tuning/lima_train.input_path": "DEP[0]/staged.jsonl.gz",
+          "cache_key": {
+            "name": "lima_train/marin_32b",
+            "model": {
+              "checkpoint_path": "marin-community/marin-32b-base",
+              "checkpoint_is_hf": true,
+              "model": null,
+              "tokenizer": "marin-community/marin-tokenizer",
+              "tokenizer_backend": "hf",
+              "trust_remote_code": false
+            },
+            "datasets": {
+              "instruction_tuning/lima_train": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "lima_train",
+                  "issue:5819",
+                  "source:GAIR/lima",
+                  "split:train",
+                  "format:chatml_final_assistant_target_only"
+                ]
+              }
+            },
+            "resource_config": {
+              "cpu": 32,
+              "ram": "128g",
+              "disk": "50g",
+              "device": {
+                "variant": "v5p-8",
+                "kind": "tpu",
+                "topology": null
+              },
+              "preemptible": true,
+              "regions": [
+                "us-central1"
+              ],
+              "zone": null,
+              "replicas": 1,
+              "device_alternatives": null,
+              "image": null
+            },
+            "per_device_batch_size": 1,
+            "max_eval_length": 4096,
+            "max_docs_per_dataset": 256,
+            "max_doc_bytes": 32768,
+            "wandb_tags": [
+              "eval=model-perplexity",
+              "dataset_bundle=lima_train",
+              "model=marin-community/marin-32b-base"
+            ]
+          }
+        },
+        "dependencies": [
+          {
+            "name": "evaluation/lima_ppl/gair_lima_train_chatml_target_only_v1",
+            "config": {
+              "attrs": {
+                "dataset_id": "GAIR/lima",
+                "revision": "68958e98267f5fb4a52a03ebcdae4ae59213fa7c",
+                "split": "train",
+                "render": "chatml_final_assistant_target_only",
+                "source_filename": "train.jsonl",
+                "output_filename": "staged.jsonl.gz",
+                "skip_rows_without_final_assistant_target": true
+              },
+              "deps.[0]": "DEP[0]"
+            },
+            "dependencies": [
+              {
+                "name": "raw/evals/lima_ppl/gair_lima",
+                "config": {
+                  "attrs": {
+                    "hf_dataset_id": "GAIR/lima",
+                    "revision": "68958e98267f5fb4a52a03ebcdae4ae59213fa7c",
+                    "hf_urls_glob": [
+                      "train.jsonl",
+                      "README.md"
+                    ],
+                    "append_sha_to_path": false
+                  }
+                },
+                "dependencies": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "analysis/model_perplexity_scores/lima_train/qwen3_32b",
+        "config": {
+          "datasets.instruction_tuning/lima_train.input_path": "DEP[0]/staged.jsonl.gz",
+          "cache_key": {
+            "name": "lima_train/qwen3_32b",
+            "model": {
+              "checkpoint_path": "Qwen/Qwen3-32B",
+              "checkpoint_is_hf": true,
+              "model": null,
+              "tokenizer": "Qwen/Qwen3-32B",
+              "tokenizer_backend": "hf",
+              "trust_remote_code": false
+            },
+            "datasets": {
+              "instruction_tuning/lima_train": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "lima_train",
+                  "issue:5819",
+                  "source:GAIR/lima",
+                  "split:train",
+                  "format:chatml_final_assistant_target_only"
+                ]
+              }
+            },
+            "resource_config": {
+              "cpu": 32,
+              "ram": "128g",
+              "disk": "50g",
+              "device": {
+                "variant": "v5p-8",
+                "kind": "tpu",
+                "topology": null
+              },
+              "preemptible": true,
+              "regions": [
+                "us-central1"
+              ],
+              "zone": null,
+              "replicas": 1,
+              "device_alternatives": null,
+              "image": null
+            },
+            "per_device_batch_size": 1,
+            "max_eval_length": 4096,
+            "max_docs_per_dataset": 256,
+            "max_doc_bytes": 32768,
+            "wandb_tags": [
+              "eval=model-perplexity",
+              "dataset_bundle=lima_train",
+              "model=Qwen/Qwen3-32B"
+            ]
+          }
+        },
+        "dependencies": [
+          {
+            "name": "evaluation/lima_ppl/gair_lima_train_chatml_target_only_v1",
+            "config": {
+              "attrs": {
+                "dataset_id": "GAIR/lima",
+                "revision": "68958e98267f5fb4a52a03ebcdae4ae59213fa7c",
+                "split": "train",
+                "render": "chatml_final_assistant_target_only",
+                "source_filename": "train.jsonl",
+                "output_filename": "staged.jsonl.gz",
+                "skip_rows_without_final_assistant_target": true
+              },
+              "deps.[0]": "DEP[0]"
+            },
+            "dependencies": [
+              {
+                "name": "raw/evals/lima_ppl/gair_lima",
+                "config": {
+                  "attrs": {
+                    "hf_dataset_id": "GAIR/lima",
+                    "revision": "68958e98267f5fb4a52a03ebcdae4ae59213fa7c",
+                    "hf_urls_glob": [
+                      "train.jsonl",
+                      "README.md"
+                    ],
+                    "append_sha_to_path": false
+                  }
+                },
+                "dependencies": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "dependencies": [
+    "gs://marin-us-central1/analysis/model_perplexity_scores/lima_train/marin_32b-19d5fe",
+    "gs://marin-us-central1/analysis/model_perplexity_scores/lima_train/qwen3_32b-33b06f"
+  ],
+  "output_path": "gs://marin-us-central1/analysis/perplexity_gap/lima_train/marin_32b-vs-qwen3_32b-e835a6"
+}

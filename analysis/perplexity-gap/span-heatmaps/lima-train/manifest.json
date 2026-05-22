@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "instruction_tuning.lima_train",
+  "title": "LIMA train span heatmap",
+  "description": "LIMA train rows rendered as ChatML-style target-only final assistant responses. Open dialogues with no final assistant response are skipped.",
+  "corpus": "LIMA train instruction-following slice",
+  "dataset_family": "instruction_tuning",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "lima_train",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/lima_train/marin_32b-19d5fe/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/lima_train/qwen3_32b-33b06f/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "instruction_tuning/lima_train",
+      "label": "lima_train Marin worse",
+      "row_index": 69,
+      "shard": "staged_jsonl_gz",
+      "bytes": 1658,
+      "score_byte_start": 386,
+      "score_byte_end": 2044,
+      "marin_bpb": 0.6027,
+      "qwen_bpb": 0.5927,
+      "gap_bpb": 0.01,
+      "payload": "examples/lima_train-Marin-worse-staged_jsonl_gz-row-69.json"
+    },
+    {
+      "dataset": "instruction_tuning/lima_train",
+      "label": "lima_train Qwen worse",
+      "row_index": 200,
+      "shard": "staged_jsonl_gz",
+      "bytes": 1240,
+      "score_byte_start": 235,
+      "score_byte_end": 1475,
+      "marin_bpb": 0.3674,
+      "qwen_bpb": 0.8497,
+      "gap_bpb": -0.4823,
+      "payload": "examples/lima_train-Qwen-worse-staged_jsonl_gz-row-200.json"
+    }
+  ]
+}

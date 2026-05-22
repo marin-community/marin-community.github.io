@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "mcqa_fever.fever_factuality",
+  "title": "MCQA/FEVER: FEVER factuality span heatmap",
+  "description": "Evidence-conditioned FEVER factuality validation rows. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "MCQA 5-shot train/dev + FEVER factuality validation",
+  "dataset_family": "fever_factuality_ppl",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text/marin_32b-7a9b10/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text/qwen3_32b-206ba9/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "fever_factuality_ppl/nli_fever_dev_evidence_conditioned",
+      "label": "nli_fever_dev_evidence_conditioned",
+      "row_index": 156,
+      "shard": "staged_jsonl_gz",
+      "bytes": 8,
+      "score_byte_start": 1471,
+      "score_byte_end": 1479,
+      "marin_bpb": 0.8264,
+      "qwen_bpb": 0.5401,
+      "gap_bpb": 0.2863,
+      "payload": "examples/nli_fever_dev_evidence_conditioned-staged_jsonl_gz-row-156.json"
+    },
+    {
+      "dataset": "fever_factuality_ppl/nli_fever_dev_evidence_conditioned",
+      "label": "nli_fever_dev_evidence_conditioned",
+      "row_index": 18,
+      "shard": "staged_jsonl_gz",
+      "bytes": 8,
+      "score_byte_start": 1958,
+      "score_byte_end": 1966,
+      "marin_bpb": 0.3344,
+      "qwen_bpb": 1.0331,
+      "gap_bpb": -0.6987,
+      "payload": "examples/nli_fever_dev_evidence_conditioned-staged_jsonl_gz-row-18.json"
+    }
+  ]
+}

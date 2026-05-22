@@ -825,6 +825,156 @@
       "aggregate_gap_bpb": -0.20081746393414104
     },
     {
+      "id": "mcqa_fever.high_gap_mcqa",
+      "title": "MCQA/FEVER: QASC and CommonSenseQA",
+      "description": "Largest aggregate Marin-better MCQA slices from the corrected 32B MCQA/FEVER 5-shot run. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "MCQA 5-shot train/dev + FEVER factuality validation",
+      "dataset_family": "lm_eval",
+      "datasets": [
+        "lm_eval/qasc_dev",
+        "lm_eval/qasc_train",
+        "lm_eval/commonsenseqa_dev",
+        "lm_eval/commonsenseqa_train"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text",
+      "manifest": "mcqa-fever-high-gap-mcqa/manifest.json",
+      "example_count": 8,
+      "text_bytes": 48,
+      "payload_bytes": 122788,
+      "aggregate_gap_bpb": -0.05398748624347259
+    },
+    {
+      "id": "mcqa_fever.science_openbook_arc",
+      "title": "MCQA/FEVER: SciQ, OpenBookQA, and ARC",
+      "description": "Science/open-book multiple-choice slices in corrected 5-shot whole-answer-string format. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "MCQA 5-shot train/dev + FEVER factuality validation",
+      "dataset_family": "lm_eval",
+      "datasets": [
+        "lm_eval/sciq_train",
+        "lm_eval/sciq_dev",
+        "lm_eval/openbookqa_train",
+        "lm_eval/openbookqa_dev",
+        "lm_eval/arc_easy_train",
+        "lm_eval/arc_easy_dev",
+        "lm_eval/arc_challenge_train",
+        "lm_eval/arc_challenge_dev"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text",
+      "manifest": "mcqa-fever-science-openbook-arc/manifest.json",
+      "example_count": 16,
+      "text_bytes": 115,
+      "payload_bytes": 299510,
+      "aggregate_gap_bpb": -0.035263345671283065
+    },
+    {
+      "id": "mcqa_fever.mmlu_race",
+      "title": "MCQA/FEVER: MMLU auxiliary and RACE",
+      "description": "Longer MCQA slices with 5-shot ICL and whole-answer-string targets in both demonstrations and held-out rows. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "MCQA 5-shot train/dev + FEVER factuality validation",
+      "dataset_family": "lm_eval",
+      "datasets": [
+        "lm_eval/mmlu_auxiliary_train",
+        "lm_eval/race_train",
+        "lm_eval/race_dev"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text",
+      "manifest": "mcqa-fever-mmlu-race/manifest.json",
+      "example_count": 6,
+      "text_bytes": 95,
+      "payload_bytes": 725594,
+      "aggregate_gap_bpb": -0.03047780229665505
+    },
+    {
+      "id": "mcqa_fever.fever_factuality",
+      "title": "MCQA/FEVER: FEVER factuality",
+      "description": "Evidence-conditioned FEVER factuality validation rows. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "MCQA 5-shot train/dev + FEVER factuality validation",
+      "dataset_family": "fever_factuality_ppl",
+      "datasets": [
+        "fever_factuality_ppl/nli_fever_dev_evidence_conditioned"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "main_gap_32b_mcqa_fever_44edb3319_v2c_mcqa_5shot_answer_text",
+      "manifest": "mcqa-fever-fever-factuality/manifest.json",
+      "example_count": 2,
+      "text_bytes": 16,
+      "payload_bytes": 47579,
+      "aggregate_gap_bpb": -0.018066502007823542
+    },
+    {
+      "id": "long_context.32k",
+      "title": "Long context: 32k validation and fixed QA",
+      "description": "PG19, GovReport, QuALITY, fixed QASPER answer-prompt QA, and NarrativeQA examples from the long-context 32k run. Raw-document examples are cropped to the strongest local gap; QA examples keep the answer prompt and underlined scored answer. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "Long-context 32k validation slices",
+      "dataset_family": "long_context",
+      "datasets": [
+        "long_context/pg19_test",
+        "long_context/govreport_validation",
+        "long_context/quality_context_test",
+        "long_context/scrolls_qasper",
+        "long_context/scrolls_narrative_qa"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "long_context_32k",
+      "manifest": "long-context-32k/manifest.json",
+      "example_count": 10,
+      "text_bytes": 54424,
+      "payload_bytes": 1568603,
+      "aggregate_gap_bpb": -0.0279820115760993
+    },
+    {
+      "id": "long_context.booksum",
+      "title": "Long context: BookSum summaries",
+      "description": "BookSum validation and test rows from the clean Chapter/Summary target-only render. Examples are cropped around the scored summary target.",
+      "corpus": "Long-context 32k validation slices",
+      "dataset_family": "long_context",
+      "datasets": [
+        "long_context/booksum_validation",
+        "long_context/booksum_test"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "long_context_32k",
+      "manifest": "long-context-booksum/manifest.json",
+      "example_count": 4,
+      "text_bytes": 5124,
+      "payload_bytes": 608082,
+      "aggregate_gap_bpb": -0.000798893381237612
+    },
+    {
+      "id": "instruction_tuning.lima_train",
+      "title": "Instruction tuning: LIMA train",
+      "description": "LIMA train rows rendered as ChatML-style target-only final assistant responses. Open dialogues with no final assistant response are skipped.",
+      "corpus": "LIMA train instruction-following slice",
+      "dataset_family": "instruction_tuning",
+      "datasets": [
+        "instruction_tuning/lima_train"
+      ],
+      "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+      "model_a": "marin-community/marin-32b-base",
+      "model_b": "Qwen/Qwen3-32B",
+      "run_key": "lima_train",
+      "manifest": "lima-train/manifest.json",
+      "example_count": 2,
+      "text_bytes": 2898,
+      "payload_bytes": 74110,
+      "aggregate_gap_bpb": -0.1403115784413111
+    },
+    {
       "id": "formal_package_network.misc",
       "title": "Formal/package/network formats",
       "description": "TPTP, npm registry metadata, and Zeek network-security formats. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
