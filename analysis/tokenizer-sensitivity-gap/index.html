@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tokenizer Sensitivity d1024 Gap Dashboard | Marin</title>
+  <meta name="description" content="Gap-centered dashboard for the patched d1024 tokenizer sensitivity perplexity analysis.">
+  <link rel="canonical" href="https://marin.community/analysis/tokenizer-sensitivity-gap/">
+  <link rel="stylesheet" href="./dashboard.css?v=20260528-heatmaps">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Tokenizer sensitivity</p>
+        <h1>d1024 perplexity gaps vs llama3-128k</h1>
+        <p class="lede">Patched byte-weighted BPB comparison across Paloma and Uncheatable. Negative gap means the candidate is better than the llama3 tokenizer path on the same scored bytes.</p>
+      </div>
+      <nav class="source-links" aria-label="Sources">
+        <a href="https://marin.community/data-browser/experiment?path=gs%3A//marin-eu-west4/experiments/exp_tokenizer_sensitivity_d1024_perplexity_gap-c91f6c.json">Experiment</a>
+        <a href="https://github.com/marin-community/marin/issues/5821#issuecomment-4568564741">Issue comment</a>
+      </nav>
+    </header>
+
+    <section class="summary-grid" id="summary-grid" aria-label="Headline gaps"></section>
+
+    <div class="layout">
+      <aside class="panel sidebar">
+        <h2>Comparisons</h2>
+        <div id="candidate-list" class="candidate-list"></div>
+        <div class="notes" id="notes"></div>
+      </aside>
+
+      <section class="content">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Gap Matrix</h2>
+              <p>Candidate BPB minus <code>llama3-128k</code> BPB.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Candidate</th>
+                  <th>Overall</th>
+                  <th>Paloma</th>
+                  <th>Uncheatable</th>
+                  <th>Slice wins</th>
+                </tr>
+              </thead>
+              <tbody id="gap-matrix"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel selected-panel">
+          <div class="panel-head">
+            <div>
+              <h2 id="selected-title"></h2>
+              <p id="selected-subtitle"></p>
+            </div>
+            <div class="selected-score" id="selected-score"></div>
+          </div>
+          <div class="group-grid" id="group-grid"></div>
+        </section>
+
+        <section class="split">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>Biggest Dataset Moves</h2>
+                <p>Largest candidate wins and losses by dataset-level BPB gap.</p>
+              </div>
+            </div>
+            <div class="move-columns">
+              <div>
+                <h3>Candidate better</h3>
+                <div id="biggest-wins" class="move-list"></div>
+              </div>
+              <div>
+                <h3>Candidate worse</h3>
+                <div id="biggest-losses" class="move-list"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>Absolute BPB</h2>
+                <p>Byte-weighted score summaries from the same run.</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="score-table">
+                <thead>
+                  <tr>
+                    <th>Tokenizer path</th>
+                    <th>Overall</th>
+                    <th>Paloma</th>
+                    <th>Uncheatable</th>
+                  </tr>
+                </thead>
+                <tbody id="score-table"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head controls-head">
+            <div>
+              <h2>Dataset Slices</h2>
+              <p id="dataset-count"></p>
+            </div>
+            <div class="controls">
+              <input id="dataset-search" class="search" placeholder="Filter datasets">
+              <select id="dataset-sort">
+                <option value="abs">Sort by |gap|</option>
+                <option value="gap">Sort by gap</option>
+                <option value="name">Sort by name</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Dataset</th>
+                  <th>Gap</th>
+                  <th>Candidate BPB</th>
+                  <th>Baseline BPB</th>
+                  <th>Bytes</th>
+                  <th>Bar</th>
+                </tr>
+              </thead>
+              <tbody id="dataset-table"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Pattern Buckets</h2>
+              <p>Segment-labeled gap buckets from the report summary.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Bucket</th>
+                  <th>Gap</th>
+                  <th>Candidate BPB</th>
+                  <th>Baseline BPB</th>
+                  <th>Bytes</th>
+                  <th>Bar</th>
+                </tr>
+              </thead>
+              <tbody id="bucket-table"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Segment Heatmaps</h2>
+              <p>Worst local spans and repeated literals from the report. Color intensity follows local gap size.</p>
+            </div>
+          </div>
+          <div class="heatmap-toolbar" id="heatmap-tabs"></div>
+          <div class="example-columns">
+            <div>
+              <h3>Candidate worse</h3>
+              <div id="heatmaps-worse" class="heatmap-list"></div>
+            </div>
+            <div>
+              <h3>Candidate better</h3>
+              <div id="heatmaps-better" class="heatmap-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Example Documents</h2>
+              <p>Report-selected rows with the largest candidate-vs-baseline deltas.</p>
+            </div>
+          </div>
+          <div class="example-columns">
+            <div>
+              <h3>Candidate worse</h3>
+              <div id="examples-worse" class="example-list"></div>
+            </div>
+            <div>
+              <h3>Candidate better</h3>
+              <div id="examples-better" class="example-list"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="./dashboard.js?v=20260528-heatmaps"></script>
+</body>
+</html>
