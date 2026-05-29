@@ -1,4 +1,4 @@
-const ASSET_VERSION = "20260528-heatmaps";
+const ASSET_VERSION = "20260528-offset-audit";
 
 const response = await fetch(`./data.json?v=${ASSET_VERSION}`);
 if (!response.ok) {
@@ -23,6 +23,7 @@ const elements = {
   datasetCount: document.getElementById("dataset-count"),
   datasetTable: document.getElementById("dataset-table"),
   bucketTable: document.getElementById("bucket-table"),
+  heatmapWarning: document.getElementById("heatmap-warning"),
   heatmapTabs: document.getElementById("heatmap-tabs"),
   heatmapsWorse: document.getElementById("heatmaps-worse"),
   heatmapsBetter: document.getElementById("heatmaps-better"),
@@ -242,14 +243,34 @@ function renderBucketTable(gap) {
 }
 
 function renderExamples(gap) {
-  elements.examplesWorse.innerHTML = exampleCards(gap.examples.model_a_worse || []);
-  elements.examplesBetter.innerHTML = exampleCards(gap.examples.model_b_worse || []);
+  const localAttributionInvalid = hasInvalidLocalAttribution(gap);
+  elements.examplesWorse.innerHTML = exampleCards(gap.examples.model_a_worse || [], localAttributionInvalid);
+  elements.examplesBetter.innerHTML = exampleCards(gap.examples.model_b_worse || [], localAttributionInvalid);
 }
 
 function renderHeatmaps(gap) {
+  if (hasInvalidLocalAttribution(gap)) {
+    elements.heatmapWarning.hidden = false;
+    elements.heatmapWarning.innerHTML = `
+      TokenMonster local heatmaps are disabled. An offset audit of the saved
+      <code>scored_documents.parquet</code> found that TokenMonster token byte spans are shifted relative to the decoded source text
+      around capcode / marker behavior. The aggregate and dataset-level BPB rows above are still useful, but local span and literal
+      attribution for TokenMonster needs a scorer fix or token-level losses saved in a new artifact.
+    `;
+    elements.heatmapTabs.hidden = true;
+    elements.heatmapsWorse.innerHTML = `<div class="dataset-meta">Disabled for TokenMonster until byte-offset attribution is regenerated.</div>`;
+    elements.heatmapsBetter.innerHTML = `<div class="dataset-meta">Disabled for TokenMonster until byte-offset attribution is regenerated.</div>`;
+    return;
+  }
+  elements.heatmapWarning.hidden = true;
+  elements.heatmapTabs.hidden = false;
   const key = selectedHeatmapView === "literals" ? "top_literals" : "top_segments";
   elements.heatmapsWorse.innerHTML = heatmapCards(gap[key]?.model_a_worse || [], selectedHeatmapView, "bad");
   elements.heatmapsBetter.innerHTML = heatmapCards(gap[key]?.model_b_worse || [], selectedHeatmapView, "good");
+}
+
+function hasInvalidLocalAttribution(gap) {
+  return gap.model === "tokenmonster-englishcode-32k";
 }
 
 function moveRow(row) {
@@ -265,7 +286,7 @@ function moveRow(row) {
   `;
 }
 
-function exampleCards(rows) {
+function exampleCards(rows, localAttributionInvalid = false) {
   if (!rows.length) {
     return `<div class="dataset-meta">No examples in this bucket.</div>`;
   }
@@ -276,7 +297,7 @@ function exampleCards(rows) {
         <span class="${toneForGap(row.gap_bpb)}">${formatGap(row.gap_bpb)}</span>
       </div>
       <div class="example-meta">
-        ${escapeHtml(row.shard || "unknown shard")} · row ${formatInteger(row.row_index)} · worst bucket ${escapeHtml(row.worst_bucket || "n/a")}
+        ${escapeHtml(row.shard || "unknown shard")} · row ${formatInteger(row.row_index)}${localAttributionInvalid ? " · document gap only" : ` · worst bucket ${escapeHtml(row.worst_bucket || "n/a")}`}
       </div>
       <pre class="example-preview">${escapeHtml(row.preview || "")}</pre>
     </article>
