@@ -512,6 +512,21 @@ select {
   margin: -2px 0 12px;
 }
 
+.warning {
+  margin: -2px 0 12px;
+  border: 1px solid #e7b978;
+  border-radius: 8px;
+  background: #fff7e8;
+  color: #65440e;
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 11px 12px;
+}
+
+.warning[hidden] {
+  display: none;
+}
+
 .heatmap-tab {
   min-height: 34px;
   border: 1px solid var(--border-strong);
