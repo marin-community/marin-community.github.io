@@ -1,0 +1,753 @@
+{
+  "name": "analysis/perplexity_gap/main_gap_32b_code_interpretation_issue6070_v1/marin_32b-vs-qwen3_32b",
+  "fn_name": "<function find_model_perplexity_gap at 0x7f98eaf21300>",
+  "config": {
+    "name": "main_gap_32b_code_interpretation_issue6070_v1/marin_32b-vs-qwen3_32b",
+    "model_a_name": "marin-community/marin-32b-base",
+    "model_b_name": "Qwen/Qwen3-32B",
+    "model_a_scores_path": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/marin_32b-5e0335",
+    "model_b_scores_path": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/qwen3_32b-0df9a6",
+    "output_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_32b_code_interpretation_issue6070_v1/marin_32b-vs-qwen3_32b-870504",
+    "wandb_tags": [
+      "eval=perplexity-gap",
+      "dataset_bundle=code_interpretation",
+      "model_a=marin-community/marin-32b-base",
+      "model_b=Qwen/Qwen3-32B",
+      "region=us-central1",
+      "issue:6070"
+    ],
+    "cache_key": {
+      "name": "main_gap_32b_code_interpretation_issue6070_v1/marin_32b-vs-qwen3_32b",
+      "model_a_name": "marin-community/marin-32b-base",
+      "model_b_name": "Qwen/Qwen3-32B",
+      "wandb_tags": [
+        "eval=perplexity-gap",
+        "dataset_bundle=code_interpretation",
+        "model_a=marin-community/marin-32b-base",
+        "model_b=Qwen/Qwen3-32B",
+        "region=us-central1",
+        "issue:6070"
+      ]
+    }
+  },
+  "override_output_path": null,
+  "version": {
+    "name": "analysis/perplexity_gap/main_gap_32b_code_interpretation_issue6070_v1/marin_32b-vs-qwen3_32b",
+    "config": {
+      "model_a_scores_path": "DEP[0]",
+      "model_b_scores_path": "DEP[1]",
+      "cache_key": {
+        "name": "main_gap_32b_code_interpretation_issue6070_v1/marin_32b-vs-qwen3_32b",
+        "model_a_name": "marin-community/marin-32b-base",
+        "model_b_name": "Qwen/Qwen3-32B",
+        "wandb_tags": [
+          "eval=perplexity-gap",
+          "dataset_bundle=code_interpretation",
+          "model_a=marin-community/marin-32b-base",
+          "model_b=Qwen/Qwen3-32B",
+          "region=us-central1",
+          "issue:6070"
+        ]
+      }
+    },
+    "dependencies": [
+      {
+        "name": "analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/marin_32b",
+        "config": {
+          "datasets.code_interpretation/expression_strings_collections/python_repl.input_path": "DEP[0]/staged.jsonl.gz",
+          "datasets.code_interpretation/expression_strings_collections/python_doctest.input_path": "DEP[1]/staged.jsonl.gz",
+          "datasets.code_interpretation/expression_strings_collections/arrow_control.input_path": "DEP[2]/staged.jsonl.gz",
+          "datasets.code_interpretation/expression_arithmetic_slices/python_repl.input_path": "DEP[3]/staged.jsonl.gz",
+          "datasets.code_interpretation/expression_arithmetic_slices/python_doctest.input_path": "DEP[4]/staged.jsonl.gz",
+          "datasets.code_interpretation/expression_arithmetic_slices/arrow_control.input_path": "DEP[5]/staged.jsonl.gz",
+          "datasets.code_interpretation/function_definition_calls/python_repl.input_path": "DEP[6]/staged.jsonl.gz",
+          "datasets.code_interpretation/function_definition_calls/python_doctest.input_path": "DEP[7]/staged.jsonl.gz",
+          "datasets.code_interpretation/function_definition_calls/arrow_control.input_path": "DEP[8]/staged.jsonl.gz",
+          "cache_key": {
+            "name": "main_gap_32b_code_interpretation_issue6070_v1/marin_32b",
+            "model": {
+              "checkpoint_path": "marin-community/marin-32b-base",
+              "checkpoint_is_hf": true,
+              "model": null,
+              "tokenizer": "marin-community/marin-tokenizer",
+              "tokenizer_backend": "hf",
+              "trust_remote_code": false
+            },
+            "datasets": {
+              "code_interpretation/expression_strings_collections/python_repl": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_strings_collections",
+                  "task_family:expression_only",
+                  "template:python_repl",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/expression_strings_collections/python_doctest": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_strings_collections",
+                  "task_family:expression_only",
+                  "template:python_doctest",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/expression_strings_collections/arrow_control": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_strings_collections",
+                  "task_family:expression_only",
+                  "template:arrow_control",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/expression_arithmetic_slices/python_repl": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_arithmetic_slices",
+                  "task_family:expression_only",
+                  "template:python_repl",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/expression_arithmetic_slices/python_doctest": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_arithmetic_slices",
+                  "task_family:expression_only",
+                  "template:python_doctest",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/expression_arithmetic_slices/arrow_control": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_arithmetic_slices",
+                  "task_family:expression_only",
+                  "template:arrow_control",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/function_definition_calls/python_repl": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:function_definition_calls",
+                  "task_family:function_definition",
+                  "template:python_repl",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/function_definition_calls/python_doctest": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:function_definition_calls",
+                  "task_family:function_definition",
+                  "template:python_doctest",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/function_definition_calls/arrow_control": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:function_definition_calls",
+                  "task_family:function_definition",
+                  "template:arrow_control",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              }
+            },
+            "resource_config": {
+              "cpu": 32,
+              "ram": "128g",
+              "disk": "50g",
+              "device": {
+                "variant": "v5p-8",
+                "kind": "tpu",
+                "topology": null
+              },
+              "preemptible": true,
+              "regions": [
+                "us-central1"
+              ],
+              "zone": null,
+              "replicas": 1,
+              "device_alternatives": null,
+              "image": null
+            },
+            "per_device_batch_size": 1,
+            "max_eval_length": 4096,
+            "max_docs_per_dataset": 256,
+            "max_doc_bytes": 32768,
+            "wandb_tags": [
+              "eval=model-perplexity",
+              "dataset_bundle=code_interpretation",
+              "model=marin-community/marin-32b-base",
+              "region=us-central1",
+              "issue:6070"
+            ]
+          }
+        },
+        "dependencies": [
+          {
+            "name": "evaluation/code_interpretation/expression_strings_collections/python_repl",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_strings_collections/python_repl",
+                "manifest_fingerprint": "95d74a3067ecce65229a9c7ed7cbd4fe1d6144179e0b6a4c3c6a15c6d6c5e1a4",
+                "task_key": "expression_strings_collections",
+                "template_key": "python_repl",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/expression_strings_collections/python_doctest",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_strings_collections/python_doctest",
+                "manifest_fingerprint": "df1eb31b10c60cee6374cb8a4ea65b97605eee97bc6ec60b899c945503e10a98",
+                "task_key": "expression_strings_collections",
+                "template_key": "python_doctest",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/expression_strings_collections/arrow_control",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_strings_collections/arrow_control",
+                "manifest_fingerprint": "0dbfa2d626d88b6e5731cab0925c3c8352569f4d87f9e1c201a4d392a4cf1be7",
+                "task_key": "expression_strings_collections",
+                "template_key": "arrow_control",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/expression_arithmetic_slices/python_repl",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_arithmetic_slices/python_repl",
+                "manifest_fingerprint": "a749c67cfb95b5d8f03bbe6a21822e9a633e21f52b22e61fb8718cc6a84d00d2",
+                "task_key": "expression_arithmetic_slices",
+                "template_key": "python_repl",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/expression_arithmetic_slices/python_doctest",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_arithmetic_slices/python_doctest",
+                "manifest_fingerprint": "222aa157c845547d75d4ce161f4f21512455b051ada88ae2088d65d4a936d09f",
+                "task_key": "expression_arithmetic_slices",
+                "template_key": "python_doctest",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/expression_arithmetic_slices/arrow_control",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_arithmetic_slices/arrow_control",
+                "manifest_fingerprint": "9716087e92288374a14427665b169336c7374817f84fdafb6b7ffb683db61ce3",
+                "task_key": "expression_arithmetic_slices",
+                "template_key": "arrow_control",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/function_definition_calls/python_repl",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/function_definition_calls/python_repl",
+                "manifest_fingerprint": "462f9ffd3d39d559448220b920c52900776e7121e27dd3b3aa9943af547174fc",
+                "task_key": "function_definition_calls",
+                "template_key": "python_repl",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/function_definition_calls/python_doctest",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/function_definition_calls/python_doctest",
+                "manifest_fingerprint": "e07ec81606ceb4c452fc0f57dc62532044acfcde4b808700b70d9e5704ffbe07",
+                "task_key": "function_definition_calls",
+                "template_key": "python_doctest",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/function_definition_calls/arrow_control",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/function_definition_calls/arrow_control",
+                "manifest_fingerprint": "ca7d71769a5bf884a2a6dc269fb174b5447abbe19944e88865d4ead3e438463b",
+                "task_key": "function_definition_calls",
+                "template_key": "arrow_control",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          }
+        ]
+      },
+      {
+        "name": "analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/qwen3_32b",
+        "config": {
+          "datasets.code_interpretation/expression_strings_collections/python_repl.input_path": "DEP[0]/staged.jsonl.gz",
+          "datasets.code_interpretation/expression_strings_collections/python_doctest.input_path": "DEP[1]/staged.jsonl.gz",
+          "datasets.code_interpretation/expression_strings_collections/arrow_control.input_path": "DEP[2]/staged.jsonl.gz",
+          "datasets.code_interpretation/expression_arithmetic_slices/python_repl.input_path": "DEP[3]/staged.jsonl.gz",
+          "datasets.code_interpretation/expression_arithmetic_slices/python_doctest.input_path": "DEP[4]/staged.jsonl.gz",
+          "datasets.code_interpretation/expression_arithmetic_slices/arrow_control.input_path": "DEP[5]/staged.jsonl.gz",
+          "datasets.code_interpretation/function_definition_calls/python_repl.input_path": "DEP[6]/staged.jsonl.gz",
+          "datasets.code_interpretation/function_definition_calls/python_doctest.input_path": "DEP[7]/staged.jsonl.gz",
+          "datasets.code_interpretation/function_definition_calls/arrow_control.input_path": "DEP[8]/staged.jsonl.gz",
+          "cache_key": {
+            "name": "main_gap_32b_code_interpretation_issue6070_v1/qwen3_32b",
+            "model": {
+              "checkpoint_path": "Qwen/Qwen3-32B",
+              "checkpoint_is_hf": true,
+              "model": null,
+              "tokenizer": "Qwen/Qwen3-32B",
+              "tokenizer_backend": "hf",
+              "trust_remote_code": false
+            },
+            "datasets": {
+              "code_interpretation/expression_strings_collections/python_repl": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_strings_collections",
+                  "task_family:expression_only",
+                  "template:python_repl",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/expression_strings_collections/python_doctest": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_strings_collections",
+                  "task_family:expression_only",
+                  "template:python_doctest",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/expression_strings_collections/arrow_control": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_strings_collections",
+                  "task_family:expression_only",
+                  "template:arrow_control",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/expression_arithmetic_slices/python_repl": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_arithmetic_slices",
+                  "task_family:expression_only",
+                  "template:python_repl",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/expression_arithmetic_slices/python_doctest": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_arithmetic_slices",
+                  "task_family:expression_only",
+                  "template:python_doctest",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/expression_arithmetic_slices/arrow_control": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:expression_arithmetic_slices",
+                  "task_family:expression_only",
+                  "template:arrow_control",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/function_definition_calls/python_repl": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:function_definition_calls",
+                  "task_family:function_definition",
+                  "template:python_repl",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/function_definition_calls/python_doctest": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:function_definition_calls",
+                  "task_family:function_definition",
+                  "template:python_doctest",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              },
+              "code_interpretation/function_definition_calls/arrow_control": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "code_interpretation",
+                  "issue:6070",
+                  "task:function_definition_calls",
+                  "task_family:function_definition",
+                  "template:arrow_control",
+                  "num_fewshot:5",
+                  "format:supervised_target_only"
+                ]
+              }
+            },
+            "resource_config": {
+              "cpu": 32,
+              "ram": "128g",
+              "disk": "50g",
+              "device": {
+                "variant": "v5p-8",
+                "kind": "tpu",
+                "topology": null
+              },
+              "preemptible": true,
+              "regions": [
+                "us-central1"
+              ],
+              "zone": null,
+              "replicas": 1,
+              "device_alternatives": null,
+              "image": null
+            },
+            "per_device_batch_size": 1,
+            "max_eval_length": 4096,
+            "max_docs_per_dataset": 256,
+            "max_doc_bytes": 32768,
+            "wandb_tags": [
+              "eval=model-perplexity",
+              "dataset_bundle=code_interpretation",
+              "model=Qwen/Qwen3-32B",
+              "region=us-central1",
+              "issue:6070"
+            ]
+          }
+        },
+        "dependencies": [
+          {
+            "name": "evaluation/code_interpretation/expression_strings_collections/python_repl",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_strings_collections/python_repl",
+                "manifest_fingerprint": "95d74a3067ecce65229a9c7ed7cbd4fe1d6144179e0b6a4c3c6a15c6d6c5e1a4",
+                "task_key": "expression_strings_collections",
+                "template_key": "python_repl",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/expression_strings_collections/python_doctest",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_strings_collections/python_doctest",
+                "manifest_fingerprint": "df1eb31b10c60cee6374cb8a4ea65b97605eee97bc6ec60b899c945503e10a98",
+                "task_key": "expression_strings_collections",
+                "template_key": "python_doctest",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/expression_strings_collections/arrow_control",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_strings_collections/arrow_control",
+                "manifest_fingerprint": "0dbfa2d626d88b6e5731cab0925c3c8352569f4d87f9e1c201a4d392a4cf1be7",
+                "task_key": "expression_strings_collections",
+                "template_key": "arrow_control",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/expression_arithmetic_slices/python_repl",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_arithmetic_slices/python_repl",
+                "manifest_fingerprint": "a749c67cfb95b5d8f03bbe6a21822e9a633e21f52b22e61fb8718cc6a84d00d2",
+                "task_key": "expression_arithmetic_slices",
+                "template_key": "python_repl",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/expression_arithmetic_slices/python_doctest",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_arithmetic_slices/python_doctest",
+                "manifest_fingerprint": "222aa157c845547d75d4ce161f4f21512455b051ada88ae2088d65d4a936d09f",
+                "task_key": "expression_arithmetic_slices",
+                "template_key": "python_doctest",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/expression_arithmetic_slices/arrow_control",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/expression_arithmetic_slices/arrow_control",
+                "manifest_fingerprint": "9716087e92288374a14427665b169336c7374817f84fdafb6b7ffb683db61ce3",
+                "task_key": "expression_arithmetic_slices",
+                "template_key": "arrow_control",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/function_definition_calls/python_repl",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/function_definition_calls/python_repl",
+                "manifest_fingerprint": "462f9ffd3d39d559448220b920c52900776e7121e27dd3b3aa9943af547174fc",
+                "task_key": "function_definition_calls",
+                "template_key": "python_repl",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/function_definition_calls/python_doctest",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/function_definition_calls/python_doctest",
+                "manifest_fingerprint": "e07ec81606ceb4c452fc0f57dc62532044acfcde4b808700b70d9e5704ffbe07",
+                "task_key": "function_definition_calls",
+                "template_key": "python_doctest",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/code_interpretation/function_definition_calls/arrow_control",
+            "config": {
+              "attrs": {
+                "dataset_key": "code_interpretation/function_definition_calls/arrow_control",
+                "manifest_fingerprint": "ca7d71769a5bf884a2a6dc269fb174b5447abbe19944e88865d4ead3e438463b",
+                "task_key": "function_definition_calls",
+                "template_key": "arrow_control",
+                "renderer_version": "v1",
+                "output_filename": "staged.jsonl.gz"
+              }
+            },
+            "dependencies": []
+          }
+        ]
+      }
+    ]
+  },
+  "dependencies": [
+    "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/marin_32b-5e0335",
+    "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/qwen3_32b-0df9a6"
+  ],
+  "output_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_32b_code_interpretation_issue6070_v1/marin_32b-vs-qwen3_32b-870504"
+}

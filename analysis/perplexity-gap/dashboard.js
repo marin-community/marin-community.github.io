@@ -1,4 +1,4 @@
-const ASSET_VERSION = '20260522-v32-booksum-lima';
+const ASSET_VERSION = '20260530-code-interpretation';
 const response = await fetch(`./data.json?v=${ASSET_VERSION}`);
 if (!response.ok) {
   throw new Error(`Failed to load dashboard data: ${response.status} ${response.statusText}`);

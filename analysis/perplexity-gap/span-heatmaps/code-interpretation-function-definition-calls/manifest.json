@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "code_interpretation.function_definition_calls",
+  "title": "Code interpretation: function and class calls span heatmap",
+  "description": "Held-out small non-famous helper function and class-definition calls across REPL, doctest, and arrow-control formats. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "Code-interpretation suite (#6070)",
+  "dataset_family": "code_interpretation",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_32b_code_interpretation_issue6070_v1",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/marin_32b-5e0335/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/qwen3_32b-0df9a6/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "code_interpretation/function_definition_calls/python_repl",
+      "label": "function_definition_calls/python_repl",
+      "row_index": 0,
+      "shard": "staged_jsonl_gz",
+      "bytes": 3,
+      "score_byte_start": 1014,
+      "score_byte_end": 1017,
+      "marin_bpb": 2.88,
+      "qwen_bpb": 0.3077,
+      "gap_bpb": 2.5723,
+      "payload": "examples/function_definition_calls-python_repl-staged_jsonl_gz-row-0.json"
+    },
+    {
+      "dataset": "code_interpretation/function_definition_calls/python_repl",
+      "label": "function_definition_calls/python_repl",
+      "row_index": 2,
+      "shard": "staged_jsonl_gz",
+      "bytes": 10,
+      "score_byte_start": 1166,
+      "score_byte_end": 1176,
+      "marin_bpb": 0.109,
+      "qwen_bpb": 0.0038,
+      "gap_bpb": 0.1052,
+      "payload": "examples/function_definition_calls-python_repl-staged_jsonl_gz-row-2.json"
+    },
+    {
+      "dataset": "code_interpretation/function_definition_calls/python_doctest",
+      "label": "function_definition_calls/python_doctest",
+      "row_index": 0,
+      "shard": "staged_jsonl_gz",
+      "bytes": 3,
+      "score_byte_start": 1015,
+      "score_byte_end": 1018,
+      "marin_bpb": 2.885,
+      "qwen_bpb": 0.3477,
+      "gap_bpb": 2.5373,
+      "payload": "examples/function_definition_calls-python_doctest-staged_jsonl_gz-row-0.json"
+    },
+    {
+      "dataset": "code_interpretation/function_definition_calls/python_doctest",
+      "label": "function_definition_calls/python_doctest",
+      "row_index": 2,
+      "shard": "staged_jsonl_gz",
+      "bytes": 10,
+      "score_byte_start": 1167,
+      "score_byte_end": 1177,
+      "marin_bpb": 0.1063,
+      "qwen_bpb": 0.0028,
+      "gap_bpb": 0.1035,
+      "payload": "examples/function_definition_calls-python_doctest-staged_jsonl_gz-row-2.json"
+    },
+    {
+      "dataset": "code_interpretation/function_definition_calls/arrow_control",
+      "label": "function_definition_calls/arrow_control",
+      "row_index": 0,
+      "shard": "staged_jsonl_gz",
+      "bytes": 3,
+      "score_byte_start": 978,
+      "score_byte_end": 981,
+      "marin_bpb": 1.6181,
+      "qwen_bpb": 0.2315,
+      "gap_bpb": 1.3866,
+      "payload": "examples/function_definition_calls-arrow_control-staged_jsonl_gz-row-0.json"
+    },
+    {
+      "dataset": "code_interpretation/function_definition_calls/arrow_control",
+      "label": "function_definition_calls/arrow_control",
+      "row_index": 2,
+      "shard": "staged_jsonl_gz",
+      "bytes": 10,
+      "score_byte_start": 1114,
+      "score_byte_end": 1124,
+      "marin_bpb": 0.0224,
+      "qwen_bpb": 0.0075,
+      "gap_bpb": 0.0148,
+      "payload": "examples/function_definition_calls-arrow_control-staged_jsonl_gz-row-2.json"
+    }
+  ]
+}

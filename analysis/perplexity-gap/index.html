@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Perplexity Gap Dashboard | Marin</title>
-  <meta name="description" content="Interactive view of Marin perplexity-gap reports across the 32B all-available diagnostic run, including focused code and code-adjacent takeaways.">
+  <meta name="description" content="Interactive view of Marin perplexity-gap reports across 32B diagnostic, long-context, AA-proxy, instruction-following, prompt-format sensitivity, and code-interpretation runs.">
   <link rel="canonical" href="https://marin.community/analysis/perplexity-gap/">
   <link rel="stylesheet" href="./dashboard.css?v=20260515-v25-stack-v2-v0">
 </head>
@@ -13,9 +13,9 @@
     <div class="hero">
       <div>
         <h1>Perplexity Gap Dashboard</h1>
-        <div class="sub">Completed Marin gap reports rendered as a single dashboard. This refresh is driven by the 32B all-available diagnostic run, with the earlier 8B base, multilingual, long-tail, Common Crawl, game/music, and follow-up slices kept for reference. The 32B run still shows a focused code and code-adjacent deficit, especially on SVG/XML markup, GitHub source, and GH Archive rows. Positive gap means Marin is worse than the comparator. Negative gap means Marin is better.</div>
+        <div class="sub">Completed Marin gap reports rendered as a single dashboard. This refresh includes the 32B all-available diagnostic run, MCQA/FEVER, long-context, LIMA, AA-proxy, prompt-format sensitivity, and code-interpretation slices, with earlier 8B runs kept for reference. Positive gap means Marin is worse than the comparator. Negative gap means Marin is better.</div>
       </div>
-      <div class="meta">Generated 2026-05-11 03:15 UTC<br>32B all-available diagnostic summary + CLRS/numeric stress tests + 8B reference summaries read directly from GCS</div>
+      <div class="meta">Generated 2026-05-30 15:36 UTC<br>32B diagnostic, MCQA/FEVER, long-context, LIMA, AA-proxy, prompt-format sensitivity, and code-interpretation summaries served from local artifacts</div>
     </div>
 
     <div class="layout">
@@ -96,6 +96,6 @@
       </main>
     </div>
   </div>
-<script type="module" src="./dashboard.js?v=20260522-v32-booksum-lima"></script>
+<script type="module" src="./dashboard.js?v=20260530-code-interpretation"></script>
 </body>
 </html>
