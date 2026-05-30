@@ -1,0 +1,1341 @@
+{
+  "name": "analysis/perplexity_gap/main_gap_32b_aa_proxy_professional_evidential_v2/marin_32b-vs-qwen3_32b",
+  "fn_name": "<function find_model_perplexity_gap at 0x7f0fb11b63e0>",
+  "config": {
+    "name": "main_gap_32b_aa_proxy_professional_evidential_v2/marin_32b-vs-qwen3_32b",
+    "model_a_name": "marin-community/marin-32b-base",
+    "model_b_name": "Qwen/Qwen3-32B",
+    "model_a_scores_path": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_aa_proxy_professional_evidential_v2/marin_32b-d965ab",
+    "model_b_scores_path": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_aa_proxy_professional_evidential_v2/qwen3_32b-508d22",
+    "output_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_32b_aa_proxy_professional_evidential_v2/marin_32b-vs-qwen3_32b-8579e5",
+    "wandb_tags": [
+      "eval=perplexity-gap",
+      "dataset_bundle=aa_proxy_professional_evidential",
+      "model_a=marin-community/marin-32b-base",
+      "model_b=Qwen/Qwen3-32B",
+      "region=us-central1"
+    ],
+    "retry_key": null,
+    "cache_key": {
+      "name": "main_gap_32b_aa_proxy_professional_evidential_v2/marin_32b-vs-qwen3_32b",
+      "model_a_name": "marin-community/marin-32b-base",
+      "model_b_name": "Qwen/Qwen3-32B",
+      "wandb_tags": [
+        "eval=perplexity-gap",
+        "dataset_bundle=aa_proxy_professional_evidential",
+        "model_a=marin-community/marin-32b-base",
+        "model_b=Qwen/Qwen3-32B",
+        "region=us-central1"
+      ],
+      "retry_key": null
+    }
+  },
+  "override_output_path": null,
+  "version": {
+    "name": "analysis/perplexity_gap/main_gap_32b_aa_proxy_professional_evidential_v2/marin_32b-vs-qwen3_32b",
+    "config": {
+      "model_a_scores_path": "DEP[0]",
+      "model_b_scores_path": "DEP[1]",
+      "cache_key": {
+        "name": "main_gap_32b_aa_proxy_professional_evidential_v2/marin_32b-vs-qwen3_32b",
+        "model_a_name": "marin-community/marin-32b-base",
+        "model_b_name": "Qwen/Qwen3-32B",
+        "wandb_tags": [
+          "eval=perplexity-gap",
+          "dataset_bundle=aa_proxy_professional_evidential",
+          "model_a=marin-community/marin-32b-base",
+          "model_b=Qwen/Qwen3-32B",
+          "region=us-central1"
+        ],
+        "retry_key": null
+      }
+    },
+    "dependencies": [
+      {
+        "name": "analysis/model_perplexity_scores/main_gap_32b_aa_proxy_professional_evidential_v2/marin_32b",
+        "config": {
+          "datasets.medical_professional_ppl/professional_document/clinical_trials_brief_summary.input_path": "DEP[0]/clinical_trials_brief_summary/data-00000-of-00001.jsonl.gz",
+          "datasets.medical_professional_ppl/professional_document/clinical_trials_detailed_description.input_path": "DEP[1]/clinical_trials_detailed_description/data-00000-of-00001.jsonl.gz",
+          "datasets.medical_professional_ppl/professional_document/clinical_trials_eligibility_criteria.input_path": "DEP[2]/clinical_trials_eligibility_criteria/data-00000-of-00001.jsonl.gz",
+          "datasets.factual_evidential_reasoning_ppl/nli_fever_train_evidence_to_claim.input_path": "DEP[3]/nli_fever_train_evidence_to_claim/data-00000-of-00001.jsonl.gz",
+          "datasets.factual_evidential_reasoning_ppl/nli_fever_dev_evidence_to_claim.input_path": "DEP[4]/nli_fever_dev_evidence_to_claim/data-00000-of-00001.jsonl.gz",
+          "datasets.factual_evidential_reasoning_ppl/vitaminc_train_label_from_evidence_claim.input_path": "DEP[5]/vitaminc_train_label_from_evidence_claim/data-00000-of-00001.jsonl.gz",
+          "datasets.factual_evidential_reasoning_ppl/vitaminc_validation_label_from_evidence_claim.input_path": "DEP[6]/vitaminc_validation_label_from_evidence_claim/data-00000-of-00001.jsonl.gz",
+          "datasets.factual_evidential_reasoning_ppl/vitaminc_validation_correct_vs_contradiction_pair.input_path": "DEP[7]/vitaminc_validation_correct_vs_contradiction_pair/data-00000-of-00001.jsonl.gz",
+          "cache_key": {
+            "name": "main_gap_32b_aa_proxy_professional_evidential_v2/marin_32b",
+            "model": {
+              "checkpoint_path": "marin-community/marin-32b-base",
+              "checkpoint_is_hf": true,
+              "model": null,
+              "tokenizer": "marin-community/marin-tokenizer",
+              "tokenizer_backend": "hf",
+              "trust_remote_code": false
+            },
+            "datasets": {
+              "professional_documents/sec/10_k": {
+                "input_path": null,
+                "hf_dataset_id": "TeraflopAI/10-K-text",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": "bdcc7da848820c5f74891f0a72fa27229bcaf972",
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents",
+                  "professional_documents/sec",
+                  "professional_documents/sec/10_k",
+                  "source:sec_edgar"
+                ]
+              },
+              "professional_documents/sec/10_q": {
+                "input_path": null,
+                "hf_dataset_id": "TeraflopAI/10-Q-text",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": "1db4291296a24f270b572c76ca46a71074371ba6",
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents",
+                  "professional_documents/sec",
+                  "professional_documents/sec/10_q",
+                  "source:sec_edgar"
+                ]
+              },
+              "professional_documents_law_uspto/contracts/atticus_contracts": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.atticus_contracts.0.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:contracts",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/contracts/cfpb_creditcard_contracts": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.cfpb_cc.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:contracts",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/contracts/resource_contracts": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.resource_contracts.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:contracts",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/court/courtlistener_opinions": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.courtlisteneropinions.0.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:court",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/court/scotus_filings": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.scotus_docket_entries.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:court",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/statutes_regulations/cfr": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.cfr.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:statutes_regulations",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/statutes_regulations/uscode": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.uscode.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:statutes_regulations",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/statutes_regulations/federal_register": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.federal_register.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:statutes_regulations",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/court/common_pile_caselaw_access_project": {
+                "input_path": null,
+                "hf_dataset_id": "common-pile/caselaw_access_project_filtered",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:court",
+                  "source_mode:hf_dataset",
+                  "split:train",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/statutes_regulations/common_pile_regulations": {
+                "input_path": null,
+                "hf_dataset_id": "common-pile/regulations_filtered",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:statutes_regulations",
+                  "source_mode:hf_dataset",
+                  "split:train",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/government_publications/common_pile_usgpo": {
+                "input_path": null,
+                "hf_dataset_id": "common-pile/usgpo_filtered",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:government_publications",
+                  "source_mode:hf_dataset",
+                  "split:train",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/patents/common_pile_uspto_patents": {
+                "input_path": null,
+                "hf_dataset_id": "common-pile/uspto_filtered",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:patents",
+                  "source_mode:hf_dataset",
+                  "split:train",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "medical_professional_ppl/professional_document/clinical_trials_brief_summary": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "medical_professional_ppl",
+                  "professional_document",
+                  "raw_ppl",
+                  "split:train",
+                  "license:apache-2.0",
+                  "ppl_fidelity:high",
+                  "core_tracking",
+                  "materialized:string_only"
+                ]
+              },
+              "medical_professional_ppl/professional_document/clinical_trials_detailed_description": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "medical_professional_ppl",
+                  "professional_document",
+                  "raw_ppl",
+                  "split:train",
+                  "license:apache-2.0",
+                  "ppl_fidelity:high",
+                  "core_tracking",
+                  "materialized:string_only"
+                ]
+              },
+              "medical_professional_ppl/professional_document/clinical_trials_eligibility_criteria": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "medical_professional_ppl",
+                  "professional_document",
+                  "raw_ppl",
+                  "split:train",
+                  "license:apache-2.0",
+                  "ppl_fidelity:high",
+                  "core_tracking",
+                  "materialized:string_only"
+                ]
+              },
+              "factual_evidential_reasoning_ppl/nli_fever_train_evidence_to_claim": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "factual_evidential_reasoning_ppl",
+                  "issue:5819",
+                  "issue:5826",
+                  "metric:evidence_conditioned_claim_likelihood",
+                  "rendering:evidence_then_claim_target",
+                  "source:nli_fever",
+                  "split:train",
+                  "loss:target_only",
+                  "truthfulness_deferred:true"
+                ]
+              },
+              "factual_evidential_reasoning_ppl/nli_fever_dev_evidence_to_claim": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "factual_evidential_reasoning_ppl",
+                  "issue:5819",
+                  "issue:5826",
+                  "metric:evidence_conditioned_claim_likelihood",
+                  "rendering:evidence_then_claim_target",
+                  "source:nli_fever",
+                  "split:dev",
+                  "loss:target_only",
+                  "truthfulness_deferred:true"
+                ]
+              },
+              "factual_evidential_reasoning_ppl/vitaminc_train_label_from_evidence_claim": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "factual_evidential_reasoning_ppl",
+                  "issue:5819",
+                  "issue:5826",
+                  "metric:contradiction_sensitivity",
+                  "rendering:evidence_claim_label_target",
+                  "source:vitaminc",
+                  "split:train",
+                  "loss:target_only",
+                  "truthfulness_deferred:true"
+                ]
+              },
+              "factual_evidential_reasoning_ppl/vitaminc_validation_label_from_evidence_claim": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "factual_evidential_reasoning_ppl",
+                  "issue:5819",
+                  "issue:5826",
+                  "metric:contradiction_sensitivity",
+                  "rendering:evidence_claim_label_target",
+                  "source:vitaminc",
+                  "split:validation",
+                  "loss:target_only",
+                  "truthfulness_deferred:true"
+                ]
+              },
+              "factual_evidential_reasoning_ppl/vitaminc_validation_correct_vs_contradiction_pair": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "factual_evidential_reasoning_ppl",
+                  "issue:5819",
+                  "issue:5826",
+                  "metric:paired_correct_vs_distractor_likelihood",
+                  "rendering:same_evidence_correct_and_contradiction_targets",
+                  "source:vitaminc",
+                  "split:validation",
+                  "loss:target_only",
+                  "truthfulness_deferred:true"
+                ]
+              }
+            },
+            "resource_config": {
+              "cpu": 32,
+              "ram": "128g",
+              "disk": "50g",
+              "device": {
+                "variant": "v5p-8",
+                "kind": "tpu",
+                "topology": null
+              },
+              "preemptible": true,
+              "regions": [
+                "us-central1"
+              ],
+              "zone": null,
+              "replicas": 1,
+              "device_alternatives": null,
+              "image": null
+            },
+            "per_device_batch_size": 1,
+            "max_eval_length": 4096,
+            "max_docs_per_dataset": 256,
+            "max_doc_bytes": 32768,
+            "wandb_tags": [
+              "eval=model-perplexity",
+              "dataset_bundle=aa_proxy_professional_evidential",
+              "model=marin-community/marin-32b-base",
+              "region=us-central1"
+            ]
+          }
+        },
+        "dependencies": [
+          {
+            "name": "evaluation/medical_professional_ppl/clinical_trials_v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "source_dataset": "louisbrulenaudet/clinical-trials",
+                "fields": [
+                  "brief_summary",
+                  "detailed_description",
+                  "eligibility_criteria"
+                ],
+                "schema": [
+                  "id",
+                  "text",
+                  "metadata"
+                ],
+                "skip_non_string_or_empty_text": true
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/medical_professional_ppl/clinical_trials_v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "source_dataset": "louisbrulenaudet/clinical-trials",
+                "fields": [
+                  "brief_summary",
+                  "detailed_description",
+                  "eligibility_criteria"
+                ],
+                "schema": [
+                  "id",
+                  "text",
+                  "metadata"
+                ],
+                "skip_non_string_or_empty_text": true
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/medical_professional_ppl/clinical_trials_v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "source_dataset": "louisbrulenaudet/clinical-trials",
+                "fields": [
+                  "brief_summary",
+                  "detailed_description",
+                  "eligibility_criteria"
+                ],
+                "schema": [
+                  "id",
+                  "text",
+                  "metadata"
+                ],
+                "skip_non_string_or_empty_text": true
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/factual_evidential_reasoning_ppl/v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "nli_fever": {
+                  "dataset_id": "pietrolesci/nli_fever",
+                  "revision": "1eddac63112eee1fdf1966e0bca27a5ff248c772"
+                },
+                "vitaminc": {
+                  "dataset_id": "tals/vitaminc",
+                  "revision": "be6febb761b0b2807687e61e0b5282e459df2fa0"
+                },
+                "schema": [
+                  "id",
+                  "input",
+                  "target",
+                  "metric",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/factual_evidential_reasoning_ppl/v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "nli_fever": {
+                  "dataset_id": "pietrolesci/nli_fever",
+                  "revision": "1eddac63112eee1fdf1966e0bca27a5ff248c772"
+                },
+                "vitaminc": {
+                  "dataset_id": "tals/vitaminc",
+                  "revision": "be6febb761b0b2807687e61e0b5282e459df2fa0"
+                },
+                "schema": [
+                  "id",
+                  "input",
+                  "target",
+                  "metric",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/factual_evidential_reasoning_ppl/v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "nli_fever": {
+                  "dataset_id": "pietrolesci/nli_fever",
+                  "revision": "1eddac63112eee1fdf1966e0bca27a5ff248c772"
+                },
+                "vitaminc": {
+                  "dataset_id": "tals/vitaminc",
+                  "revision": "be6febb761b0b2807687e61e0b5282e459df2fa0"
+                },
+                "schema": [
+                  "id",
+                  "input",
+                  "target",
+                  "metric",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/factual_evidential_reasoning_ppl/v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "nli_fever": {
+                  "dataset_id": "pietrolesci/nli_fever",
+                  "revision": "1eddac63112eee1fdf1966e0bca27a5ff248c772"
+                },
+                "vitaminc": {
+                  "dataset_id": "tals/vitaminc",
+                  "revision": "be6febb761b0b2807687e61e0b5282e459df2fa0"
+                },
+                "schema": [
+                  "id",
+                  "input",
+                  "target",
+                  "metric",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/factual_evidential_reasoning_ppl/v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "nli_fever": {
+                  "dataset_id": "pietrolesci/nli_fever",
+                  "revision": "1eddac63112eee1fdf1966e0bca27a5ff248c772"
+                },
+                "vitaminc": {
+                  "dataset_id": "tals/vitaminc",
+                  "revision": "be6febb761b0b2807687e61e0b5282e459df2fa0"
+                },
+                "schema": [
+                  "id",
+                  "input",
+                  "target",
+                  "metric",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          }
+        ]
+      },
+      {
+        "name": "analysis/model_perplexity_scores/main_gap_32b_aa_proxy_professional_evidential_v2/qwen3_32b",
+        "config": {
+          "datasets.medical_professional_ppl/professional_document/clinical_trials_brief_summary.input_path": "DEP[0]/clinical_trials_brief_summary/data-00000-of-00001.jsonl.gz",
+          "datasets.medical_professional_ppl/professional_document/clinical_trials_detailed_description.input_path": "DEP[1]/clinical_trials_detailed_description/data-00000-of-00001.jsonl.gz",
+          "datasets.medical_professional_ppl/professional_document/clinical_trials_eligibility_criteria.input_path": "DEP[2]/clinical_trials_eligibility_criteria/data-00000-of-00001.jsonl.gz",
+          "datasets.factual_evidential_reasoning_ppl/nli_fever_train_evidence_to_claim.input_path": "DEP[3]/nli_fever_train_evidence_to_claim/data-00000-of-00001.jsonl.gz",
+          "datasets.factual_evidential_reasoning_ppl/nli_fever_dev_evidence_to_claim.input_path": "DEP[4]/nli_fever_dev_evidence_to_claim/data-00000-of-00001.jsonl.gz",
+          "datasets.factual_evidential_reasoning_ppl/vitaminc_train_label_from_evidence_claim.input_path": "DEP[5]/vitaminc_train_label_from_evidence_claim/data-00000-of-00001.jsonl.gz",
+          "datasets.factual_evidential_reasoning_ppl/vitaminc_validation_label_from_evidence_claim.input_path": "DEP[6]/vitaminc_validation_label_from_evidence_claim/data-00000-of-00001.jsonl.gz",
+          "datasets.factual_evidential_reasoning_ppl/vitaminc_validation_correct_vs_contradiction_pair.input_path": "DEP[7]/vitaminc_validation_correct_vs_contradiction_pair/data-00000-of-00001.jsonl.gz",
+          "cache_key": {
+            "name": "main_gap_32b_aa_proxy_professional_evidential_v2/qwen3_32b",
+            "model": {
+              "checkpoint_path": "Qwen/Qwen3-32B",
+              "checkpoint_is_hf": true,
+              "model": null,
+              "tokenizer": "Qwen/Qwen3-32B",
+              "tokenizer_backend": "hf",
+              "trust_remote_code": false
+            },
+            "datasets": {
+              "professional_documents/sec/10_k": {
+                "input_path": null,
+                "hf_dataset_id": "TeraflopAI/10-K-text",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": "bdcc7da848820c5f74891f0a72fa27229bcaf972",
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents",
+                  "professional_documents/sec",
+                  "professional_documents/sec/10_k",
+                  "source:sec_edgar"
+                ]
+              },
+              "professional_documents/sec/10_q": {
+                "input_path": null,
+                "hf_dataset_id": "TeraflopAI/10-Q-text",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": "1db4291296a24f270b572c76ca46a71074371ba6",
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents",
+                  "professional_documents/sec",
+                  "professional_documents/sec/10_q",
+                  "source:sec_edgar"
+                ]
+              },
+              "professional_documents_law_uspto/contracts/atticus_contracts": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.atticus_contracts.0.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:contracts",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/contracts/cfpb_creditcard_contracts": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.cfpb_cc.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:contracts",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/contracts/resource_contracts": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.resource_contracts.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:contracts",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/court/courtlistener_opinions": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.courtlisteneropinions.0.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:court",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/court/scotus_filings": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.scotus_docket_entries.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:court",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/statutes_regulations/cfr": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.cfr.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:statutes_regulations",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/statutes_regulations/uscode": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.uscode.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:statutes_regulations",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/statutes_regulations/federal_register": {
+                "input_path": "https://huggingface.co/datasets/pile-of-law/pile-of-law/resolve/main/data/validation.federal_register.jsonl.xz",
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:statutes_regulations",
+                  "source_mode:url_jsonl_xz",
+                  "split:validation",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/court/common_pile_caselaw_access_project": {
+                "input_path": null,
+                "hf_dataset_id": "common-pile/caselaw_access_project_filtered",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:court",
+                  "source_mode:hf_dataset",
+                  "split:train",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/statutes_regulations/common_pile_regulations": {
+                "input_path": null,
+                "hf_dataset_id": "common-pile/regulations_filtered",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:statutes_regulations",
+                  "source_mode:hf_dataset",
+                  "split:train",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/government_publications/common_pile_usgpo": {
+                "input_path": null,
+                "hf_dataset_id": "common-pile/usgpo_filtered",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:government_publications",
+                  "source_mode:hf_dataset",
+                  "split:train",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "professional_documents_law_uspto/patents/common_pile_uspto_patents": {
+                "input_path": null,
+                "hf_dataset_id": "common-pile/uspto_filtered",
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "train",
+                "tags": [
+                  "professional_documents_law_uspto",
+                  "family:patents",
+                  "source_mode:hf_dataset",
+                  "split:train",
+                  "rendering:raw_document_text"
+                ]
+              },
+              "medical_professional_ppl/professional_document/clinical_trials_brief_summary": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "medical_professional_ppl",
+                  "professional_document",
+                  "raw_ppl",
+                  "split:train",
+                  "license:apache-2.0",
+                  "ppl_fidelity:high",
+                  "core_tracking",
+                  "materialized:string_only"
+                ]
+              },
+              "medical_professional_ppl/professional_document/clinical_trials_detailed_description": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "medical_professional_ppl",
+                  "professional_document",
+                  "raw_ppl",
+                  "split:train",
+                  "license:apache-2.0",
+                  "ppl_fidelity:high",
+                  "core_tracking",
+                  "materialized:string_only"
+                ]
+              },
+              "medical_professional_ppl/professional_document/clinical_trials_eligibility_criteria": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": null,
+                "target_key": null,
+                "split": "validation",
+                "tags": [
+                  "medical_professional_ppl",
+                  "professional_document",
+                  "raw_ppl",
+                  "split:train",
+                  "license:apache-2.0",
+                  "ppl_fidelity:high",
+                  "core_tracking",
+                  "materialized:string_only"
+                ]
+              },
+              "factual_evidential_reasoning_ppl/nli_fever_train_evidence_to_claim": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "factual_evidential_reasoning_ppl",
+                  "issue:5819",
+                  "issue:5826",
+                  "metric:evidence_conditioned_claim_likelihood",
+                  "rendering:evidence_then_claim_target",
+                  "source:nli_fever",
+                  "split:train",
+                  "loss:target_only",
+                  "truthfulness_deferred:true"
+                ]
+              },
+              "factual_evidential_reasoning_ppl/nli_fever_dev_evidence_to_claim": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "factual_evidential_reasoning_ppl",
+                  "issue:5819",
+                  "issue:5826",
+                  "metric:evidence_conditioned_claim_likelihood",
+                  "rendering:evidence_then_claim_target",
+                  "source:nli_fever",
+                  "split:dev",
+                  "loss:target_only",
+                  "truthfulness_deferred:true"
+                ]
+              },
+              "factual_evidential_reasoning_ppl/vitaminc_train_label_from_evidence_claim": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "factual_evidential_reasoning_ppl",
+                  "issue:5819",
+                  "issue:5826",
+                  "metric:contradiction_sensitivity",
+                  "rendering:evidence_claim_label_target",
+                  "source:vitaminc",
+                  "split:train",
+                  "loss:target_only",
+                  "truthfulness_deferred:true"
+                ]
+              },
+              "factual_evidential_reasoning_ppl/vitaminc_validation_label_from_evidence_claim": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "factual_evidential_reasoning_ppl",
+                  "issue:5819",
+                  "issue:5826",
+                  "metric:contradiction_sensitivity",
+                  "rendering:evidence_claim_label_target",
+                  "source:vitaminc",
+                  "split:validation",
+                  "loss:target_only",
+                  "truthfulness_deferred:true"
+                ]
+              },
+              "factual_evidential_reasoning_ppl/vitaminc_validation_correct_vs_contradiction_pair": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "factual_evidential_reasoning_ppl",
+                  "issue:5819",
+                  "issue:5826",
+                  "metric:paired_correct_vs_distractor_likelihood",
+                  "rendering:same_evidence_correct_and_contradiction_targets",
+                  "source:vitaminc",
+                  "split:validation",
+                  "loss:target_only",
+                  "truthfulness_deferred:true"
+                ]
+              }
+            },
+            "resource_config": {
+              "cpu": 32,
+              "ram": "128g",
+              "disk": "50g",
+              "device": {
+                "variant": "v5p-8",
+                "kind": "tpu",
+                "topology": null
+              },
+              "preemptible": true,
+              "regions": [
+                "us-central1"
+              ],
+              "zone": null,
+              "replicas": 1,
+              "device_alternatives": null,
+              "image": null
+            },
+            "per_device_batch_size": 1,
+            "max_eval_length": 4096,
+            "max_docs_per_dataset": 256,
+            "max_doc_bytes": 32768,
+            "wandb_tags": [
+              "eval=model-perplexity",
+              "dataset_bundle=aa_proxy_professional_evidential",
+              "model=Qwen/Qwen3-32B",
+              "region=us-central1"
+            ]
+          }
+        },
+        "dependencies": [
+          {
+            "name": "evaluation/medical_professional_ppl/clinical_trials_v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "source_dataset": "louisbrulenaudet/clinical-trials",
+                "fields": [
+                  "brief_summary",
+                  "detailed_description",
+                  "eligibility_criteria"
+                ],
+                "schema": [
+                  "id",
+                  "text",
+                  "metadata"
+                ],
+                "skip_non_string_or_empty_text": true
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/medical_professional_ppl/clinical_trials_v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "source_dataset": "louisbrulenaudet/clinical-trials",
+                "fields": [
+                  "brief_summary",
+                  "detailed_description",
+                  "eligibility_criteria"
+                ],
+                "schema": [
+                  "id",
+                  "text",
+                  "metadata"
+                ],
+                "skip_non_string_or_empty_text": true
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/medical_professional_ppl/clinical_trials_v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "source_dataset": "louisbrulenaudet/clinical-trials",
+                "fields": [
+                  "brief_summary",
+                  "detailed_description",
+                  "eligibility_criteria"
+                ],
+                "schema": [
+                  "id",
+                  "text",
+                  "metadata"
+                ],
+                "skip_non_string_or_empty_text": true
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/factual_evidential_reasoning_ppl/v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "nli_fever": {
+                  "dataset_id": "pietrolesci/nli_fever",
+                  "revision": "1eddac63112eee1fdf1966e0bca27a5ff248c772"
+                },
+                "vitaminc": {
+                  "dataset_id": "tals/vitaminc",
+                  "revision": "be6febb761b0b2807687e61e0b5282e459df2fa0"
+                },
+                "schema": [
+                  "id",
+                  "input",
+                  "target",
+                  "metric",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/factual_evidential_reasoning_ppl/v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "nli_fever": {
+                  "dataset_id": "pietrolesci/nli_fever",
+                  "revision": "1eddac63112eee1fdf1966e0bca27a5ff248c772"
+                },
+                "vitaminc": {
+                  "dataset_id": "tals/vitaminc",
+                  "revision": "be6febb761b0b2807687e61e0b5282e459df2fa0"
+                },
+                "schema": [
+                  "id",
+                  "input",
+                  "target",
+                  "metric",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/factual_evidential_reasoning_ppl/v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "nli_fever": {
+                  "dataset_id": "pietrolesci/nli_fever",
+                  "revision": "1eddac63112eee1fdf1966e0bca27a5ff248c772"
+                },
+                "vitaminc": {
+                  "dataset_id": "tals/vitaminc",
+                  "revision": "be6febb761b0b2807687e61e0b5282e459df2fa0"
+                },
+                "schema": [
+                  "id",
+                  "input",
+                  "target",
+                  "metric",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/factual_evidential_reasoning_ppl/v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "nli_fever": {
+                  "dataset_id": "pietrolesci/nli_fever",
+                  "revision": "1eddac63112eee1fdf1966e0bca27a5ff248c772"
+                },
+                "vitaminc": {
+                  "dataset_id": "tals/vitaminc",
+                  "revision": "be6febb761b0b2807687e61e0b5282e459df2fa0"
+                },
+                "schema": [
+                  "id",
+                  "input",
+                  "target",
+                  "metric",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "evaluation/factual_evidential_reasoning_ppl/v1",
+            "config": {
+              "cache_key": {
+                "examples_per_slice": 2000,
+                "nli_fever": {
+                  "dataset_id": "pietrolesci/nli_fever",
+                  "revision": "1eddac63112eee1fdf1966e0bca27a5ff248c772"
+                },
+                "vitaminc": {
+                  "dataset_id": "tals/vitaminc",
+                  "revision": "be6febb761b0b2807687e61e0b5282e459df2fa0"
+                },
+                "schema": [
+                  "id",
+                  "input",
+                  "target",
+                  "metric",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          }
+        ]
+      }
+    ]
+  },
+  "dependencies": [
+    "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_aa_proxy_professional_evidential_v2/marin_32b-d965ab",
+    "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_aa_proxy_professional_evidential_v2/qwen3_32b-508d22"
+  ],
+  "output_path": "gs://marin-us-central1/analysis/perplexity_gap/main_gap_32b_aa_proxy_professional_evidential_v2/marin_32b-vs-qwen3_32b-8579e5"
+}

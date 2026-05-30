@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "code_interpretation.expression_arithmetic_slices",
+  "title": "Code interpretation: arithmetic and slices span heatmap",
+  "description": "Held-out Python-like arithmetic, generator, range, and slicing expressions across REPL, doctest, and arrow-control formats. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "Code-interpretation suite (#6070)",
+  "dataset_family": "code_interpretation",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_32b_code_interpretation_issue6070_v1",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/marin_32b-5e0335/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/qwen3_32b-0df9a6/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "code_interpretation/expression_arithmetic_slices/python_repl",
+      "label": "expression_arithmetic_slices/python_repl",
+      "row_index": 1,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 416,
+      "score_byte_end": 418,
+      "marin_bpb": 0.6586,
+      "qwen_bpb": 0.0988,
+      "gap_bpb": 0.5598,
+      "payload": "examples/expression_arithmetic_slices-python_repl-staged_jsonl_gz-row-1.json"
+    },
+    {
+      "dataset": "code_interpretation/expression_arithmetic_slices/python_repl",
+      "label": "expression_arithmetic_slices/python_repl",
+      "row_index": 2,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 407,
+      "score_byte_end": 409,
+      "marin_bpb": 1.852,
+      "qwen_bpb": 6.6749,
+      "gap_bpb": -4.8229,
+      "payload": "examples/expression_arithmetic_slices-python_repl-staged_jsonl_gz-row-2.json"
+    },
+    {
+      "dataset": "code_interpretation/expression_arithmetic_slices/python_doctest",
+      "label": "expression_arithmetic_slices/python_doctest",
+      "row_index": 1,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 417,
+      "score_byte_end": 419,
+      "marin_bpb": 0.6457,
+      "qwen_bpb": 0.0616,
+      "gap_bpb": 0.5842,
+      "payload": "examples/expression_arithmetic_slices-python_doctest-staged_jsonl_gz-row-1.json"
+    },
+    {
+      "dataset": "code_interpretation/expression_arithmetic_slices/python_doctest",
+      "label": "expression_arithmetic_slices/python_doctest",
+      "row_index": 2,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 408,
+      "score_byte_end": 410,
+      "marin_bpb": 2.0728,
+      "qwen_bpb": 7.0413,
+      "gap_bpb": -4.9686,
+      "payload": "examples/expression_arithmetic_slices-python_doctest-staged_jsonl_gz-row-2.json"
+    },
+    {
+      "dataset": "code_interpretation/expression_arithmetic_slices/arrow_control",
+      "label": "expression_arithmetic_slices/arrow_control",
+      "row_index": 1,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 464,
+      "score_byte_end": 466,
+      "marin_bpb": 1.2254,
+      "qwen_bpb": 0.8831,
+      "gap_bpb": 0.3423,
+      "payload": "examples/expression_arithmetic_slices-arrow_control-staged_jsonl_gz-row-1.json"
+    },
+    {
+      "dataset": "code_interpretation/expression_arithmetic_slices/arrow_control",
+      "label": "expression_arithmetic_slices/arrow_control",
+      "row_index": 2,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 455,
+      "score_byte_end": 457,
+      "marin_bpb": 1.7293,
+      "qwen_bpb": 5.9791,
+      "gap_bpb": -4.2497,
+      "payload": "examples/expression_arithmetic_slices-arrow_control-staged_jsonl_gz-row-2.json"
+    }
+  ]
+}

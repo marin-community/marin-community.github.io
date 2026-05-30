@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "code_interpretation.expression_strings_collections",
+  "title": "Code interpretation: strings and collections span heatmap",
+  "description": "Held-out Python-like string, collection, dict lookup, slicing, and indexing expressions across REPL, doctest, and arrow-control formats. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+  "corpus": "Code-interpretation suite (#6070)",
+  "dataset_family": "code_interpretation",
+  "comparison_id": "marin-community/marin-32b-base__Qwen/Qwen3-32B",
+  "model_a": "marin-community/marin-32b-base",
+  "model_b": "Qwen/Qwen3-32B",
+  "run_key": "main_gap_32b_code_interpretation_issue6070_v1",
+  "score_paths": {
+    "marin": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/marin_32b-5e0335/scored_documents.parquet",
+    "qwen": "gs://marin-us-central1/analysis/model_perplexity_scores/main_gap_32b_code_interpretation_issue6070_v1/qwen3_32b-0df9a6/scored_documents.parquet"
+  },
+  "examples": [
+    {
+      "dataset": "code_interpretation/expression_strings_collections/python_repl",
+      "label": "expression_strings_collections/python_repl",
+      "row_index": 0,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 405,
+      "score_byte_end": 407,
+      "marin_bpb": 1.2359,
+      "qwen_bpb": 0.0191,
+      "gap_bpb": 1.2168,
+      "payload": "examples/expression_strings_collections-python_repl-staged_jsonl_gz-row-0.json"
+    },
+    {
+      "dataset": "code_interpretation/expression_strings_collections/python_repl",
+      "label": "expression_strings_collections/python_repl",
+      "row_index": 1,
+      "shard": "staged_jsonl_gz",
+      "bytes": 10,
+      "score_byte_start": 425,
+      "score_byte_end": 435,
+      "marin_bpb": 0.0083,
+      "qwen_bpb": 0.1888,
+      "gap_bpb": -0.1805,
+      "payload": "examples/expression_strings_collections-python_repl-staged_jsonl_gz-row-1.json"
+    },
+    {
+      "dataset": "code_interpretation/expression_strings_collections/python_doctest",
+      "label": "expression_strings_collections/python_doctest",
+      "row_index": 0,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 406,
+      "score_byte_end": 408,
+      "marin_bpb": 1.245,
+      "qwen_bpb": 0.0254,
+      "gap_bpb": 1.2196,
+      "payload": "examples/expression_strings_collections-python_doctest-staged_jsonl_gz-row-0.json"
+    },
+    {
+      "dataset": "code_interpretation/expression_strings_collections/python_doctest",
+      "label": "expression_strings_collections/python_doctest",
+      "row_index": 1,
+      "shard": "staged_jsonl_gz",
+      "bytes": 10,
+      "score_byte_start": 426,
+      "score_byte_end": 436,
+      "marin_bpb": 0.0087,
+      "qwen_bpb": 0.2685,
+      "gap_bpb": -0.2597,
+      "payload": "examples/expression_strings_collections-python_doctest-staged_jsonl_gz-row-1.json"
+    },
+    {
+      "dataset": "code_interpretation/expression_strings_collections/arrow_control",
+      "label": "expression_strings_collections/arrow_control",
+      "row_index": 0,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 453,
+      "score_byte_end": 455,
+      "marin_bpb": 0.9171,
+      "qwen_bpb": 0.0154,
+      "gap_bpb": 0.9017,
+      "payload": "examples/expression_strings_collections-arrow_control-staged_jsonl_gz-row-0.json"
+    },
+    {
+      "dataset": "code_interpretation/expression_strings_collections/arrow_control",
+      "label": "expression_strings_collections/arrow_control",
+      "row_index": 2,
+      "shard": "staged_jsonl_gz",
+      "bytes": 2,
+      "score_byte_start": 471,
+      "score_byte_end": 473,
+      "marin_bpb": 0.0216,
+      "qwen_bpb": 0.0386,
+      "gap_bpb": -0.017,
+      "payload": "examples/expression_strings_collections-arrow_control-staged_jsonl_gz-row-2.json"
+    }
+  ]
+}
