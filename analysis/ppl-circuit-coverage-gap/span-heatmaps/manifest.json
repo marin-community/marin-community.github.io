@@ -1,0 +1,110 @@
+{
+  "title": "Span Heatmap Samples",
+  "description": "Red means Marin used more bits per byte than Qwen on that character; blue means Qwen used more. Underline marks the scored target range.",
+  "sets": [
+    {
+      "id": "ppl_circuit_coverage_python_interpretation_arithmetic_repl-model_a_worse",
+      "title": "python_interpretation/arithmetic_repl · Marin worse",
+      "dataset": "ppl_circuit_coverage/python_interpretation/arithmetic_repl",
+      "direction": "model_a_worse",
+      "description": "Top scored examples for this task and direction, with per-character bpb overlays generated from completed score parquet files.",
+      "payload": "ppl_circuit_coverage_python_interpretation_arithmetic_repl-model_a_worse/examples.json",
+      "example_count": 10,
+      "text_bytes": 250,
+      "aggregate_gap_bpb": 3.054498456991636,
+      "aggregate_marin_bpb": 3.4347230883745046,
+      "aggregate_qwen_bpb": 0.3802246313828688
+    },
+    {
+      "id": "ppl_circuit_coverage_python_interpretation_arithmetic_repl-model_b_worse",
+      "title": "python_interpretation/arithmetic_repl · Qwen worse",
+      "dataset": "ppl_circuit_coverage/python_interpretation/arithmetic_repl",
+      "direction": "model_b_worse",
+      "description": "Top scored examples for this task and direction, with per-character bpb overlays generated from completed score parquet files.",
+      "payload": "ppl_circuit_coverage_python_interpretation_arithmetic_repl-model_b_worse/examples.json",
+      "example_count": 6,
+      "text_bytes": 302,
+      "aggregate_gap_bpb": -1.5423567124775477,
+      "aggregate_marin_bpb": 3.007075156484331,
+      "aggregate_qwen_bpb": 4.54943186896188
+    },
+    {
+      "id": "ppl_circuit_coverage_text_mechanics_character_indices-model_a_worse",
+      "title": "text_mechanics/character_indices · Marin worse",
+      "dataset": "ppl_circuit_coverage/text_mechanics/character_indices",
+      "direction": "model_a_worse",
+      "description": "Top scored examples for this task and direction, with per-character bpb overlays generated from completed score parquet files.",
+      "payload": "ppl_circuit_coverage_text_mechanics_character_indices-model_a_worse/examples.json",
+      "example_count": 10,
+      "text_bytes": 424,
+      "aggregate_gap_bpb": 2.5624547421932222,
+      "aggregate_marin_bpb": 3.0662018716335298,
+      "aggregate_qwen_bpb": 0.5037471294403076
+    },
+    {
+      "id": "ppl_circuit_coverage_text_mechanics_character_indices-model_b_worse",
+      "title": "text_mechanics/character_indices · Qwen worse",
+      "dataset": "ppl_circuit_coverage/text_mechanics/character_indices",
+      "direction": "model_b_worse",
+      "description": "Top scored examples for this task and direction, with per-character bpb overlays generated from completed score parquet files.",
+      "payload": "ppl_circuit_coverage_text_mechanics_character_indices-model_b_worse/examples.json",
+      "example_count": 6,
+      "text_bytes": 280,
+      "aggregate_gap_bpb": -0.22894216510089663,
+      "aggregate_marin_bpb": 1.4916199192002013,
+      "aggregate_qwen_bpb": 1.720562084301098
+    },
+    {
+      "id": "ppl_circuit_coverage_text_mechanics_line_rhythm-model_a_worse",
+      "title": "text_mechanics/line_rhythm · Marin worse",
+      "dataset": "ppl_circuit_coverage/text_mechanics/line_rhythm",
+      "direction": "model_a_worse",
+      "description": "Top scored examples for this task and direction, with per-character bpb overlays generated from completed score parquet files.",
+      "payload": "ppl_circuit_coverage_text_mechanics_line_rhythm-model_a_worse/examples.json",
+      "example_count": 10,
+      "text_bytes": 1782,
+      "aggregate_gap_bpb": 0.35481109122131005,
+      "aggregate_marin_bpb": 0.7171721857092466,
+      "aggregate_qwen_bpb": 0.36236109448793646
+    },
+    {
+      "id": "ppl_circuit_coverage_text_mechanics_line_rhythm-model_b_worse",
+      "title": "text_mechanics/line_rhythm · Qwen worse",
+      "dataset": "ppl_circuit_coverage/text_mechanics/line_rhythm",
+      "direction": "model_b_worse",
+      "description": "Top scored examples for this task and direction, with per-character bpb overlays generated from completed score parquet files.",
+      "payload": "ppl_circuit_coverage_text_mechanics_line_rhythm-model_b_worse/examples.json",
+      "example_count": 6,
+      "text_bytes": 786,
+      "aggregate_gap_bpb": -0.05109434930327663,
+      "aggregate_marin_bpb": 0.5444265615706351,
+      "aggregate_qwen_bpb": 0.5955209108739118
+    },
+    {
+      "id": "ppl_circuit_coverage_vocab_mechanics_token_chars-model_a_worse",
+      "title": "vocab_mechanics/token_chars · Marin worse",
+      "dataset": "ppl_circuit_coverage/vocab_mechanics/token_chars",
+      "direction": "model_a_worse",
+      "description": "Top scored examples for this task and direction, with per-character bpb overlays generated from completed score parquet files.",
+      "payload": "ppl_circuit_coverage_vocab_mechanics_token_chars-model_a_worse/examples.json",
+      "example_count": 26,
+      "text_bytes": 2539,
+      "aggregate_gap_bpb": 0.9528446223909817,
+      "aggregate_marin_bpb": 1.0425567228295742,
+      "aggregate_qwen_bpb": 0.0897121004385925
+    },
+    {
+      "id": "ppl_circuit_coverage_vocab_mechanics_token_chars-model_b_worse",
+      "title": "vocab_mechanics/token_chars · Qwen worse",
+      "dataset": "ppl_circuit_coverage/vocab_mechanics/token_chars",
+      "direction": "model_b_worse",
+      "description": "Top scored examples for this task and direction, with per-character bpb overlays generated from completed score parquet files.",
+      "payload": "ppl_circuit_coverage_vocab_mechanics_token_chars-model_b_worse/examples.json",
+      "example_count": 21,
+      "text_bytes": 1482,
+      "aggregate_gap_bpb": -0.40031109152014704,
+      "aggregate_marin_bpb": 0.5253162530823513,
+      "aggregate_qwen_bpb": 0.9256273446024983
+    }
+  ]
+}

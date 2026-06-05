@@ -1,0 +1,508 @@
+{
+  "name": "analysis/perplexity_gap/ppl_circuit_coverage/marin_32b-vs-qwen3_32b",
+  "fn_name": "<function find_model_perplexity_gap at 0x7f7e9859d620>",
+  "config": {
+    "name": "ppl_circuit_coverage/marin_32b-vs-qwen3_32b",
+    "model_a_name": "marin-community/marin-32b-base",
+    "model_b_name": "Qwen/Qwen3-32B",
+    "model_a_scores_path": "gs://marin-us-central1/analysis/model_perplexity_scores/ppl_circuit_coverage/marin_32b-db54dd",
+    "model_b_scores_path": "gs://marin-us-central1/analysis/model_perplexity_scores/ppl_circuit_coverage/qwen3_32b-85e4f8",
+    "output_path": "gs://marin-us-central1/analysis/perplexity_gap/ppl_circuit_coverage/marin_32b-vs-qwen3_32b-d0e561",
+    "wandb_tags": [
+      "eval=perplexity-gap",
+      "dataset_bundle=ppl_circuit_coverage",
+      "model_a=marin-community/marin-32b-base",
+      "model_b=Qwen/Qwen3-32B"
+    ],
+    "retry_key": null,
+    "cache_key": {
+      "name": "ppl_circuit_coverage/marin_32b-vs-qwen3_32b",
+      "model_a_name": "marin-community/marin-32b-base",
+      "model_b_name": "Qwen/Qwen3-32B",
+      "wandb_tags": [
+        "eval=perplexity-gap",
+        "dataset_bundle=ppl_circuit_coverage",
+        "model_a=marin-community/marin-32b-base",
+        "model_b=Qwen/Qwen3-32B"
+      ],
+      "retry_key": null
+    }
+  },
+  "override_output_path": null,
+  "version": {
+    "name": "analysis/perplexity_gap/ppl_circuit_coverage/marin_32b-vs-qwen3_32b",
+    "config": {
+      "model_a_scores_path": "DEP[0]",
+      "model_b_scores_path": "DEP[1]",
+      "cache_key": {
+        "name": "ppl_circuit_coverage/marin_32b-vs-qwen3_32b",
+        "model_a_name": "marin-community/marin-32b-base",
+        "model_b_name": "Qwen/Qwen3-32B",
+        "wandb_tags": [
+          "eval=perplexity-gap",
+          "dataset_bundle=ppl_circuit_coverage",
+          "model_a=marin-community/marin-32b-base",
+          "model_b=Qwen/Qwen3-32B"
+        ],
+        "retry_key": null
+      }
+    },
+    "dependencies": [
+      {
+        "name": "analysis/model_perplexity_scores/ppl_circuit_coverage/marin_32b",
+        "config": {
+          "datasets.ppl_circuit_coverage/vocab_mechanics/token_chars.input_path": "DEP[0]/vocab_mechanics_token_chars.jsonl.gz",
+          "datasets.ppl_circuit_coverage/text_mechanics/character_indices.input_path": "DEP[1]/text_mechanics_character_indices.jsonl.gz",
+          "datasets.ppl_circuit_coverage/text_mechanics/line_rhythm.input_path": "DEP[2]/text_mechanics_line_rhythm.jsonl.gz",
+          "datasets.ppl_circuit_coverage/python_interpretation/arithmetic_repl.input_path": "DEP[3]/python_interpretation_arithmetic_repl.jsonl.gz",
+          "cache_key": {
+            "name": "ppl_circuit_coverage/marin_32b",
+            "model": {
+              "checkpoint_path": "marin-community/marin-32b-base",
+              "checkpoint_is_hf": true,
+              "model": null,
+              "tokenizer": "marin-community/marin-tokenizer",
+              "tokenizer_backend": "hf",
+              "trust_remote_code": false
+            },
+            "datasets": {
+              "ppl_circuit_coverage/vocab_mechanics/token_chars": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "ppl_circuit_coverage",
+                  "epic:5005",
+                  "issue:6103",
+                  "family:vocab_mechanics",
+                  "task:token_chars",
+                  "seed:6103",
+                  "examples:tokenizer_vocab_coverage",
+                  "source:generated_ppl_circuit_coverage_v1",
+                  "tokenizer:marin-community/marin-tokenizer",
+                  "loss:target_only",
+                  "eval_only"
+                ]
+              },
+              "ppl_circuit_coverage/text_mechanics/character_indices": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "ppl_circuit_coverage",
+                  "epic:5005",
+                  "issue:6103",
+                  "family:text_mechanics",
+                  "task:character_indices",
+                  "seed:6103",
+                  "examples:1000",
+                  "source:generated_ppl_circuit_coverage_v1",
+                  "tokenizer:marin-community/marin-tokenizer",
+                  "loss:target_only",
+                  "eval_only"
+                ]
+              },
+              "ppl_circuit_coverage/text_mechanics/line_rhythm": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "ppl_circuit_coverage",
+                  "epic:5005",
+                  "issue:6103",
+                  "family:text_mechanics",
+                  "task:line_rhythm",
+                  "seed:6103",
+                  "examples:1000",
+                  "source:generated_ppl_circuit_coverage_v1",
+                  "tokenizer:marin-community/marin-tokenizer",
+                  "loss:target_only",
+                  "eval_only"
+                ]
+              },
+              "ppl_circuit_coverage/python_interpretation/arithmetic_repl": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "ppl_circuit_coverage",
+                  "epic:5005",
+                  "issue:6103",
+                  "family:python_interpretation",
+                  "task:arithmetic_repl",
+                  "seed:6103",
+                  "examples:1000",
+                  "source:generated_ppl_circuit_coverage_v1",
+                  "tokenizer:marin-community/marin-tokenizer",
+                  "loss:target_only",
+                  "eval_only"
+                ]
+              }
+            },
+            "resource_config": {
+              "cpu": 32,
+              "ram": "128g",
+              "disk": "50g",
+              "device": {
+                "variant": "v5p-8",
+                "kind": "tpu",
+                "topology": null
+              },
+              "preemptible": true,
+              "regions": null,
+              "zone": "us-central1-a",
+              "replicas": 1,
+              "device_alternatives": null,
+              "image": null
+            },
+            "per_device_batch_size": 1,
+            "max_eval_length": 4096,
+            "max_docs_per_dataset": null,
+            "max_doc_bytes": 32768,
+            "wandb_tags": [
+              "eval=model-perplexity",
+              "dataset_bundle=ppl_circuit_coverage",
+              "model=marin-community/marin-32b-base"
+            ]
+          }
+        },
+        "dependencies": [
+          {
+            "name": "raw/evals/ppl_circuit_coverage",
+            "config": {
+              "attrs": {
+                "source": "generated_ppl_circuit_coverage_v1",
+                "examples_per_config": 1000,
+                "seed": 6103,
+                "tokenizer": "marin-community/marin-tokenizer",
+                "schema": [
+                  "input",
+                  "target",
+                  "id",
+                  "subset",
+                  "task",
+                  "seed",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "raw/evals/ppl_circuit_coverage",
+            "config": {
+              "attrs": {
+                "source": "generated_ppl_circuit_coverage_v1",
+                "examples_per_config": 1000,
+                "seed": 6103,
+                "tokenizer": "marin-community/marin-tokenizer",
+                "schema": [
+                  "input",
+                  "target",
+                  "id",
+                  "subset",
+                  "task",
+                  "seed",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "raw/evals/ppl_circuit_coverage",
+            "config": {
+              "attrs": {
+                "source": "generated_ppl_circuit_coverage_v1",
+                "examples_per_config": 1000,
+                "seed": 6103,
+                "tokenizer": "marin-community/marin-tokenizer",
+                "schema": [
+                  "input",
+                  "target",
+                  "id",
+                  "subset",
+                  "task",
+                  "seed",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "raw/evals/ppl_circuit_coverage",
+            "config": {
+              "attrs": {
+                "source": "generated_ppl_circuit_coverage_v1",
+                "examples_per_config": 1000,
+                "seed": 6103,
+                "tokenizer": "marin-community/marin-tokenizer",
+                "schema": [
+                  "input",
+                  "target",
+                  "id",
+                  "subset",
+                  "task",
+                  "seed",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          }
+        ]
+      },
+      {
+        "name": "analysis/model_perplexity_scores/ppl_circuit_coverage/qwen3_32b",
+        "config": {
+          "datasets.ppl_circuit_coverage/vocab_mechanics/token_chars.input_path": "DEP[0]/vocab_mechanics_token_chars.jsonl.gz",
+          "datasets.ppl_circuit_coverage/text_mechanics/character_indices.input_path": "DEP[1]/text_mechanics_character_indices.jsonl.gz",
+          "datasets.ppl_circuit_coverage/text_mechanics/line_rhythm.input_path": "DEP[2]/text_mechanics_line_rhythm.jsonl.gz",
+          "datasets.ppl_circuit_coverage/python_interpretation/arithmetic_repl.input_path": "DEP[3]/python_interpretation_arithmetic_repl.jsonl.gz",
+          "cache_key": {
+            "name": "ppl_circuit_coverage/qwen3_32b",
+            "model": {
+              "checkpoint_path": "Qwen/Qwen3-32B",
+              "checkpoint_is_hf": true,
+              "model": null,
+              "tokenizer": "Qwen/Qwen3-32B",
+              "tokenizer_backend": "hf",
+              "trust_remote_code": false
+            },
+            "datasets": {
+              "ppl_circuit_coverage/vocab_mechanics/token_chars": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "ppl_circuit_coverage",
+                  "epic:5005",
+                  "issue:6103",
+                  "family:vocab_mechanics",
+                  "task:token_chars",
+                  "seed:6103",
+                  "examples:tokenizer_vocab_coverage",
+                  "source:generated_ppl_circuit_coverage_v1",
+                  "tokenizer:marin-community/marin-tokenizer",
+                  "loss:target_only",
+                  "eval_only"
+                ]
+              },
+              "ppl_circuit_coverage/text_mechanics/character_indices": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "ppl_circuit_coverage",
+                  "epic:5005",
+                  "issue:6103",
+                  "family:text_mechanics",
+                  "task:character_indices",
+                  "seed:6103",
+                  "examples:1000",
+                  "source:generated_ppl_circuit_coverage_v1",
+                  "tokenizer:marin-community/marin-tokenizer",
+                  "loss:target_only",
+                  "eval_only"
+                ]
+              },
+              "ppl_circuit_coverage/text_mechanics/line_rhythm": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "ppl_circuit_coverage",
+                  "epic:5005",
+                  "issue:6103",
+                  "family:text_mechanics",
+                  "task:line_rhythm",
+                  "seed:6103",
+                  "examples:1000",
+                  "source:generated_ppl_circuit_coverage_v1",
+                  "tokenizer:marin-community/marin-tokenizer",
+                  "loss:target_only",
+                  "eval_only"
+                ]
+              },
+              "ppl_circuit_coverage/python_interpretation/arithmetic_repl": {
+                "input_path": null,
+                "hf_dataset_id": null,
+                "hf_dataset_name": null,
+                "hf_dataset_revision": null,
+                "text_key": "text",
+                "input_key": "input",
+                "target_key": "target",
+                "split": "validation",
+                "tags": [
+                  "ppl_circuit_coverage",
+                  "epic:5005",
+                  "issue:6103",
+                  "family:python_interpretation",
+                  "task:arithmetic_repl",
+                  "seed:6103",
+                  "examples:1000",
+                  "source:generated_ppl_circuit_coverage_v1",
+                  "tokenizer:marin-community/marin-tokenizer",
+                  "loss:target_only",
+                  "eval_only"
+                ]
+              }
+            },
+            "resource_config": {
+              "cpu": 32,
+              "ram": "128g",
+              "disk": "50g",
+              "device": {
+                "variant": "v5p-8",
+                "kind": "tpu",
+                "topology": null
+              },
+              "preemptible": true,
+              "regions": null,
+              "zone": "us-central1-a",
+              "replicas": 1,
+              "device_alternatives": null,
+              "image": null
+            },
+            "per_device_batch_size": 1,
+            "max_eval_length": 4096,
+            "max_docs_per_dataset": null,
+            "max_doc_bytes": 32768,
+            "wandb_tags": [
+              "eval=model-perplexity",
+              "dataset_bundle=ppl_circuit_coverage",
+              "model=Qwen/Qwen3-32B"
+            ]
+          }
+        },
+        "dependencies": [
+          {
+            "name": "raw/evals/ppl_circuit_coverage",
+            "config": {
+              "attrs": {
+                "source": "generated_ppl_circuit_coverage_v1",
+                "examples_per_config": 1000,
+                "seed": 6103,
+                "tokenizer": "marin-community/marin-tokenizer",
+                "schema": [
+                  "input",
+                  "target",
+                  "id",
+                  "subset",
+                  "task",
+                  "seed",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "raw/evals/ppl_circuit_coverage",
+            "config": {
+              "attrs": {
+                "source": "generated_ppl_circuit_coverage_v1",
+                "examples_per_config": 1000,
+                "seed": 6103,
+                "tokenizer": "marin-community/marin-tokenizer",
+                "schema": [
+                  "input",
+                  "target",
+                  "id",
+                  "subset",
+                  "task",
+                  "seed",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "raw/evals/ppl_circuit_coverage",
+            "config": {
+              "attrs": {
+                "source": "generated_ppl_circuit_coverage_v1",
+                "examples_per_config": 1000,
+                "seed": 6103,
+                "tokenizer": "marin-community/marin-tokenizer",
+                "schema": [
+                  "input",
+                  "target",
+                  "id",
+                  "subset",
+                  "task",
+                  "seed",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          },
+          {
+            "name": "raw/evals/ppl_circuit_coverage",
+            "config": {
+              "attrs": {
+                "source": "generated_ppl_circuit_coverage_v1",
+                "examples_per_config": 1000,
+                "seed": 6103,
+                "tokenizer": "marin-community/marin-tokenizer",
+                "schema": [
+                  "input",
+                  "target",
+                  "id",
+                  "subset",
+                  "task",
+                  "seed",
+                  "metadata"
+                ]
+              }
+            },
+            "dependencies": []
+          }
+        ]
+      }
+    ]
+  },
+  "dependencies": [
+    "gs://marin-us-central1/analysis/model_perplexity_scores/ppl_circuit_coverage/marin_32b-db54dd",
+    "gs://marin-us-central1/analysis/model_perplexity_scores/ppl_circuit_coverage/qwen3_32b-85e4f8"
+  ],
+  "output_path": "gs://marin-us-central1/analysis/perplexity_gap/ppl_circuit_coverage/marin_32b-vs-qwen3_32b-d0e561"
+}
