@@ -25,7 +25,8 @@ Here's the lifecycle of an [experiment](https://marin.readthedocs.io/en/latest/e
 3. Code defines a provenance graph which is **executed**; results are summarized in a **WandB** report.
 
 We also publish reusable analysis views, including the
-[Perplexity Gap Dashboard](/analysis/perplexity-gap/)
+[Perplexity Gap Dashboard](/analysis/perplexity-gap/),
+the [PPL Circuit Coverage Dashboard](/analysis/ppl-circuit-coverage-gap/),
 and the [Scaling Laws Explorer](/analysis/scaling-laws-analysis/).
 
 Some examples:
