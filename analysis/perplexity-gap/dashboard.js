@@ -1,4 +1,4 @@
-const ASSET_VERSION = '20260530-code-interpretation';
+const ASSET_VERSION = '20260610-ppl-circuit-v2';
 const response = await fetch(`./data.json?v=${ASSET_VERSION}`);
 if (!response.ok) {
   throw new Error(`Failed to load dashboard data: ${response.status} ${response.statusText}`);
@@ -163,6 +163,7 @@ const SPOTLIGHTS = [
       all_available: 'All available diagnostic slices',
       mcqa_fever: 'MCQA + FEVER validation',
       long_context: 'Long-context 32k',
+      ppl_circuit_v2: 'PPL circuit coverage v2',
     };
 
     const CODE_TAKEAWAY_BUCKETS = [
