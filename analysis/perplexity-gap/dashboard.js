@@ -1,4 +1,4 @@
-const ASSET_VERSION = '20260610-ppl-circuit-v2';
+const ASSET_VERSION = '20260610-ppl-circuit-v2-heatmaps';
 const response = await fetch(`./data.json?v=${ASSET_VERSION}`);
 if (!response.ok) {
   throw new Error(`Failed to load dashboard data: ${response.status} ${response.statusText}`);
