@@ -1,4 +1,4 @@
-const ASSET_VERSION = '20260610-ppl-circuit-v2-heatmaps';
+const ASSET_VERSION = '20260611-ppl-circuit-v2-8b-heatmaps';
 const response = await fetch(`./data.json?v=${ASSET_VERSION}`);
 if (!response.ok) {
   throw new Error(`Failed to load dashboard data: ${response.status} ${response.statusText}`);
@@ -219,7 +219,7 @@ const SPOTLIGHTS = [
       'long_tail_ppl/code_ecosystem',
     ];
 
-    const DATASET_ALIAS_PREFIXES = ['issue:', 'epic:', 'source:', 'surface:', 'split:', 'family:', 'task:', 'renderer:', 'seed_range:', 'crawl:'];
+    const DATASET_ALIAS_PREFIXES = ['issue:', 'epic:', 'source:', 'surface:', 'split:', 'family:', 'task:', 'task_tier:', 'renderer:', 'seed_range:', 'crawl:'];
     const DATASET_WRAPPER_PREFIXES = ['long_tail_ppl/', 'long_tail_ppl_runnable/'];
 
     function corpusLabel(run) {
@@ -303,6 +303,10 @@ const SPOTLIGHTS = [
       if (name === 'issue:5061') displayName = 'package_metadata';
       if (name === 'issue:5254') displayName = 'Stack v2 code ecosystem';
       if (name === 'code_ecosystem') displayName = 'Stack v2 code ecosystem';
+      if (name === 'issue:6070') displayName = 'compact v2 ICL circuit coverage';
+      if (name === 'source:generated_ppl_circuit_coverage_v2_compact_v1') displayName = 'compact v2 generated source';
+      if (name === 'task_tier:core') displayName = 'compact v2 task tier: core';
+      if (name === 'task_tier:extended') displayName = 'compact v2 task tier: extended';
       if (name === 'issue:5825') displayName = 'long-context validation';
       if (name === 'epic:5819') displayName = 'AA surrogate coverage';
       if (name === 'long_context') displayName = 'long-context 32k';
@@ -413,6 +417,16 @@ const SPOTLIGHTS = [
       }
       if (name === 'long_context' || name === 'issue:5825' || name === 'epic:5819' || name.startsWith('long_context/')) {
         pushRef(refs, 'issue #5825', issueUrl(5825), 'issue');
+      }
+      if (
+        row.corpus === 'PPL circuit coverage v2' ||
+        name === 'ppl_circuit_coverage_v2' ||
+        name === 'issue:6070' ||
+        name === 'source:generated_ppl_circuit_coverage_v2_compact_v1' ||
+        name.startsWith('task_tier:') ||
+        name.startsWith('ppl_circuit_coverage_v2/')
+      ) {
+        pushRef(refs, 'issue #6070', issueUrl(6070), 'issue');
       }
 
       if (name === 'gh_archive_structured_output' || name.startsWith('gh_archive_structured_output/')) {
