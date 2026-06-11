@@ -1,3 +1,4 @@
+{% raw %}
 # Perplexity Gap Report
 
 **Model A:** marin-community/marin-32b-base
@@ -346,3 +347,4 @@ Representative token boundaries come from the highest-gap occurrence for each li
 | tb-ydḱ | text/non_ascii_word | 1 | 8 | 0.879412 | 5.058394 | -4.178982 | -33.431860 | ppl_circuit_coverage_v2/string_byte_transforms/string_reversal | reverse("abc-12")␠->␠'21-cba'⏎reverse("lam")␠->␠'mal'⏎reverse("́kdy-bt87")␠->␠'78tb-ydḱ'⏎ | \|tb\|-y\|dk\|́\| | \|tb\|-y\|d\|k\|k\| |
 | ::' | text/punctuation | 28 | 84 | 0.278829 | 0.675495 | -0.396665 | -33.319900 | ppl_circuit_coverage_v2/string_byte_transforms/string_rotation | …t("abcdef",␠2)␠->␠'cdefab'⏎rotate_right("abcdef",␠2)␠->␠'efabcd'⏎rotate_left("ﬁkdd::rsglllfi",␠6)␠->␠'rsglllfiﬁkdd::'⏎ | \|::\|'…\| | \|::\|'…\| |
 | 14 | text/number | 360 | 720 | 1.798623 | 1.842902 | -0.044279 | -31.881011 | ppl_circuit_coverage_v2/arithmetic/base_conversion | …base_convert("101101",␠from_base=2,␠to_base=10)␠->␠'45'⏎>>>␠base_convert("57679",␠from_base=10,␠to_base=16)␠->␠'e14f'⏎ | \|14\| | \|1\|4\| |
+{% endraw %}
