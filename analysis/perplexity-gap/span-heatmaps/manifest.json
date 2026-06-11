@@ -1498,6 +1498,105 @@
       "text_bytes": 39,
       "payload_bytes": 90883,
       "aggregate_gap_bpb": 0.41614614495077684
+    },
+    {
+      "id": "ppl_circuit_v2_8b.string_byte_transforms",
+      "title": "PPL circuit v2 8B: string and byte transforms",
+      "description": "Compact v2 supervised target-only string reversal, slicing, rotation, escaping, Unicode, and bytes-vs-chars tasks. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "PPL circuit coverage v2",
+      "dataset_family": "ppl_circuit_coverage_v2",
+      "datasets": [
+        "ppl_circuit_coverage_v2/string_byte_transforms/string_reversal",
+        "ppl_circuit_coverage_v2/string_byte_transforms/string_slicing",
+        "ppl_circuit_coverage_v2/string_byte_transforms/string_rotation",
+        "ppl_circuit_coverage_v2/string_byte_transforms/unicode_casefolding",
+        "ppl_circuit_coverage_v2/string_byte_transforms/unicode_normalization",
+        "ppl_circuit_coverage_v2/string_byte_transforms/escape_unescape",
+        "ppl_circuit_coverage_v2/string_byte_transforms/chars_vs_bytes"
+      ],
+      "comparison_id": "marin-community/marin-8b-base__Qwen/Qwen3-8B-Base",
+      "model_a": "marin-community/marin-8b-base",
+      "model_b": "Qwen/Qwen3-8B-Base",
+      "run_key": "main_gap_8b_ppl_circuit_coverage_v2_issue6070_v1",
+      "manifest": "ppl-circuit-v2-8b-string-byte-transforms/manifest.json",
+      "example_count": 14,
+      "text_bytes": 208,
+      "payload_bytes": 39382,
+      "aggregate_gap_bpb": 0.21774017174443716
+    },
+    {
+      "id": "ppl_circuit_v2_8b.arithmetic_indexing",
+      "title": "PPL circuit v2 8B: arithmetic and indexing",
+      "description": "Compact v2 supervised target-only base conversion, carry/borrow, checksum, modular arithmetic, index lookup, bracket matching, and line/column offsets. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "PPL circuit coverage v2",
+      "dataset_family": "ppl_circuit_coverage_v2",
+      "datasets": [
+        "ppl_circuit_coverage_v2/arithmetic/base_conversion",
+        "ppl_circuit_coverage_v2/arithmetic/carry_addition",
+        "ppl_circuit_coverage_v2/arithmetic/borrow_subtraction",
+        "ppl_circuit_coverage_v2/arithmetic/digit_checksum",
+        "ppl_circuit_coverage_v2/arithmetic/modular_arithmetic",
+        "ppl_circuit_coverage_v2/indexing_position_tracking/all_indices",
+        "ppl_circuit_coverage_v2/indexing_position_tracking/bracket_matching",
+        "ppl_circuit_coverage_v2/indexing_position_tracking/character_at_index",
+        "ppl_circuit_coverage_v2/indexing_position_tracking/line_column_offsets"
+      ],
+      "comparison_id": "marin-community/marin-8b-base__Qwen/Qwen3-8B-Base",
+      "model_a": "marin-community/marin-8b-base",
+      "model_b": "Qwen/Qwen3-8B-Base",
+      "run_key": "main_gap_8b_ppl_circuit_coverage_v2_issue6070_v1",
+      "manifest": "ppl-circuit-v2-8b-arithmetic-indexing/manifest.json",
+      "example_count": 18,
+      "text_bytes": 87,
+      "payload_bytes": 46972,
+      "aggregate_gap_bpb": 0.296604425313206
+    },
+    {
+      "id": "ppl_circuit_v2_8b.format_serialization",
+      "title": "PPL circuit v2 8B: format style and serialization",
+      "description": "Compact v2 supervised target-only CSV/TSV, JSON re-emission, Python repr containers, line wrapping, Markdown table padding, and outline indentation. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "PPL circuit coverage v2",
+      "dataset_family": "ppl_circuit_coverage_v2",
+      "datasets": [
+        "ppl_circuit_coverage_v2/structured_serialization/csv_tsv_transforms",
+        "ppl_circuit_coverage_v2/structured_serialization/json_field_reemit",
+        "ppl_circuit_coverage_v2/structured_serialization/python_repr_containers",
+        "ppl_circuit_coverage_v2/format_style_instruction/line_wrapping",
+        "ppl_circuit_coverage_v2/format_style_instruction/markdown_table_padding",
+        "ppl_circuit_coverage_v2/format_style_instruction/outline_indentation"
+      ],
+      "comparison_id": "marin-community/marin-8b-base__Qwen/Qwen3-8B-Base",
+      "model_a": "marin-community/marin-8b-base",
+      "model_b": "Qwen/Qwen3-8B-Base",
+      "run_key": "main_gap_8b_ppl_circuit_coverage_v2_issue6070_v1",
+      "manifest": "ppl-circuit-v2-8b-format-serialization/manifest.json",
+      "example_count": 12,
+      "text_bytes": 1293,
+      "payload_bytes": 84875,
+      "aggregate_gap_bpb": 0.03851648769507571
+    },
+    {
+      "id": "ppl_circuit_v2_8b.state_machines",
+      "title": "PPL circuit v2 8B: state machines",
+      "description": "Compact v2 supervised target-only stack push/pop plus the extended finite automata, turtle command, regex-lite, and brainfuck-lite tasks. Token losses are smeared uniformly over token byte spans before the Marin-Qwen gap is computed.",
+      "corpus": "PPL circuit coverage v2",
+      "dataset_family": "ppl_circuit_coverage_v2",
+      "datasets": [
+        "ppl_circuit_coverage_v2/state_machines/stack_push_pop",
+        "ppl_circuit_coverage_v2/state_machines/finite_automata",
+        "ppl_circuit_coverage_v2/state_machines/turtle_commands",
+        "ppl_circuit_coverage_v2/state_machines/regex_lite",
+        "ppl_circuit_coverage_v2/state_machines/brainfuck_lite"
+      ],
+      "comparison_id": "marin-community/marin-8b-base__Qwen/Qwen3-8B-Base",
+      "model_a": "marin-community/marin-8b-base",
+      "model_b": "Qwen/Qwen3-8B-Base",
+      "run_key": "main_gap_8b_ppl_circuit_coverage_v2_issue6070_v1",
+      "manifest": "ppl-circuit-v2-8b-state-machines/manifest.json",
+      "example_count": 10,
+      "text_bytes": 249,
+      "payload_bytes": 34422,
+      "aggregate_gap_bpb": 0.04489351148918451
     }
   ]
 }
