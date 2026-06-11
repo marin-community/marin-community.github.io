@@ -1,3 +1,4 @@
+{% raw %}
 # Perplexity Gap Report
 
 **Model A:** marin-community/marin-8b-base
@@ -348,3 +349,4 @@ Representative token boundaries come from the highest-gap occurrence for each li
 | 643020 | text/number | 1 | 6 | 1.306527 | 3.103649 | -1.797122 | -10.782734 | ppl_circuit_coverage_v2/arithmetic/borrow_subtraction | >>>␠502␠-␠148␠->␠354⏎>>>␠1004␠-␠879␠->␠125⏎>>>␠708200␠-␠65180␠->␠643020⏎ | \|643\|020\| | \|6\|4\|3\|0\|2\|0\| |
 | 3,2,0,0 | text/number | 5 | 35 | 0.843604 | 1.145846 | -0.302242 | -10.578476 | ppl_circuit_coverage_v2/state_machines/brainfuck_lite | …[3,1,0,0],"pointer":0}⏎brainfuck_lite␠cells=4␠program=">++<-+-+<<+<+-++-+--<++"⏎final={"cells":[3,2,0,0],"pointer":0}⏎ | \|3\|,\|2\|,\|0\|,\|0\| | \|3\|,\|2\|,\|0\|,\|0\| |
 | lmf | text/word | 1 | 3 | 1.770703 | 5.293507 | -3.522804 | -10.568411 | ppl_circuit_coverage_v2/string_byte_transforms/string_rotation | …ft("abcdef",␠2)␠->␠'cdefab'⏎rotate_right("abcdef",␠2)␠->␠'efabcd'⏎rotate_left("λateznp/lmffj",␠11)␠->␠'fjλateznp/lmf'⏎ | \|…l\|mf\| | \|…l\|mf\| |
+{% endraw %}
