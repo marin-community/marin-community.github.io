@@ -34,37 +34,31 @@ Some examples:
    [[issue](https://github.com/marin-community/marin/issues/935),
     [PR](https://github.com/marin-community/marin/pull/941),
     [code](https://github.com/marin-community/marin/blob/ef74efc1dc771c7b2704b252ae1b664375e2ef28/experiments/exp934_zloss.py),
-    [execution](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2Fexp934_zloss-68c8ed.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/ZLoss-vs-Not-1-4B--VmlldzoxMjEzMzA1NA)]
 2. Experiment 950: How does pretraining learning rate impact SFT?<br>
    [[issue](https://github.com/marin-community/marin/issues/950),
     [PR](https://github.com/marin-community/marin/pull/952),
     [code](https://github.com/marin-community/marin/blob/66bf426298be7635712bb88939aa0d9210f74574/experiments/exp950_sft_amenability.py),
-    [execution](https://marin.community/data-browser/experiment?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2Fexp950_sft_amenability-050465.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/How-does-Learning-Rate-Schedule-Impact-SFT---VmlldzoxMjgyNDkyOQ)]
 3. Experiment 163: Is BERT a better quality filter than fastText?<br>
    [[issue](https://github.com/marin-community/marin/issues/163),
     [PR](https://github.com/marin-community/marin/pull/1298),
     [code](https://github.com/marin-community/marin/blob/43172b00d07e41ca52e5b7a99c556d0f45e35c34/experiments/exp163_bert.py),
-    [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp163_bert-d29862.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/Experiment-163-Fasttext-vs-BERT--VmlldzoxMjgyOTk0OQ)]
 4. Experiment 1290: Which optimizers actually outperform AdamW?<br>
    [[issue](https://github.com/marin-community/marin/issues/1290),
     [PR](https://github.com/marin-community/marin/pull/1293),
     [code](https://github.com/marin-community/marin/tree/f464fee2b6b88c04f47c32d5d2b386759fe993f3/marin/optimizer_sweep),
-    [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-eu-west4/experiments/exp725_adamwsweep_520M_1-e70fba.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/Fantastic-Optimizers-and-Where-to-Find-Them--VmlldzoxMjgzMzQ2NQ)]
 5. Experiment 1183: Are MoEs really better than dense models?<br>
    [[issue](https://github.com/marin-community/marin/issues/1183),
     [PR](https://github.com/marin-community/marin/pull/1270),
     [code](https://github.com/marin-community/marin/blob/be9976c96190cabfbfc7c81ec26e9856c1e88758/experiments/exp1183_olmoe.py),
-    [execution](https://marin.community/data-browser/experiment/?path=gs%3A%2F%2Fmarin-us-west4%2Fexperiments%2Fexp1183_olmoe-f9d291.json),
     [WandB](https://api.wandb.ai/links/marin-community/qi3u8nx7)]
 6. Experiment 702: How should you train on rare task-relevant data?<br>
    [[issue](https://github.com/marin-community/marin/issues/702),
     [PR](https://github.com/marin-community/marin/pull/1297),
     [code](https://github.com/marin-community/marin/tree/bfbc4492aefe50291829e2ceebf1b3b94186da9c/experiments/two_stage),
-    [execution](https://marin.community/data-browser/view/?paths=%5B%22gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2Fjoint_ptft-3b3709.json%22%5D),
     [WandB](https://wandb.ai/stanford-mercury/suhas-two-stage/reports/Two-stage-training-main-results-5-18---VmlldzoxMjgzNTg3MA?accessToken=2mbamb7vwfbaj8205ga8yojvyg471v3jkftrcwinp7vl4lnqfan3exsg7qs3scnx)]
 
 ## Models 🌐
@@ -73,18 +67,15 @@ We trained some models in Marin:
 1. [Marin-8B-Base (deeper-starling)](https://huggingface.co/marin-community/marin-8b-base)
    [[issue](https://github.com/marin-community/marin/issues/600),
     [code](https://github.com/marin-community/marin/blob/4699e2/experiments/tootsie/exp600_tootsie.py),
-    [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp600_tootsie-4699e2.json),
     [WandB](https://wandb.ai/marin-community/marin/reports/Tootsie-8B---VmlldzoxMTY3MzU3OA)]:
     Beats Llama 3.1 8B base on 14/19 standard benchmarks!
     Read more in our [retrospective](https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/).
 2. [Marin-8B-Instruct (deeper-starling-05-15)](https://huggingface.co/marin-community/marin-8b-instruct)
-   [[execution](https://marin.community/data-browser/experiment/?path=gs%3A%2F%2Fmarin-us-central2%2Fexperiments%2FexpPH_starling_sft-d4db6c.json)]:
    Try it out on
    [Together AI](https://api.together.ai/playground/v2/chat/marin-community/marin-8b-instruct)!
 3. Marin-32B-Base
    [[issue](https://github.com/marin-community/marin/issues/1295),
-    [code](https://github.com/marin-community/marin/blob/c6f4b0/experiments/tootsie/exp1529_32b_mantis_cooldown.py),
-    [execution](https://marin.community/data-browser/experiment/?path=gs%3A//marin-us-central2/experiments/exp1529_32b_mantis_cooldown-c6f4b0.json)]:
+    [code](https://github.com/marin-community/marin/blob/c6f4b0/experiments/tootsie/exp1529_32b_mantis_cooldown.py)]:
    Beats OLMo 2 32B Base on 14/19 standard benchmarks (making it the best open-source model as of Oct 29, 2025),
    and is close to Gemma 3 27B PT and Qwen 2.5 32B Base (the best comparably-sized open-weight models).
    Read more in our [retrospective](https://marin.readthedocs.io/en/latest/reports/marin-32b-retro/).

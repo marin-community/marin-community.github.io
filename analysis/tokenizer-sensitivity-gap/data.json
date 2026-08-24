@@ -6286,7 +6286,6 @@
     }
   ],
   "source_experiment": "gs://marin-eu-west4/experiments/exp_tokenizer_sensitivity_d1024_perplexity_gap-c91f6c.json",
-  "source_experiment_browser": "https://marin.community/data-browser/experiment?path=gs%3A//marin-eu-west4/experiments/exp_tokenizer_sensitivity_d1024_perplexity_gap-c91f6c.json",
   "source_issue_comment": "https://github.com/marin-community/marin/issues/5821#issuecomment-4568564741",
   "title": "Tokenizer Sensitivity d1024 Gap Dashboard"
 }
