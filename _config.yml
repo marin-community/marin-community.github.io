@@ -4,3 +4,6 @@ title: Marin
 logo: assets/images/marin-logo.svg
 permalink: /blog/:year/:month/:day/:title/
 future: true
+exclude:
+  - blog_style.py
+  - make_figures.py
