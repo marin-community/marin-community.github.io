@@ -16,7 +16,7 @@ Want to stay up to date?  Join our [Discord](https://discord.gg/J9CTk7pqcM) or o
 
 ## Blogs 📝
 
-- [Async RL from Scratch on TPUs](/blog/2026/03/06/async-rl-from-scratch/)
+- [Async RL from Scratch on TPUs](/blog/2026/05/21/async-rl-from-scratch/)
 - [Introducing Marin: An Open Lab for Building Foundation Models](/blog/2025/05/19/announcement/)
 
 ## Experiments 🧪
