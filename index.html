@@ -1,0 +1,189 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/marin-logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;500;600&family=Noto+Serif:ital,wght@0,400;0,500;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="/assets/index-CJ5yNz9X.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-NSqI4VOu.css">
+  </head>
+  <body>
+    <main>
+      <div class="header-group">
+        <img src="/marin-logo.svg" alt="Marin" class="logo-aside" />
+        <h1>
+          Marin is charting the way to the open frontier of artificial
+          intelligence
+        </h1>
+      </div>
+
+      <p class="subtitle">
+        To do this, we are discovering and assembling the knowledge required to
+        build artificial intelligence and
+        <a
+          href="https://openathena.ai/blog/open-development-of-frontier-ai/"
+          target="_blank"
+          rel="noopener"
+          >returning it to the world</a
+        >.
+      </p>
+
+      <div class="subtitle-small hero-run">
+        <figure class="loss-chart">
+          <svg viewBox="0 0 220 120" aria-label="Eval loss over training steps">
+            <!-- target line -->
+            <text x="120" y="83.5" text-anchor="middle" class="chart-label-target">projected loss</text>
+            <line x1="26" y1="87.8" x2="214" y2="87.8" stroke="var(--chart-dot)" stroke-width="0.75" stroke-dasharray="3 2" />
+            <text x="216" y="87.8" dominant-baseline="middle" class="chart-label-target" style="cursor: default">&#x25C7;<title>Target Paloma eval loss, preregistered at 18T tokens</title></text>
+            <!-- y-axis labels (log10 scale) -->
+            <text x="22" y="87.8" text-anchor="end" dominant-baseline="middle" class="chart-label">2.04</text>
+            <text x="22" y="56.7" text-anchor="end" dominant-baseline="middle" class="chart-label">4</text>
+            <text x="22" y="24.7" text-anchor="end" dominant-baseline="middle" class="chart-label">8</text>
+            <!-- chart title -->
+            <text x="130" y="50" text-anchor="middle" class="chart-title">eval loss</text>
+            <!-- eval loss curve -->
+            <path d="M27.7,6.8 L30.0,74.7 L32.0,79.3 L33.5,81.3 L35.0,82.2 L36.5,82.9 L37.7,83.3 L39.0,83.6 L40.2,83.8 L41.4,84.0 L46.9,84.5" fill="none" stroke="var(--text)" stroke-width="1.2" />
+            <!-- eval loss dots -->
+            <circle cx="27.7" cy="6.8" r="1.5" fill="var(--chart-dot)" />
+            <circle cx="30.0" cy="74.7" r="1.5" fill="var(--chart-dot)" />
+            <circle cx="32.0" cy="79.3" r="1.5" fill="var(--chart-dot)" />
+            <circle cx="33.5" cy="81.3" r="1.5" fill="var(--chart-dot)" />
+            <circle cx="35.0" cy="82.2" r="1.5" fill="var(--chart-dot)" />
+            <circle cx="36.5" cy="82.9" r="1.5" fill="var(--chart-dot)" />
+            <circle cx="37.7" cy="83.3" r="1.5" fill="var(--chart-dot)" />
+            <circle cx="39.0" cy="83.6" r="1.5" fill="var(--chart-dot)" />
+            <circle cx="40.2" cy="83.8" r="1.5" fill="var(--chart-dot)" />
+            <circle cx="41.4" cy="84.0" r="1.5" fill="var(--chart-dot)" />
+            <circle cx="46.9" cy="84.5" r="1.5" fill="var(--chart-dot)" />
+            <!-- x-axis labels -->
+            <text x="26" y="106" class="chart-label">Aug 19</text>
+            <text x="214" y="106" text-anchor="end" class="chart-label">Dec 1</text>
+          </svg>
+        </figure>
+        <p>
+          Right now, we're training a
+          <a
+            href="https://github.com/marin-community/marin/issues/8435"
+            target="_blank"
+            rel="noopener"
+            >535 billion parameter mixture-of-experts model</a
+          >
+          with 23 billion active parameters, on 18 trillion tokens of data. You can follow along
+          <a
+            href="https://mtracker.oa.dev/hero-run-535b"
+            target="_blank"
+            rel="noopener"
+            >here</a
+          >.
+        </p>
+      </div>
+
+      <div class="body-text">
+        <p>Open means that we share everything:</p>
+        <ul>
+          <li>
+            Our discussions
+            (<a href="https://discord.com/invite/J9CTk7pqcM" target="_blank" rel="noopener"
+              >join here</a
+            >)
+          </li>
+          <li>
+            All of
+            <a
+              href="https://github.com/marin-community/marin"
+              target="_blank"
+              rel="noopener"
+              >our code</a
+            >, including models, infrastructure, etc.
+          </li>
+          <li>
+            Our models'
+            <a
+              href="https://huggingface.co/marin-community"
+              target="_blank"
+              rel="noopener"
+              >weights</a
+            >
+          </li>
+          <li>
+            The sources of all the data in our
+            <a
+              href="https://huggingface.co/spaces/marin-community/token-count-viewer"
+              target="_blank"
+              rel="noopener"
+              >training corpus</a
+            >
+          </li>
+          <li>
+            The results of our successful and unsuccessful
+            <a
+              href="https://github.com/marin-community/marin/issues?q=is%3Aissue%20label%3Aexperiment"
+              target="_blank"
+              rel="noopener"
+              >experiments</a
+            >
+          </li>
+          <li>
+            <a href="https://github.com/Open-Athena/mumwelt/" target="_blank" rel="noopener"
+              >Tools</a
+            >
+            that make it easy to learn from this effort
+          </li>
+        </ul>
+      </div>
+
+      <p class="selected-writing">
+        Selected writing:
+        <a href="https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/" target="_blank" rel="noopener">8B dense retro</a>
+        <a href="https://marin.readthedocs.io/en/latest/reports/marin-32b-retro/" target="_blank" rel="noopener">32B dense retro</a>
+        <a href="https://openathena.ai/blog/delphi/" target="_blank" rel="noopener">Delphi scaling suite</a>
+        <a href="https://openathena.ai/blog/cluster-scheduling-with-iris/" target="_blank" rel="noopener">Cluster scheduling with Iris</a>
+        <a href="https://openathena.ai/blog/pretraining-speedup/" target="_blank" rel="noopener">LLM pretraining efficiency</a>
+        <a href="https://openathena.ai/blog/quantile-balancing/" target="_blank" rel="noopener">MoE quantile balancing</a>
+      </p>
+
+      <p class="separator">&#x25C7;</p>
+
+      <footer>
+        <p>
+          Marin is primarily developed by
+          <a href="https://openathena.ai" target="_blank" rel="noopener"
+            >Open Athena</a
+          >
+          <svg class="oa-logo" viewBox="53 0 43 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M77.3615 8.62784C77.3615 5.0582 80.2553 2.16446 83.8249 2.16446H87.3984V0H83.8249C79.0599 0 75.1971 3.86283 75.1971 8.62784V30.3904H77.3615V8.62784Z" fill="#9E6D43"/><path d="M77.3622 32.5085V25.0673C77.3622 21.4977 80.2559 18.6039 83.8255 18.6039H91.0938V16.4395H83.8255C79.0606 16.4395 75.1978 20.3023 75.1978 25.0673V32.5085C75.1978 36.1036 78.1121 39.0179 81.7071 39.0179V36.8536C79.3075 36.8536 77.3622 34.9082 77.3622 32.5085Z" fill="#9E6D43"/><path d="M71.022 32.2222V17.3485C71.022 13.7789 68.1282 10.8852 64.5586 10.8852H58.3965V8.7207H64.5586C69.3236 8.72072 73.1864 12.5835 73.1864 17.3485V32.2222C73.1864 35.9752 70.144 39.0176 66.3911 39.0176V36.8532C68.9487 36.8532 71.022 34.7798 71.022 32.2222Z" fill="#9E6D43"/><path d="M84.655 4.90707C84.655 3.39235 85.8829 2.16446 87.3977 2.16446C88.9123 2.16448 90.1402 3.39236 90.1402 4.90707C90.1402 6.42179 88.9124 7.64975 87.3977 7.64978C85.8829 7.64978 84.655 6.4218 84.655 4.90707ZM82.4905 4.90707C82.4905 7.61717 84.6876 9.81423 87.3977 9.81423C90.1077 9.81421 92.3047 7.61716 92.3047 4.90707C92.3047 2.19699 90.1077 2.21202e-05 87.3977 0C84.6876 0 82.4905 2.19698 82.4905 4.90707Z" fill="#868263"/><path d="M88.3503 21.3465C88.3503 19.8318 89.5783 18.6039 91.093 18.6039C92.6077 18.6039 93.8355 19.8318 93.8356 21.3465C93.8356 22.8612 92.6077 24.0892 91.093 24.0892C89.5782 24.0892 88.3503 22.8613 88.3503 21.3465ZM86.1858 21.3465C86.1858 24.0566 88.3829 26.2537 91.093 26.2537C93.803 26.2537 96 24.0566 96 21.3465C96 18.6364 93.803 16.4395 91.093 16.4395C88.3829 16.4395 86.1858 18.6364 86.1858 21.3465Z" fill="#868263"/><path d="M55.2292 13.6278C55.2292 12.1131 56.4572 10.8852 57.9719 10.8852C59.4866 10.8852 60.7144 12.1131 60.7145 13.6278C60.7145 15.1425 59.4866 16.3705 57.9719 16.3705C56.4571 16.3705 55.2292 15.1425 55.2292 13.6278ZM53.0647 13.6278C53.0647 16.3379 55.2618 18.5349 57.9719 18.5349C60.6819 18.5349 62.8789 16.3379 62.8789 13.6278C62.8789 10.9177 60.6819 8.72073 57.9719 8.7207C55.2618 8.7207 53.0648 10.9177 53.0647 13.6278Z" fill="#868263"/></svg>,
+          with contributors from the community.
+        </p>
+        <p>
+          This work is generously supported by the
+          <strong>Google TPU Research Cloud</strong> program for TPUs, the
+          <strong>Huang Foundation</strong> for GPUs, the
+          <strong>Siegel Family Foundation</strong>,
+          <strong>Fulcrum Science</strong>,
+          <strong>Schmidt Sciences</strong>, and many others. We also benefit
+          immensely from the broader open ecosystem, which has released numerous
+          tools and datasets.
+        </p>
+        <p>
+          Marin began its voyage in 2024 at Stanford University, created by
+          David Hall and Percy Liang.
+        </p>
+        <p>
+          If you'd like to work full-time on Marin, Open Athena is hiring.
+          Please tell us more about yourself at
+          <a href="mailto:info@openathena.ai">info@openathena.ai</a>.
+        </p>
+      </footer>
+    </main>
+
+  </body>
+</html>
