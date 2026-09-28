@@ -1,9 +1,12 @@
 theme: jekyll-theme-minimal
 repository: marin-community/marin-community.github.io
 title: Marin
+url: https://marin.community
 logo: assets/images/marin-logo.svg
 permalink: /blog/:year/:month/:day/:title/
 future: true
+plugins:
+  - jekyll-seo-tag
 exclude:
   - blog_style.py
   - make_figures.py
