@@ -1,0 +1,33 @@
+{
+  "kind": "video",
+  "src": "moe-token-routing.mp4",
+  "poster": "moe-token-routing.png",
+  "width": 1440,
+  "height": 960,
+  "steps": [
+    {
+      "time": 0.0,
+      "title": "Input states"
+    },
+    {
+      "time": 4.0,
+      "title": "Router"
+    },
+    {
+      "time": 10.0,
+      "title": "Dispatch"
+    },
+    {
+      "time": 18.0,
+      "title": "Experts"
+    },
+    {
+      "time": 23.0,
+      "title": "Combine"
+    },
+    {
+      "time": 33.0,
+      "title": "Output states"
+    }
+  ]
+}

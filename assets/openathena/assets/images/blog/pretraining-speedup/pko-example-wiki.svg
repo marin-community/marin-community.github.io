@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 142" width="820" height="142">
+<rect width="100%" height="100%" fill="#F2E7DF" rx="8"/>
+<circle cx="31" cy="15" r="10" fill="#5E7A2A"/><text x="31" y="20" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="15" font-weight="bold" fill="#F2E7DF" text-anchor="middle">+</text>
+<text x="50" y="20" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#6b6157" font-style="italic">Wikipedia bio — predicting `d` after the second occurrence of `coup`</text>
+<rect x="348.1" y="33.0" width="37.7" height="16.0" fill="rgba(56,92,143,0.28)" rx="3"/>
+<text x="22" y="44" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="14" fill="#1F1E1B" xml:space="preserve"><tspan>…dissolution of Congress following the </tspan><tspan>coup</tspan><tspan> d’état that same year…</tspan></text>
+<text x="410" y="70" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#6b6157" text-anchor="middle" font-style="italic">≈ 600 tokens later</text>
+<rect x="609.0" y="81.0" width="37.7" height="16.0" fill="rgba(56,92,143,0.28)" rx="3"/>
+<rect x="651.0" y="81.0" width="12.4" height="16.0" fill="rgba(143,107,56,0.50)" rx="3"/>
+<text x="22" y="92" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="14" fill="#1F1E1B" xml:space="preserve"><tspan>…the dissolution of the National Congress of Chile following the 1973 </tspan><tspan>coup</tspan><tspan> </tspan><tspan font-weight="bold">d</tspan><tspan>’état. In 1976…</tspan></text>
+<text x="22" y="120" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#6b6157">PKO confidence: 32%<tspan dx="14">·</tspan><tspan dx="14">baseline: &lt;0.001%</tspan></text>
+</svg>

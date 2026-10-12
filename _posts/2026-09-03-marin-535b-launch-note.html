@@ -1,0 +1,218 @@
+---
+layout: mirror
+title: Marin 535B-A23B launch note
+authors:
+- David Hall
+date: '2026-09-03'
+categories: blog
+description: A look back at Marin's first year at Open Athena and forward at the 535B-A23B
+  hero run, the largest model the team has ever trained.
+source_url: https://openathena.ai/blog/marin-535b-launch-note/
+canonical_url: https://www.openathena.ai/blog/marin-535b-launch-note/
+source_content_sha256: db59decdbe80b861f59e29709954e6927f571999a1fc5b34188a173fa357bc72
+excerpt: A look back at Marin's first year at Open Athena and forward at the 535B-A23B
+  hero run, the largest model the team has ever trained.
+---
+{% raw %}
+<div class="blog-post-content project-detail-body">
+<p>A couple weeks ago, we kicked off our capstone run of the year, a mixture of experts (MoE) model with 535B total parameters and 23B active. The plan is for it to pretrain for about 3 months on 18 trillion tokens, including agentic, coding, and scientific data. Consistent with our commitment to <a href="https://openathena.ai/blog/open-development-of-frontier-ai/">open development</a>, the entire run—including architecture, data, predicted loss, etc.—is documented on <a href="https://github.com/marin-community/marin/issues/8435">GitHub</a>.</p>
+<p>It's the largest model we've ever trained, and so far, it's going almost boringly well, lining up with our predictions and chugging along with a minimum of infrastructural or numerical fuss. You can follow along in our <a href="https://wandb.ai/marin-community/marin_moe/reports/535B-A23B-18T-Token-Hero-Run-Scaling-Ladder--VmlldzoxNzc2MDM5Ng">W&amp;B report</a>, on the <a href="https://github.com/marin-community/marin/issues/8435">GitHub run tracker</a> or on our purpose-built <a href="https://mtracker.oa.dev/hero-run-535b">dashboard</a>.</p>
+<p>It also happens to be just over a year since Marin joined Open Athena, and so it's natural to reflect a bit. In short, it's been a big year. Since joining Open Athena, Marin has grown from one FTE to ten. And in that time, we've built a lot of the machinery we used to wish existed.</p>
+<ul>
+<li>We published our <a href="https://openathena.ai/blog/delphi/">Delphi scaling suite</a>, releasing models trained up to 1e23 FLOPs, with scaling laws that allow us to predict performance of models 300x larger within 0.2%.</li>
+<li>We scaled <a href="https://openathena.ai/blog/pretraining-speedup/">Marin MoE V1</a> beyond 100B parameters and to 1e23 FLOPs. The 129B-parameter, 16B-active run landed within 1% of its preregistered loss prediction and achieved a 6.7× theoretical (3.6× realized on TPU v4) speedup over our dense Delphi recipe.</li>
+<li>We developed <a href="https://openathena.ai/blog/cluster-scheduling-with-iris/">Iris</a>, our global compute scheduler that lets us take advantage of compute anywhere around the world. We also developed <a href="https://storage.googleapis.com/marin-public/held/harrier-k40-cluster-overview/2026.08.18/index.html?revision=uniform-sampling">DataKit</a>, our end-to-end system for curating and mixing pretraining data.</li>
+<li>We're finishing up <a href="https://storage.googleapis.com/marin-public/benjaminfeuer/standing-up-a-cold-start-sft-pipeline-for-marin-models/2026.08.16/index.html">Snowball</a>, a 67B-A2B Mixture-of-Experts model on 10T tokens. We extended it to 262K context and built an end-to-end post-training pipeline to post train it. We'll be releasing it soon.</li>
+</ul>
+<p>We also published some papers and helped incubate two separate efforts <a href="https://openathena.ai/blog/marin-dna/">building foundation models for biology</a>.</p>
+<p>Any one of those accomplishments would have seemed wildly ambitious for Marin a year or two ago. Unsurprisingly, I keep coming back to the 535B run. What I find most remarkable is just how boring it has felt since launch.</p>
+<p>You see, our hero runs were traditionally <em>not</em> boring. When Percy and I started Marin back in 2024, our goals, though objectively more modest, still seemed audacious. The plan was to match Llama 3.1 8B with a fully open source model. Google's TPU Research Cloud generously gave us access to 512 TPU v5e cores, a dramatic jump in our compute resources at the time. <a href="https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/">Marin 8B succeeded</a>: the model matched or exceeded Llama 3.1 8B on 16 of 19 base model evaluations.</p>
+<p>We followed that with Marin 32B, opportunistically launched on a pile of preemptible v5p chips between reservations. We yolo'd the hypers and kicked off the run. No big deal.</p>
+<p>But, we soon discovered that, among other things, one FTE is actually not enough to babysit a large training run on cobbled-together infrastructure on top of preemptible compute, particularly once it starts <a href="https://wandb.ai/marin-community/marin/reports/Marin-32B-Work-In-Progress--VmlldzoxMzM1Mzk1NQ">throwing loss spikes</a>. Who knew? After much surgery (notably QK norm) and an eventual retreat to a stable v4-2048, the model somehow limped across the finish line. It even turned out to be <a href="https://marin.readthedocs.io/en/latest/reports/marin-32b-retro/">a pretty good model</a>.</p>
+<p>Good times, but it was painfully clear that we were hitting a wall. We had shown that a tiny team could train surprisingly good models in the open, but we had also more or less exhausted what could be accomplished by one full-time person, borrowed infrastructure, and whatever compute happened to be lying around.</p>
+<p>Around this time, Jeff Hammerbacher, CEO of Open Athena, reached out with an offer to bring Marin into Open Athena, to give it the resources to become a real lab, without giving up on our commitment to doing the work in the open. We eagerly took him up on it. With the support of Jeff, David Siegel, and the rest of Open Athena, we went from one person working full-time on Marin to ten.</p>
+<p>The goal over the following year was straightforward, if not exactly easy: take everything that had previously depended on improvisation and heroics and turn it into science and infrastructure. Then scale it up to get as close to the frontier as we could.</p>
+<p>We were also incredibly fortunate this year to receive a <a href="https://openathena.ai/blog/huang-foundation-marin-535b-training-run/">generous grant from the <strong>Jen-Hsun and Lori Huang Foundation</strong></a> to support Marin's compute over the coming year. That support made our next leap in scale possible, starting with this 535B-A23B run. It's a pretty extraordinary bet to place on a ten-person open lab, and we're deeply grateful for it.</p>
+<p>I keep coming back to the "boringness" of our hero run because that maturity has been the point of everything we've been building. Our focus on smooth scaling laws with stable hyperparameter transfer has meant that we know almost exactly what model we'll be getting before we even kick it off. All the work on Iris and our other infrastructure has meant that we haven't even needed to set up a pager system for our on-call rotation. Hardware failures happen, but the system automatically recovers and the run keeps going.</p>
+<p>That's not to say that there wasn't plenty of work to do in the lead up to the hero run launch. We had to finalize the architecture, prepare the final data mixture, do the scaling law runs to register our predictions, and also port our entire infrastructure and training stack from Google TPUs on GCP to Nvidia GPUs on CoreWeave. No big deal.</p>
+<p>Obviously, there was a ton to do, and… I missed it. First, I was on a long-scheduled family vacation to Costa Rica. (In my defense, CoreWeave delivered the GPUs several weeks early. When do the GPUs ever come early?) Then I was lost in a chikungunya-induced fever dream for weeks while everyone else was pushing for the launch.</p>
+<p>As painful as it was for me to miss the lead-up to the run, the fact that the project barely missed a beat in my absence is one of the things I'm proudest of. Two years ago, or even just a year ago, when Marin had one FTE, that obviously would have been impossible. I couldn't even take a fully unplugged vacation. So, despite my FOMO, I could not be prouder of this run and of Marin overall.</p>
+<p>But it also means the credit for this launch belongs to the people who weren't shivering under a pile of blankets, briefly convinced they had developed hyperphantasia.</p>
+<p>Foundation model work increasingly gets attributed to organizations, or to enormous author lists where it's hard to tell who actually did what. These models are team efforts, but teams are made of people, and people deserve credit for the work they did. So:</p>
+<ul>
+<li><strong>Larry Dial</strong> led the model and training recipe: architecture selection, optimizer and routing choices, scaling-ladder design and execution, and the final run specification. Without him, our loss curves would not be nearly so boring, nor so good.</li>
+<li><strong>Will Held</strong> owned much of the production data and evaluation preparation. He found most of our 20 trillion tokens of source data, ran the experiments to determine our final training mixture, and built the evaluations that let us know whether the recipe was working.</li>
+<li><strong>Isaac Hodes</strong> held everything together. He took a sprawling set of experiments and objectives and distilled them into the handful of questions we needed to answer before launch. He somehow kept that picture current while the answers—and sometimes the questions—changed underneath us.</li>
+<li><strong>Mark Muchane</strong>, despite joining the team only weeks before launch, contributed across both the data pipeline and the training kernels. He built and audited parts of our quality-scoring pipeline, then brought the new dropless "<a href="https://cursor.com/blog/mixture-of-kittens">Mixture-of-Kittens</a>" backend to the full hero shape and figured its remaining performance bottlenecks.</li>
+<li><strong>Russell Power</strong> has been key to making the run boring from an infrastructure perspective. In addition to developing Iris and getting it running on CoreWeave, he hunted down reliability problems throughout the stack and cut recovery from hardware faults from roughly an hour to a few minutes.</li>
+<li><strong>Matt Wittmann</strong> rebuilt our expert-parallel path around XLA:GPU's ragged all-to-all, fixing problems in the primitive itself along the way. The result nearly eliminated token dropping and raised throughput from 21% to 24% MFU, cutting the projected remaining runtime by roughly one-eighth.</li>
+<li><strong>Rafal Wojdyla</strong> made the run possible across both data and systems. He created the DataKit processing pipeline with its embedding-based reclustering, provenance tracking, and global fuzzy deduplication. He also built our initial GPU-friendly expert-parallel implementation.</li>
+<li><strong>Romain Yon</strong> brought vLLM support to our custom "Grug MoE" architecture. He validated checkpoint exports and inference parity, worked out how models at this scale could be served, and built the path from a finished training checkpoint to evaluation and downstream use.</li>
+</ul>
+<p>We also aren't alone in this. Our partners at Nvidia and CoreWeave have been essential in getting this run off the ground. Nvidia's JAX team helped us with all the weird corner cases we dug up and the CoreWeave team has been incredibly responsive in tracking down hardware issues. Thanks also to Alec Radford and Kaiyue Wen for the sage advice in the leadup to the launch.</p>
+<p>Finally, we also want to thank <strong>Zak Stone</strong> and <strong>Google's TPU Research Cloud</strong>, which provided compute for the scaling ladder behind this run and has supported Marin since the very beginning. It is hard to overstate how much that support mattered. Marin simply would not exist without it.</p>
+<p>This is just the pretraining phase of our 2026 hero run. Once it finishes, the model passes to our post-training team, led by <strong>Ben Feuer</strong>. We'll have much more to say about that soon.</p>
+<p>Stepping back, this past year we've focused on building the machine that can reliably, boringly produce models. We've produced a lot of data, a lot of intermediate models, and a lot of information along the way. Almost all of it is public: on GitHub, on WandB, in experiment reports, and in conversations on Discord.</p>
+<p>The problem is that there is now simply too much of it. Transparency is not the same thing as legibility. So that's one of our big goals for the coming year: to distill that transparency into something legible. We want to do a better job turning all of those experiments, decisions, successes, and failures into knowledge that people outside Marin can actually use.</p>
+<p>Two years ago, Marin was created to see if a tiny open project could train a competitive foundation model at all. This past year, we've been trying to build a lab that can do it reliably. This next year, we need to get much better at making what we learn along the way useful to everyone else.</p>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{hall2026_marin_535b_launch_note,
+  author = {Hall, David},
+  title = {Marin 535B-A23B launch note},
+  year = {2026},
+  month = {sep},
+  howpublished = {\url{https://www.openathena.ai/blog/marin-535b-launch-note/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

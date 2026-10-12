@@ -1,0 +1,320 @@
+---
+layout: mirror
+title: Open Development of Frontier AI
+authors:
+- David Hall
+date: '2026-06-29'
+categories: blog
+description: Open development is key to making frontier-level artificial intelligence
+  legible, reusable, and public.
+source_url: https://openathena.ai/blog/open-development-of-frontier-ai/
+canonical_url: https://www.openathena.ai/blog/open-development-of-frontier-ai/
+source_content_sha256: 305a0c82301a30436c255ab2ef2cf3576ea1526eed7e72ce19f3cc8a53dbd847
+excerpt: Open development is key to making frontier-level artificial intelligence
+  legible, reusable, and public.
+---
+{% raw %}
+<div class="blog-post-body">
+<aside class="blog-toc">
+<nav class="blog-toc-nav">
+<div class="blog-toc-title">Contents</div>
+<ol class="blog-toc-list"></ol>
+</nav>
+<details class="blog-toc-mobile">
+<summary class="blog-toc-title">Contents</summary>
+<ol class="blog-toc-list"></ol>
+</details>
+</aside>
+<div class="blog-post-content project-detail-body">
+<p>I should start by saying that “Generative AI is the defining technology of our time. It is transforming how we work, how we learn, how we create and consume knowledge,” etc, etc.</p>
+<p>So much is obvious. What is less obvious is how frontier AI is built.</p>
+<p>By “how it is built,” I do not mean the high-level story you get in a popular science article. I do not even mean the knowledge you learn from classes like the <a href="https://cs336.stanford.edu">CS336 lectures</a> at Stanford, which are painstakingly excavated from technical reports released by commercial AI companies and the handful of open source labs.</p>
+<p>I mean the process knowledge that leads to the discovery of those insights you might learn from  that class. <em>Process knowledge</em> is the body of techniques for improving the model building process itself: how you decide which architectural changes make it into your most expensive training runs, or how you determine what data is included or excluded from training.</p>
+<p>Frontier AI models are built from this process knowledge, and it is a closely guarded secret. When leading AI labs disclose bits of that knowledge, it is always limited, tactical, or contingent. They are taking part in a status game, credibility signaling, or an attempt to capture mindshare. When these labs achieve these goals, they taper the transparency, disclosing less and less until they tell us almost nothing about how they got to their results.</p>
+<p>Unfortunately, this diminishing transparency makes it harder and harder for non-frontier labs, academia, and the broader public to understand how frontier AI is actually built or to contest the choices being made on their behalf. It is relatively easy for researchers to download web data and a training toolkit and train a few-billion-parameter model. But without the process knowledge behind frontier systems, researchers’ efforts are unlikely to yield conclusions that apply at any relevant scale.</p>
+<p>What is needed, then, is an organization whose purpose is the discovery and promulgation of the process knowledge to create frontier-level artificial intelligence, rather than organizations who merely disclose it for publicity or signaling.</p>
+<p>But first, if you will permit me, a story.</p>
+<h2 id="knowledge-as-weapon">Knowledge as weapon<a aria-label="Link to section: Knowledge as weapon" class="heading-anchor" href="#knowledge-as-weapon"></a></h2>
+<p>In 16th century Renaissance Italy, mathematical knowledge was rarely shared freely. Instead, it was kept secret because it could serve as a kind of munition. Scholars kept discoveries secret so they could deploy them in public contests called “disputations,” where two intellectuals would compete to see who was the superior thinker. Victory would mean prestige, university positions, and patronage from wealthy nobles. Defeat could bring professional ruin.</p>
+<p>So when Scipione del Ferro, a professor in Bologna, discovered a method for solving one form of the depressed cubic (what we would now write as $x^3+px=q$), he did not publish it. He kept it as both sword and shield, revealing it only near the end of his life to his student Antonio Fior.</p>
+<p>Fior, convinced he now possessed a secret weapon, challenged Niccolò Tartaglia to a disputation, a “math duel.” He posed a series of cubic equations, assuming Tartaglia would have no general method for solving them. Instead, Tartaglia derived his own method during the contest and defeated Fior decisively.</p>
+<p>Naturally, Tartaglia did not publish his new method. It was now <em>his</em> weapon. He kept it secret for years, revealing it only to another man, Girolamo Cardano, after Cardano swore a solemn oath of secrecy.<sup class="footnote-ref" id="fnref-1"><a href="#fn-1">1</a></sup> Eventually, Cardano published the method anyway, leading to a dispute between Cardano and Tartaglia and eventually, perhaps inevitably, another disputation.</p>
+<p>The story of the depressed cubic’s solution is usually presented as a kind of farce. It is comical to imagine mathematicians stockpiling their secret knowledge, ready to unsheathe it in a “math duel” at a moment’s notice. It borders on outright silly.</p>
+<p>And yet, for me, this story has an undercurrent of sadness, of waste. The solution to the depressed cubic led to the development of complex numbers. Without this cloak-and-dagger skulking, how much sooner could we have discovered them? How many other ideas were delayed, or lost entirely, to that culture of secrecy?</p>
+<h2 id="what-is-secret-in-modern-ai">What is secret in modern AI?<a aria-label="Link to section: What is secret in modern AI?" class="heading-anchor" href="#what-is-secret-in-modern-ai"></a></h2>
+<p>Much of the debate around open-weight releases has focused on what they do and do not reveal. They reveal a model’s architecture and parameters. A technical report may gesture at the data and training recipe. But the most important knowledge usually remains outside the artifact: the process knowledge behind the model, accumulated through thousands of small decisions, experiments, failures, and corrections.</p>
+<p>The process knowledge of frontier AI consists of many parts: data sourcing, curation, and preprocessing; data mixtures and curricula; scaling experiments; optimizer and initialization choices; and kernels and systems tricks. It also consists of what doesn’t work: methods that don’t scale, or aren’t stable enough, or otherwise exhibit unacceptable pathologies.</p>
+<p>Perhaps most important is the meta-process knowledge, the techniques for making these choices: how you should design experiments to assess data quality; which key evaluations and metrics to track; how to determine whether a new model or technique is worth scaling. These techniques take the form of quality gates, scaling suites and ablation protocols, and the like.</p>
+<p>This is the real “secret sauce” of modern AI labs. And it is precisely this process knowledge that rarely, if ever, enters the scientific record.</p>
+<h2 id="transparency-as-tactic">Transparency as tactic<a aria-label="Link to section: Transparency as tactic" class="heading-anchor" href="#transparency-as-tactic"></a></h2>
+<p>Instead, when an AI lab releases something other than a new API endpoint, it is most often a set of model weights. These open weight (often erroneously called “open source”) releases don't reveal process knowledge, except very indirectly. Today, when an established lab releases an open weight model, there is usually a press release with evaluation numbers and some vague gestures at technical details, but usually this is all we get. Google’s Gemma 4, OpenAI’s GPT-OSS, Meta’s Llama 4, and Alibaba’s more recent Qwen models all fit this mold.</p>
+<p>Some commercial labs do release more detailed reports. In fact, the exceptions to this rule are instructive. Generally speaking, it is newer labs—or labs looking to regain the spotlight—that release detailed reports of how they built their systems. Recently, among American efforts, Arcee, Cursor, Nvidia, and Microsoft’s MAI have all released detailed reports. Many Chinese and European labs have also released reports.</p>
+<p>However, for companies, this transparency is tactical. The goal is to generate attention, excitement, funding, and above all, credibility. Like the challenger Fior, up-and-coming labs put their knowledge on display to project power, to attempt to claim their place among the “real” frontier labs. Of course, the ritualization is different from that of Renaissance Italy. Rather than challenge and disputation, we get the press release, the LaTeX tech report, and the accompanying social media fanfare. But the underlying motivations are the same.</p>
+<p>As those goals are achieved, subsequent releases from those same labs contain fewer and fewer details. Witness the decline of substance in the tech reports from OpenAI for its GPT series. (I will resist making the joke.) Meta’s Llama series follows this decline as well: Llama 1 and Llama 2 have lots of details, Llama 3 fewer, and Llama 4 no tech report at all. Now even Alibaba’s Qwen has seemingly followed the same path. The more credibility and reputation (or sometimes just capital) an organization has, the less it needs to disclose. “Open weights labs” have repeatedly proven to be only <em>contingently</em> open.</p>
+<p>This is why disclosure always stops short of the full details. The training system's software architecture is described in just enough detail to establish credibility. We learn which open-source kernels are used, but (usually) not the details of the ones developed in-house.<sup class="footnote-ref" id="fnref-2"><a href="#fn-2">2</a></sup> We learn that X% of the pretraining data is code, but we do not know how the code is presented to the model—is it a single file at a time, an entire repo, the commit history as a sequence of diffs?</p>
+<p>We do not know and, from the company’s perspective, we do not need to. This is correct: businesses manufacture knowledge for business ends. If transparency no longer advances those ends, the disclosure stops.</p>
+<h2 id="academias-role">Academia’s role<a aria-label="Link to section: Academia’s role" class="heading-anchor" href="#academias-role"></a></h2>
+<p>But academia's ends are different. Academia’s purpose is the creation and dissemination of knowledge. However, academia’s role in the development of artificial intelligence is under threat. As we have seen, the manufacture of knowledge increasingly happens inside closed AI labs.</p>
+<p>Some of this is necessary, since the cost to develop frontier-level AIs is prohibitive for typical academic budgets. But academia should still be able to contribute new ideas and techniques, just as it has in so many commercialized technical domains, such as UC Berkeley’s development of the RISC-V processor architecture in 2010.</p>
+<p>How can we expect researchers to develop useful optimizers or scalable architectures if the protocol for a well-behaved scaling-suite (which many frontier labs have developed) is a secret? How can academia contribute to the development of safe AI—be it filtering for pretraining or alignment at posttraining—if the recipes being used aren't relevant?</p>
+<h2 id="open-development-and-process-knowledge">Open development and process knowledge<a aria-label="Link to section: Open development and process knowledge" class="heading-anchor" href="#open-development-and-process-knowledge"></a></h2>
+<p>So if process knowledge is the secret sauce of frontier AI, and if smaller actors like academia are to have a role in its creation, then what is needed is an organization whose strategic objective is to turn frontier AI process knowledge into a public good: an organization dedicated to <em>open development</em>.</p>
+<p>Marin is our attempt to build such an institution. While we of course aim to build and release high-quality open models, Marin’s primary goal is to make the process of developing frontier AI legible, reusable, and public.</p>
+<p>A key part of this effort is the creation of reliable scaling suites like <a href="https://openathena.ai/blog/delphi/">Delphi</a>. Delphi consists of models of increasing size, trained according to a consistent recipe that makes performance predictable across scale. Using this recipe, we were able to accurately predict the performance of the largest model from runs trained with 300x less compute.</p>
+<p>Scaling suites like Delphi chart a path toward a world where researchers can test new ideas at small scale and have some confidence that they will continue to work at industry-relevant scales.</p>
+<p>Just as importantly, we try to build our tools and methods in the open. Our goals are public from the beginning, and progress is documented as it happens. Even aborted attempts are not quietly buried. Experiment logs, including failures, remain visible. Our Delphi release included a “v1” recipe that failed to scale. Releasing and describing that failure helps researchers avoid repeating the same mistake.</p>
+<p>The result is a legible trail of documented process knowledge, as well as the artifacts it produces. We aim to do the same with data curation in pretraining, environment creation and curriculum design in posttraining, and the many smaller pieces of process knowledge that rarely make it into a polished release.</p>
+<h2 id="academia-and-open-development">Academia and open development<a aria-label="Link to section: Academia and open development" class="heading-anchor" href="#academia-and-open-development"></a></h2>
+<p>More broadly, we believe that academic AI should likewise adopt stronger norms around open development. Academia rightly prides itself on the dissemination of knowledge: we publish our ideas, present them at conferences, and share them with the world. But academic practice is still largely organized around disclosure at publication time. Results and methodology are often withheld until a paper is accepted or posted on arXiv. Experimental artifacts may be held back even longer to preserve follow-on work. Negative results often never see the light of day, only to be rediscovered again and again.</p>
+<p>Instead, code should be developed in the open where possible, rather than made public only at release time (if at all). Replications, scaling protocols, evaluation suites, and negative results should be treated as meaningful scientific outputs. Failures should be acknowledged as part of the research process, not hidden from it.</p>
+<p>Some constraints are real. Data may need to remain private for licensing, privacy, or security reasons. Some projects cannot be conducted fully in public. But where openness is possible, it should be the default. And where full transparency is impossible, careful public documentation should still be the norm.</p>
+<p>Scooping is a real concern. But academia has strong norms around plagiarism and priority. Open development, if anything, creates a clearer public record of both. More importantly, in an environment of uncertain and often insufficient funding, it is wasteful for hard-won knowledge to remain locked inside private lab notebooks, repos, or Slack threads.</p>
+<p>Frontier AI is built from process knowledge: the accumulated body of experimental technique, evaluation discipline, systems judgment, and hard-won operational understanding that makes large-scale model development possible. If that knowledge remains largely private, then academia cannot meaningfully contribute to the field’s development.</p>
+<p>To avoid that outcome, more of this process knowledge has to enter the scientific record. Not every detail can be public. But the default should move toward legibility, reproducibility, and public accumulation, rather than private inheritance.</p>
+<section class="footnotes">
+<ol>
+<li id="fn-1"><p>Amusingly, the disclosure came in the form of a <a href="https://old.maa.org/press/periodicals/convergence/how-tartaglia-solved-the-cubic-equation-tartaglias-poem">poem</a>.<a class="footnote" href="#fnref-1">↩</a></p></li>
+<li id="fn-2"><p>DeepSeek is an important exception, but one that proves the rule. The kernel releases after DeepSeek-V3 helped answer skepticism about the company’s cost-efficiency claims and established its systems credibility. The later releases around V4 look even more tactical: they make third-party inference providers better at serving DeepSeek’s architecture, thereby increasing adoption while weakening the API and serving moats of closed-weight labs.<a class="footnote" href="#fnref-2">↩</a></p></li>
+</ol>
+</section>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{hall2026_open_development_of_frontier_ai,
+  author = {Hall, David},
+  title = {Open Development of Frontier AI},
+  year = {2026},
+  month = {jun},
+  howpublished = {\url{https://www.openathena.ai/blog/open-development-of-frontier-ai/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<script>
+(function() {
+  const content = document.querySelector('.blog-post-content');
+  const lists = document.querySelectorAll('.blog-toc-list');
+  if (!content || !lists.length) return;
+
+  const headings = Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+    .filter(function(h) { return !h.closest('.blog-post-citation'); });
+
+  // Find the minimum heading level used so it becomes the top-level TOC entry
+  var minLevel = 6;
+  headings.forEach(function(h) {
+    var level = parseInt(h.tagName[1]);
+    if (level < minLevel) minLevel = level;
+  });
+
+  function buildToc(list) {
+    headings.forEach(function(h) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+      var level = parseInt(h.tagName[1]);
+
+      if (level === minLevel) {
+        li.className = 'toc-h2';
+        li.dataset.sublist = '';
+        list.appendChild(li);
+      } else {
+        var parent = list.querySelector('li.toc-h2:last-child > ol');
+        if (!parent) {
+          parent = document.createElement('ol');
+          var lastTop = list.querySelector('li.toc-h2:last-child');
+          if (lastTop) lastTop.appendChild(parent);
+          else { li.className = 'toc-h3'; list.appendChild(li); return; }
+        }
+        li.className = 'toc-h3';
+        parent.appendChild(li);
+      }
+    });
+  }
+
+  lists.forEach(function(list) { buildToc(list); });
+
+  // Highlight active TOC entry on scroll
+  var tocLinks = document.querySelectorAll('.blog-toc-nav .blog-toc-list a');
+  if (tocLinks.length && headings.length) {
+    function updateActive() {
+      var current = null;
+      var threshold = window.innerHeight * 0.3;
+      for (var i = 0; i < headings.length; i++) {
+        if (headings[i].getBoundingClientRect().top <= threshold) current = headings[i];
+      }
+      // Find the parent top-level heading for the current heading
+      var parentH2 = null;
+      if (current) {
+        var currentLevel = parseInt(current.tagName[1]);
+        if (currentLevel === minLevel) {
+          parentH2 = current;
+        } else {
+          for (var j = Array.prototype.indexOf.call(headings, current) - 1; j >= 0; j--) {
+            if (parseInt(headings[j].tagName[1]) === minLevel) { parentH2 = headings[j]; break; }
+          }
+        }
+      }
+      var activeLink = null;
+      tocLinks.forEach(function(link) {
+        var isActive = current && link.getAttribute('href') === '#' + current.id;
+        var isParent = parentH2 && parentH2 !== current && link.getAttribute('href') === '#' + parentH2.id;
+        link.classList.toggle('active', isActive || isParent);
+        if (isActive) activeLink = link;
+      });
+
+      // Auto-scroll TOC to keep active link visible.
+      // IMPORTANT: do not use scrollIntoView — it scrolls every scrollable ancestor
+      // (including the window), which fights the user's page scroll. Adjust only
+      // the TOC's own scrollTop so the page position stays put.
+      if (activeLink && !userScrolledToc) {
+        var tocNav = document.querySelector('.blog-toc');
+        var linkRect = activeLink.getBoundingClientRect();
+        var tocRect = tocNav.getBoundingClientRect();
+        if (linkRect.bottom > tocRect.bottom || linkRect.top < tocRect.top) {
+          var target = (linkRect.top - tocRect.top) + tocNav.scrollTop
+                     - (tocRect.height - linkRect.height) / 2;
+          tocNav.scrollTop = Math.max(0, target);
+        }
+      }
+    }
+
+    // Track manual TOC scrolling
+    var userScrolledToc = false;
+    var tocEl = document.querySelector('.blog-toc');
+    var tocScrollTimer;
+    tocEl.addEventListener('scroll', function() {
+      userScrolledToc = true;
+      clearTimeout(tocScrollTimer);
+      tocScrollTimer = setTimeout(function() { userScrolledToc = false; }, 1000);
+    }, { passive: true });
+
+    window.addEventListener('scroll', updateActive, { passive: true });
+    updateActive();
+  }
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

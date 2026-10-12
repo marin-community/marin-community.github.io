@@ -1,24 +1,15 @@
 ---
-layout: default
+layout: blog
 ---
-
-<small>{{ page.date | date: "%-d %B %Y" }}</small>
-<h1>{{ page.title }}</h1>
-
-<p class="view">
-{% for author in page.authors %}
-    <div style="text-align: center; margin: 15px 0;">{{ author }}</div>
-{% endfor %}
-</p>
-
-{% if page.author_notes %}
-<p class="view">
-{% for note in page.author_notes %}
-    <div style="text-align: center; font-size: 0.85em; margin: 4px 0;">{{ note }}</div>
-{% endfor %}
-</p>
-{% endif %}
-
-<hr/>
-
-{{content}}
+<article class="post original-post">
+  <header class="post-header">
+    <a class="back-link" href="{{ '/blog/' | relative_url }}">← All writing</a>
+    <p class="eyebrow">Marin</p>
+    <h1>{{ page.title | escape }}</h1>
+    <p class="post-meta"><time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: '%-d %B %Y' }}</time></p>
+    <div class="post-authors">{% for author in page.authors %}<p>{{ author }}</p>{% endfor %}</div>
+    {% for note in page.author_notes %}<p class="author-note">{{ note }}</p>{% endfor %}
+  </header>
+  <div class="original-content">{{ content }}</div>
+  <p class="post-end"><a href="{{ '/blog/' | relative_url }}">← More from Marin</a></p>
+</article>

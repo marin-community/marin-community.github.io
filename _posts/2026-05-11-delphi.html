@@ -1,0 +1,918 @@
+---
+layout: mirror
+title: Scaling Laws That Extrapolate 300× Past the Fit
+authors:
+- Will Held
+date: '2026-05-11'
+categories: blog
+description: Delphi is an open scaling suite ranging from 3e18 to 1e23 FLOPs. A pre-registered
+  forecast from its scaling law predicted the loss of the largest run within 0.2%,
+  extrapolating 300× past the largest run used in the fit.
+source_url: https://openathena.ai/blog/delphi/
+canonical_url: https://www.openathena.ai/blog/delphi/
+source_content_sha256: 921687cb3dbf6041c9f6c95891e81e92beea7e6d63814806cd6a54b8cc0a4189
+excerpt: Delphi is an open scaling suite ranging from 3e18 to 1e23 FLOPs. A pre-registered
+  forecast from its scaling law predicted the loss of the largest run within 0.2%,
+  extrapolating 300× past the largest run used in the fit.
+---
+{% raw %}
+<div class="blog-post-body">
+<aside class="blog-toc">
+<nav class="blog-toc-nav">
+<div class="blog-toc-title">Contents</div>
+<ol class="blog-toc-list"></ol>
+</nav>
+<details class="blog-toc-mobile">
+<summary class="blog-toc-title">Contents</summary>
+<ol class="blog-toc-list"></ol>
+</details>
+</aside>
+<div class="blog-post-content project-detail-body">
+<p>In this post, I'll describe the process of developing Delphi, the Marin team's first open scaling suite, inspired by <a href="https://www.eleuther.ai/papers-blog/pythia-a-suite-for-analyzing-large-language-modelsacross-training-and-scaling">Pythia</a>. Delphi has three parts: a scaling recipe that maps compute budgets to model configurations, a scaling suite trained from that recipe on the <a href="https://sites.research.google/trc/about/">Google TPU Research Cloud</a>, and a scaling law that uses the smaller Delphi models to predict the larger ones. We release the checkpoints, training mixture, and recipe so Delphi can serve as a new resource for scaling studies. A pre-registered forecast from the scaling law predicted the final loss of the largest Delphi run (1e23 FLOPs, 25B parameters, 600B tokens) within 0.2%, extrapolating 300× past the largest run used in the fit.</p>
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">Delphi's scaling law, from small runs to frontier-scale compute</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="Delphi's scaling law, from small runs to frontier-scale compute. The Delphi scaling law was fit on seven IsoFLOP optima at 3e18 to 3e20 FLOPs; held-out runs at 1e21, 1e22, and 1e23 land within 0.5% of the fit. Past 1e23 the dashed curve is pure extrapolation — where it places Marin 32B, Kimi K2.5, DeepSeek V4, GPT-4, Opus, and GPT-5 is just the same law continued forward. Compute estimates for closed-weight models are drawn from Epoch AI's large-scale AI models database." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/delphi/extrapolation.json" role="img" style="min-height:460px;"></div></div></div><figcaption>The Delphi scaling law was fit on seven IsoFLOP optima at 3e18 to 3e20 FLOPs; held-out runs at 1e21, 1e22, and 1e23 land within 0.5% of the fit. Past 1e23 the dashed curve is pure extrapolation — where it places Marin 32B, Kimi K2.5, DeepSeek V4, GPT-4, Opus, and GPT-5 is just the same law continued forward. Compute estimates for closed-weight models are drawn from Epoch AI's large-scale AI models database.</figcaption></figure>
+<p><strong>Summary</strong></p>
+<ul>
+<li>Our first attempt produced a scaling law that looked clean on the small runs but diverged when extrapolated 30× past them.</li>
+<li>The fix to our recipe was a token-horizon correction to the learning rate and other hyperparameters, along with a new optimizer that removed weight decay from the hyperparameter search.</li>
+<li>With this updated recipe, the fit predicted the loss of a 1e23 FLOP run within 0.2%, and smaller held-out runs at 1e21 and 1e22 landed within 0.5% across multiple random seeds.</li>
+<li>The same process forecast downstream benchmarks—MMLU, HumanEval, and GSM8K—via a two-step regression procedure combining compute and observational scaling laws.</li>
+<li>All checkpoints, fit coefficients, and the recipe are publicly released, along with scripts that deterministically reproduce the training mixture (Nemotron-CC, StarCoderData, and ProofPile 2) from public sources.</li>
+</ul>
+<h2 id="how-do-you-decide-what-to-train-at-scale">How do you decide what to train at scale?<a aria-label="Link to section: How do you decide what to train at scale?" class="heading-anchor" href="#how-do-you-decide-what-to-train-at-scale"></a></h2>
+<p>Suppose you have one year and a couple thousand accelerators to train a language model. What model should you train?</p>
+<p>This is not one decision, but many. You need an architecture, a data mixture, a batch size, learning rates, momentum terms, parameter initializations, and a host of other details. Even with a large allocation, you cannot afford to test all of your options by running full-scale experiments.</p>
+<p>Instead, if you want these decisions to be empirically grounded, you have to use smaller-scale runs as proxies. There is good news and bad news here. The bad news is that performance is scale-dependent: the best configuration at small scale is not necessarily the best configuration at large scale. The good news is that performance is often surprisingly predictable as a function of compute. A <strong>scaling law</strong> is an empirical relationship between a resource, such as training FLOPs, and an outcome, such as validation loss. With a stable scaling law, small runs can tell us something about larger runs we have not trained yet.<sup class="footnote-ref" id="fnref-1"><a href="#fn-1">1</a></sup></p>
+<p>But a scaling law by itself does not solve our problem. It does not tell us how to train models; it only tells us what happens after we have chosen a way of assigning models and hyperparameters at each compute budget. That assignment is a <strong>scaling recipe</strong>: a mapping from compute to a full training configuration. A recipe says, for example, how model width, depth, batch size, learning rate, and training duration should change as compute increases.</p>
+<p>This shifts the experimental question. Instead of asking whether one particular model configuration is good, we ask whether a recipe produces good models across scale. A recipe is useful when it is both competitive and predictable: competitive because the models it trains have low loss, and predictable because the scaling law fit on smaller runs continues to describe larger ones. Building such a recipe means combining theory, empirical tuning, and judgment where the theory is incomplete.</p>
+<p>With a recipe in hand, we can produce a <strong>scaling suite</strong>: a set of models trained with the same recipe at increasing compute budgets. A scaling suite is a reusable research resource. It lets the community study the effects of model, data, and compute scaling without doing their own training. Pythia and other open scaling suites have already been used this way for a range of downstream scientific questions, including memorization (<a href="https://arxiv.org/abs/2202.07646">Carlini et al., 2022</a>), training-trajectory analysis (<a href="https://aclanthology.org/2023.acl-long.767/">Xia et al., 2023</a>), the emergence of downstream evaluations (<a href="https://ericjmichaud.com/quanta/">Michaud, 2023</a>), how next-token predictions form layer by layer (<a href="https://arxiv.org/abs/2303.08112">Belrose et al., 2023</a>), and model provenance (<a href="https://arxiv.org/abs/2510.19796">Kuditipudi et al., 2025</a>).</p>
+<p>Delphi expands on three axes for open-scaling suites: scale, capability, and comparison. It raises the top range in compute, model size, and training tokens; brings meaningful in-context learning capabilities into view; and makes the recipe itself a falsifiable baseline that other groups can compare against at whatever scale they can afford.</p>
+<h2 id="scaling-recipe-procedure">Scaling recipe procedure<a aria-label="Link to section: Scaling recipe procedure" class="heading-anchor" href="#scaling-recipe-procedure"></a></h2>
+<p>A scaling recipe starts with a reference model, a small model which you can exhaustively tune, and aims to generalize its hyperparameters in a functional form. The inputs are model size and token budget. The output is the full training configuration: architecture, batch size, learning rate, optimizer settings, schedule, and initialization. This makes hyperparameter transfer part of the experiment. If every run in the suite comes from the same recipe, then a misbehaving run points back to the recipe itself, rather than to a single table entry.</p>
+<p>The symbols used throughout the recipe are summarized below. Quantities without subscripts describe the run being generated; quantities with a $0$ subscript come from the reference model.</p>
+<details>
+<summary>Symbols and Fields</summary>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Symbol / field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Input</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Compute budget</td>
+<td>$C$</td>
+</tr>
+<tr>
+<td>Sequence length</td>
+<td>$\ell$</td>
+</tr>
+<tr>
+<td>Model width</td>
+<td>$H$</td>
+</tr>
+<tr>
+<td><strong>Reference tuning</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Reference batch size</td>
+<td>$B_0$</td>
+</tr>
+<tr>
+<td>Reference duration</td>
+<td>$T_0$</td>
+</tr>
+<tr>
+<td>Reference projection learning rate</td>
+<td>$\eta_0$</td>
+</tr>
+<tr>
+<td>Reference scalar learning rate</td>
+<td>$\eta_{0,\mathrm{Adam}}$</td>
+</tr>
+<tr>
+<td>Reference epsilon</td>
+<td>$\varepsilon_0$</td>
+</tr>
+<tr>
+<td><strong>Derived scale</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Parameter count</td>
+<td>$N$</td>
+</tr>
+<tr>
+<td>Training duration</td>
+<td>$T$</td>
+</tr>
+<tr>
+<td><strong>Output</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Training steps</td>
+<td>steps</td>
+</tr>
+<tr>
+<td>Model depth</td>
+<td>layers</td>
+</tr>
+<tr>
+<td>Attention shape</td>
+<td>heads</td>
+</tr>
+<tr>
+<td>Batch size</td>
+<td>$B$</td>
+</tr>
+<tr>
+<td>Learning rate</td>
+<td>$\eta$</td>
+</tr>
+<tr>
+<td>Momentum terms</td>
+<td>$\beta_1$, $\beta_2$</td>
+</tr>
+<tr>
+<td>Numerical stability</td>
+<td>$\varepsilon$</td>
+</tr>
+<tr>
+<td>Gradient clipping</td>
+<td>max grad norm</td>
+</tr>
+<tr>
+<td>Regularization</td>
+<td>weight decay</td>
+</tr>
+<tr>
+<td>Initialization</td>
+<td>init std</td>
+</tr>
+<tr>
+<td><strong>Held fixed across the suite</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Architecture family</td>
+<td>Qwen 3</td>
+</tr>
+<tr>
+<td>Tokenizer</td>
+<td>Llama 3</td>
+</tr>
+<tr>
+<td>Data mixture</td>
+<td>Nemotron-CC + StarCoderData + ProofPile 2</td>
+</tr>
+<tr>
+<td>LR schedule</td>
+<td>WSD, 10% warmup, 0 floor</td>
+</tr>
+<tr>
+<td>Mixed precision</td>
+<td>f32 params, bf16 compute</td>
+</tr>
+<tr>
+<td>Parallelism</td>
+<td>FSDP</td>
+</tr>
+</tbody>
+</table>
+</details>
+<p>The recipe is then tested through IsoFLOP sweeps. An IsoFLOP sweep trains several models at the same compute budget, changing the tradeoff between model size and training duration throughout. For example, one point in the grid might be a smaller model trained on more tokens, while another is a larger model trained on fewer tokens. For each budget from 3e18 to 3e20 FLOPs, Delphi trains <a href="https://arxiv.org/abs/2505.09388">Qwen 3</a> architecture models on a mixture of <a href="https://data.commoncrawl.org/contrib/Nemotron/Nemotron-CC/index.html">Nemotron-CC</a>, <a href="https://huggingface.co/datasets/bigcode/starcoderdata">StarCoderData</a>, and <a href="https://huggingface.co/datasets/EleutherAI/proof-pile-2">ProofPile 2</a>, sweeping model size while adjusting token count to keep compute fixed. The best configuration at each budget is called "compute-optimal." From the compute-optimal points, we can fit a power law between compute and performance and use it to forecast larger runs.<sup class="footnote-ref" id="fnref-2"><a href="#fn-2">2</a></sup></p>
+<h2 id="delphi-attempt-1-how-can-scaling-laws-go-wrong">Delphi attempt 1: How can scaling laws go wrong?<a aria-label="Link to section: Delphi attempt 1: How can scaling laws go wrong?" class="heading-anchor" href="#delphi-attempt-1-how-can-scaling-laws-go-wrong"></a></h2>
+<p>The first Delphi attempt followed published scaling recipes where they existed. The basic pattern was to start from an existing model in Marin, tuned via grid search,<sup class="footnote-ref" id="fnref-3"><a href="#fn-3">3</a></sup> then transfer outward through prescriptions that depend on hidden dimension $H$, batch size $B$, and training duration $T$. In that first recipe, learning rate scaled with batch size and width per <a href="https://arxiv.org/abs/2203.03466">muP (Yang et al., 2022)</a>, depth followed a log-corrected ratio from the depth-to-width scaling literature (<a href="https://arxiv.org/abs/2006.12467">Levine et al., 2020</a>), and batch size targeted a fixed step count.</p>
+<p>Inside that grid, the seven IsoFLOP buckets from 3e18 to 3e20 FLOPs looked healthy. Each traced a parabola with a relatively clear minimum, and the asymptotic power law through those minima fit cleanly. Then the 1e22 held-out run missed the forecast by 2.5%, and the 1e23 run diverged. Scale-dependence and predictability can coexist, but only if the recipe captures the right scale-dependence. This initial attempt did not!</p>
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">The initial Cautious AdamC recipe</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="The initial Cautious AdamC recipe. Left: at each compute budget, I train a range of (model size, training duration) pairs totaling the same FLOPs and fit a parabola in (log tokens, loss). Its minimum (×) is the compute-optimal point for that budget. Right: the scaling-law fit on those optima (left of the vertical divider in the panel) extrapolated to held-out 1e21, 1e22, and 1e23 runs (right of the divider). The 1e22 miss and the diverged 1e23 run are what forced the rewrite in the next section." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/delphi/first-ladder.json" data-plotly-src-mobile="/assets/openathena/assets/images/blog/delphi/first-ladder-mobile.json" role="img" style="min-height:380px;"></div></div></div><figcaption>Left: at each compute budget, I train a range of (model size, training duration) pairs totaling the same FLOPs and fit a parabola in (log tokens, loss). Its minimum (×) is the compute-optimal point for that budget. Right: the scaling-law fit on those optima (left of the vertical divider in the panel) extrapolated to held-out 1e21, 1e22, and 1e23 runs (right of the divider). The 1e22 miss and the diverged 1e23 run are what forced the rewrite in the next section.</figcaption></figure>
+<h2 id="delphi-attempt-2-how-do-you-fix-a-broken-scaling-suite">Delphi attempt 2: How do you fix a broken scaling suite?<a aria-label="Link to section: Delphi attempt 2: How do you fix a broken scaling suite?" class="heading-anchor" href="#delphi-attempt-2-how-do-you-fix-a-broken-scaling-suite"></a></h2>
+<p>When a single run fails, especially partway through, it often makes sense to rescue it, like we did with <a href="https://marin.readthedocs.io/en/latest/reports/marin-32b-retro/">Marin 32B</a>. When a scaling suite fails, though, you have to suppress this instinct! Instead you want to identify which part of the recipe to change, and you need a way to tell whether the new recipe works using only your small-scale runs. Here the 1e22 miss and the 1e23 divergence both showed up at longer training durations than anything inside the IsoFLOP grid. That pushed me to focus on the parts of the recipe most likely to break as the token horizon increased.</p>
+<p>The main problem was likely the learning rate. A common prescription is to scale learning rate up with the square root of batch size (<a href="https://arxiv.org/abs/2205.10287">Malladi et al., 2022</a>), often alongside retuning optimizer settings like $\beta_2$ as batch size changes (<a href="https://arxiv.org/abs/2507.07101">Marek et al., 2025</a>). To try and diminish step count as a confound, I had the suite configured to try to keep step count roughly constant by scaling batch size unless the learning rate grew beyond 0.01. This meant that the larger, data-heavy runs used very large batch sizes and, correspondingly, relatively large learning rates.</p>
+<p>Those learning rates already looked too large to me, meaning that either the batch size was too large or there was a missing scaling factor on the learning rate. Marin 32B—where hyperparameters were tuned more by eye—used even larger batch sizes with a learning rate more than 10× lower, and it was largely spike free once we swapped to the Qwen 3 architecture. As such, I felt that finding the right adjustment to the learning rate scaling recipe was the right intervention to pursue.</p>
+<p>A second problem was weight decay, the critical regularizer in LLM training. I had left it pinned at 0.1 across every run, so it scaled with neither training length nor model width. In retrospect, this was probably not the cause of the loss spikes, but it was clearly suboptimal.</p>
+<p>With those two red flags in view, I set out to replace the recipe with one that had more principled prescriptions for both, especially for models trained over longer token horizons. When I reran the small-scale IsoFLOPs, I was less focused on improving the compute-optimal point itself than on improving the extremes, since those were the runs most likely to reveal whether I had actually fixed the token-scaling problem.</p>
+<h3 id="adamh-and-a-token-horizon-lr-recipe">AdamH and a token-horizon LR recipe<a aria-label="Link to section: AdamH and a token-horizon LR recipe" class="heading-anchor" href="#adamh-and-a-token-horizon-lr-recipe"></a></h3>
+<p>The final recipe combines two ideas and one process change. First, I changed the optimizer to reduce the number of parameters we needed to tune. Second, I adopted a method for transferring hyperparameters. Finally, I used a more efficient process to search for optimal hyperparameters.</p>
+<p>For the optimizer, I replaced Cautious AdamC<sup class="footnote-ref" id="fnref-4"><a href="#fn-4">4</a></sup> with <strong><a href="https://whenwen.github.io/wd_blog/public/hyperball-part-1.html">AdamH</a></strong> (Adam with Hyperball), developed in Marin by <a href="https://whenwen.github.io/">Kaiyue Wen</a>. AdamH constrains every projection weight to stay on the Frobenius-norm sphere it was initialized on, so weight decay has nothing to regularize away and falls out of the recipe. Kaiyue had already shown inside Marin that AdamH transfers hyperparameters across width and depth better than Adam—width-stability is also why Delphi's learning rate recipe has no $\frac{1}{H}$ factor.</p>
+<details>
+<summary>AdamH Update Rule</summary>
+<p>Given the standard Adam update direction $u_t = \frac{m_t}{\sqrt{v_t} + \varepsilon}$ for projection weight $W$, AdamH replaces the $W \leftarrow W - \eta\,u_t$ step with</p>
+<div class="math-block">
+<p>$$ \begin{aligned} \widetilde{W} &amp;= W - \eta\,u_t\,\frac{\|W\|_F}{\|u_t\|_F}, \\ W &amp;\leftarrow \frac{\|W\|_F}{\|\widetilde{W}\|_F}\,\widetilde{W}. \end{aligned} $$</p>
+</div>
+<p>The first line takes a step whose Frobenius norm matches $\eta\|W\|_F$ regardless of $\|u_t\|_F$, and the second line projects back onto the sphere of radius $\|W\|_F$ so the weight norm is preserved exactly.</p>
+<p>The figure below replicates Kaiyue's width-scaling sweep at fixed depth: each curve is one hidden dimension from 128 to 1024, swept across learning rates. Under Adam, the best learning rate drifts left as width grows. Under AdamH, the best learning rate stays more bounded, which is the property that lets the recipe keep $\eta_0$ fixed across the widths in our IsoFLOP buckets.</p>
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">Optimal learning rate under Adam vs AdamH</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="Optimal learning rate under Adam vs AdamH. Loss vs learning rate at fixed depth (num_layers=4) for hidden dimensions from 128 to 1024, on Kaiyue Wen's small-model sweep over C4-en. Stars mark the per-width optimum and the dashed line connects them in width order. Under Adam the optimum slides toward smaller learning rates as width grows; under AdamH it stays near the same learning rate across the sweep." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/delphi/hparam-transfer.json" data-plotly-src-mobile="/assets/openathena/assets/images/blog/delphi/hparam-transfer-mobile.json" role="img" style="min-height:400px;"></div></div></div><figcaption>Loss vs learning rate at fixed depth (num_layers=4) for hidden dimensions from 128 to 1024, on Kaiyue Wen's small-model sweep over C4-en. Stars mark the per-width optimum and the dashed line connects them in width order. Under Adam the optimum slides toward smaller learning rates as width grows; under AdamH it stays near the same learning rate across the sweep.</figcaption></figure>
+</details>
+<p>For hyperparameter transfer across training duration, I revisited recent work from Apple that gives a set of prescriptions I have seen referred to as Complete(d)P.<sup class="footnote-ref" id="fnref-5"><a href="#fn-5">5</a></sup> Unlike our initial recipe, which focused mostly on width and batch-size scaling, Complete(d)P adds prescriptions for how hyperparameters should change with training duration. In particular, it says learning rate should decrease as the number of tokens seen during training increases. Delphi uses a $\left(\frac{T_0}{T}\right)^{0.3}$ correction, which matched my intuitions: it prescribes a lower learning rate for our largest runs without contradicting the widely used $\sqrt{B}$ prescription for a fixed token count.<sup class="footnote-ref" id="fnref-6"><a href="#fn-6">6</a></sup></p>
+<p>While weight decay and the token-horizon term are the load-bearing changes, I also used this opportunity to retune the reference model with <a href="https://oss-vizier.readthedocs.io/en/latest/">Vizier</a>, Google's Gaussian-process-based optimizer. Vizier suggests new hyperparameter settings by fitting a model to the trials it has already seen, which makes it more efficient for modeling several interacting hyperparameters at once. The full recipe and a side-by-side calculator are below.</p>
+<details>
+<summary>Full Recipe Comparison and Hyperparameter Calculator</summary>
+<p>The table below lists the full scaling recipe side by side with the earlier one. For the reference run, $B_0 = 64$, $T_0 = 2.5\text{B}$ tokens, $\eta_0 = 0.00630$, $\eta_{0,\mathrm{Adam}} = 0.000656$, and $\varepsilon_0 = 1.85\times 10^{-8}$. For initialization, $d_{\mathrm{in}}$ is the input dimension of each linear map: $H$ for attention and MLP up/gate projections, and $4H$ for the MLP down projection.</p>
+<table>
+<thead>
+<tr>
+<th>Hyperparameter</th>
+<th>Delphi attempt 1: initial recipe</th>
+<th>Delphi attempt 2: updated recipe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>weight decay</td>
+<td>$0.1$</td>
+<td>removed by AdamH</td>
+</tr>
+<tr>
+<td>learning rate (projections)</td>
+<td>$\frac{0.33\sqrt{B}}{H}$</td>
+<td>$\eta_0\,\sqrt{\frac{B}{B_0}}\,\left(\frac{T_0}{T}\right)^{0.3}$</td>
+</tr>
+<tr>
+<td>learning rate (scalars, embeddings)</td>
+<td>same as projections</td>
+<td>$\eta_{0,\mathrm{Adam}}\,\sqrt{\frac{BT_0}{B_0T}}$</td>
+</tr>
+<tr>
+<td>$\beta_1$</td>
+<td>$0.95$</td>
+<td>$0.9$</td>
+</tr>
+<tr>
+<td>$\beta_2$</td>
+<td>$0.98^{B/B_0}$</td>
+<td>$\mathrm{clip}\!\left(0.9999^{B/B_0},\ 0.9,\ 0.9999\right)$</td>
+</tr>
+<tr>
+<td>$\varepsilon$</td>
+<td>$10^{-15}$</td>
+<td>$\varepsilon_0\,\sqrt{\frac{B_0T}{BT_0}}$</td>
+</tr>
+<tr>
+<td>max grad norm</td>
+<td>$1.0$</td>
+<td>$0.1$</td>
+</tr>
+<tr>
+<td>depth</td>
+<td>$\frac{H}{64 + 4\log_2 H - 9}$</td>
+<td>$\frac{H}{64 + 4\log_2 H - 9}$</td>
+</tr>
+<tr>
+<td>heads</td>
+<td>$\frac{H}{128}$</td>
+<td>$\frac{H}{128}$</td>
+</tr>
+<tr>
+<td>batch size</td>
+<td>$\frac{T}{\ell \cdot 2^{16}}$</td>
+<td>$\frac{T}{\ell \cdot 2^{16}}$</td>
+</tr>
+<tr>
+<td>init std (projections)</td>
+<td>$\frac{1}{\sqrt{d_{\mathrm{in}}}}$</td>
+<td>$\frac{1}{\sqrt{d_{\mathrm{in}}}}$</td>
+</tr>
+<tr>
+<td>init std (embeddings)</td>
+<td>$\frac{1}{H}$</td>
+<td>$\frac{1}{H}$</td>
+</tr>
+</tbody>
+</table>
+<p>The calculator below instantiates both recipes for any hidden dimension, token budget, and batch size. The reference constants stay fixed to the tuned Delphi values above.</p>
+<div class="recipe-calculator" id="delphi-recipe-calculator">
+<table class="recipe-inputs">
+<thead>
+<tr>
+<th scope="col">Model width $H$</th>
+<th scope="col">Training duration $T$</th>
+<th scope="col">Batch size $B$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><input data-recipe-input="h" min="1" step="128" type="number" value="1024"/> <small data-recipe-format="h"></small></td>
+<td><input data-recipe-input="t" min="1" step="1000000000" type="number" value="137000000000"/> <small data-recipe-format="t"></small></td>
+<td><input data-recipe-input="b" min="1" step="1" type="number" value="512"/> <small data-recipe-format="b"></small></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th scope="col">Hyperparameter</th>
+<th scope="col">Delphi attempt 1</th>
+<th scope="col">Delphi attempt 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th scope="row">weight decay</th>
+<td data-recipe-output="v1-weight-decay"></td>
+<td data-recipe-output="v2-weight-decay"></td>
+</tr>
+<tr>
+<th scope="row">$\eta$ (proj)</th>
+<td data-recipe-output="v1-projection-lr"></td>
+<td data-recipe-output="v2-projection-lr"></td>
+</tr>
+<tr>
+<th scope="row">$\eta$ (scalar)</th>
+<td data-recipe-output="v1-adam-lr"></td>
+<td data-recipe-output="v2-adam-lr"></td>
+</tr>
+<tr>
+<th scope="row">$\beta_1$</th>
+<td data-recipe-output="v1-beta1"></td>
+<td data-recipe-output="v2-beta1"></td>
+</tr>
+<tr>
+<th scope="row">$\beta_2$</th>
+<td data-recipe-output="v1-beta2"></td>
+<td data-recipe-output="v2-beta2"></td>
+</tr>
+<tr>
+<th scope="row">$\varepsilon$</th>
+<td data-recipe-output="v1-eps"></td>
+<td data-recipe-output="v2-eps"></td>
+</tr>
+<tr>
+<th scope="row">max grad norm</th>
+<td data-recipe-output="v1-grad"></td>
+<td data-recipe-output="v2-grad"></td>
+</tr>
+<tr>
+<th scope="row">layers</th>
+<td data-recipe-output="v1-layers"></td>
+<td data-recipe-output="v2-layers"></td>
+</tr>
+<tr>
+<th scope="row">heads</th>
+<td data-recipe-output="v1-heads"></td>
+<td data-recipe-output="v2-heads"></td>
+</tr>
+<tr>
+<th scope="row">steps</th>
+<td data-recipe-output="v1-steps"></td>
+<td data-recipe-output="v2-steps"></td>
+</tr>
+<tr>
+<th scope="row">init ($d_{\mathrm{in}}=H$)</th>
+<td data-recipe-output="v1-init-h"></td>
+<td data-recipe-output="v2-init-h"></td>
+</tr>
+<tr>
+<th scope="row">init ($d_{\mathrm{in}}=4H$)</th>
+<td data-recipe-output="v1-init-4h"></td>
+<td data-recipe-output="v2-init-4h"></td>
+</tr>
+<tr>
+<th scope="row">init (embed)</th>
+<td data-recipe-output="v1-init-embed"></td>
+<td data-recipe-output="v2-init-embed"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<script>
+(function() {
+  var root = document.getElementById('delphi-recipe-calculator');
+  if (!root) return;
+
+  function read(name) {
+    var input = root.querySelector('[data-recipe-input="' + name + '"]');
+    return input ? Number(input.value) : NaN;
+  }
+
+  function write(name, value) {
+    var output = root.querySelector('[data-recipe-output="' + name + '"]');
+    if (output) output.textContent = value;
+  }
+
+  function writeHint(name, value) {
+    var hint = root.querySelector('[data-recipe-format="' + name + '"]');
+    if (hint) hint.textContent = value;
+  }
+
+  function fmtCount(n) {
+    return Number.isFinite(n) ? n.toLocaleString('en-US') : '';
+  }
+
+  function fmtTokens(n) {
+    if (!Number.isFinite(n)) return '';
+    if (n >= 1e12) return +(n / 1e12).toFixed(2) + 'T tokens';
+    if (n >= 1e9) return +(n / 1e9).toFixed(1) + 'B tokens';
+    if (n >= 1e6) return +(n / 1e6).toFixed(1) + 'M tokens';
+    return n.toLocaleString('en-US') + ' tokens';
+  }
+
+  function finite(value) {
+    return Number.isFinite(value) && value > 0;
+  }
+
+  function rounded(value) {
+    return Number.isFinite(value) ? String(Math.round(value)) : '—';
+  }
+
+  function fixed(value, digits) {
+    return Number.isFinite(value) ? value.toFixed(digits) : '—';
+  }
+
+  function sci(value) {
+    if (!Number.isFinite(value)) return '—';
+    if (value === 0) return '0';
+    return value.toExponential(2).replace('e', 'e');
+  }
+
+  function clip(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function update() {
+    var h = read('h');
+    var t = read('t');
+    var b = read('b');
+    var ell = 4096;
+    var b0 = 64;
+    var t0 = 2500000000;
+    var eta0 = 0.00630;
+    var etaAdam0 = 0.000656;
+    var eps0 = 0.0000000185;
+    var hOk = finite(h);
+    var tOk = finite(t);
+    var bOk = finite(b);
+    var layers = hOk ? h / (64 + 4 * Math.log2(h) - 9) : NaN;
+    var heads = hOk ? h / 128 : NaN;
+    var steps = (tOk && bOk) ? t / (ell * b) : NaN;
+    var v1ProjectionLr = (hOk && bOk) ? 0.33 * Math.sqrt(b) / h : NaN;
+    var v2ProjectionLr = (tOk && bOk) ? eta0 * Math.sqrt(b / b0) * Math.pow(t0 / t, 0.3) : NaN;
+    var v2AdamLr = (tOk && bOk) ? etaAdam0 * Math.sqrt((b * t0) / (b0 * t)) : NaN;
+    var v1Beta2 = bOk ? Math.pow(0.98, b / 128) : NaN;
+    var v2Beta2 = bOk ? clip(Math.pow(0.9999, b / b0), 0.9, 0.9999) : NaN;
+    var v2Eps = (tOk && bOk) ? eps0 * Math.sqrt((b0 * t) / (b * t0)) : NaN;
+    var initH = hOk ? 1 / Math.sqrt(h) : NaN;
+    var init4H = hOk ? 1 / Math.sqrt(4 * h) : NaN;
+    var initEmbed = hOk ? 1 / h : NaN;
+
+    write('v1-layers', rounded(layers));
+    write('v2-layers', rounded(layers));
+    write('v1-heads', rounded(heads));
+    write('v2-heads', rounded(heads));
+    write('v1-steps', rounded(steps));
+    write('v2-steps', rounded(steps));
+    write('v1-weight-decay', '0.1');
+    write('v2-weight-decay', 'removed');
+    write('v1-projection-lr', sci(v1ProjectionLr));
+    write('v2-projection-lr', sci(v2ProjectionLr));
+    write('v1-adam-lr', sci(v1ProjectionLr));
+    write('v2-adam-lr', sci(v2AdamLr));
+    write('v1-beta1', '0.95');
+    write('v2-beta1', '0.9');
+    write('v1-beta2', fixed(v1Beta2, 4));
+    write('v2-beta2', fixed(v2Beta2, 4));
+    write('v1-eps', '1.00e-15');
+    write('v2-eps', sci(v2Eps));
+    write('v1-grad', '1.0');
+    write('v2-grad', '0.1');
+    write('v1-init-h', sci(initH));
+    write('v2-init-h', sci(initH));
+    write('v1-init-4h', sci(init4H));
+    write('v2-init-4h', sci(init4H));
+    write('v1-init-embed', sci(initEmbed));
+    write('v2-init-embed', sci(initEmbed));
+
+    writeHint('h', fmtCount(h));
+    writeHint('t', fmtTokens(t));
+    writeHint('b', fmtCount(b));
+  }
+
+  root.querySelectorAll('input').forEach(function(input) {
+    input.addEventListener('input', update);
+  });
+  update();
+})();
+</script>
+<p>At fixed batch size, the $\left(\frac{T_0}{T}\right)^{0.3}$ term lowers the projection learning rate for longer training runs. When batch size grows with token count, the batch-size and token-horizon terms trade off, which is the interaction the recipe is meant to make explicit.</p>
+<p>The remaining constants are shared across both recipes. Delphi uses a Qwen 3 architecture with MLP ratio 4, sequence length 4096, a 10% linear warmup, and a 20% linear decay to zero. If you'd rather read code than formulas, the two recipes live side by side in the Marin repo: <a href="https://github.com/marin-community/marin/blob/main/experiments/scaling_law_sweeps/c_adamc.py">c_adamc.py</a> for the first recipe and <a href="https://github.com/marin-community/marin/blob/main/experiments/scaling_law_sweeps/completed_adamh.py">completed_adamh.py</a> for Delphi.</p>
+</details>
+<h3 id="an-empirical-sanity-check-on-the-new-recipe">An empirical sanity check on the new recipe<a aria-label="Link to section: An empirical sanity check on the new recipe" class="heading-anchor" href="#an-empirical-sanity-check-on-the-new-recipe"></a></h3>
+<p>In order to empirically validate that this recipe led to near-optimal configurations at multiple scales, I ran experiments to find tuned hyperparameters across two hidden dimensions, four batch sizes, and three token horizons. These 24 settings serve as a "test set" for our recipe, allowing us to see how well the recipe's configuration maps to costly hyperparameter tuning at each setup. Here, I visualize the results for each hyperparameter with a Gaussian-process partial-dependence curve<sup class="footnote-ref" id="fnref-7"><a href="#fn-7">7</a></sup> with the goal of observing how close the empirical optimal is to the recipe recommendation.</p>
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">Vizier sanity check on the AdamH scaling recipe</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="Vizier sanity check on the AdamH scaling recipe. The blue curve is the Gaussian-process partial-dependence estimate for one hyperparameter after averaging over the others. The shaded band is its posterior uncertainty. The blue rug at the bottom shows which values Vizier actually sampled in that cell. The black &lt;code&gt;x&lt;/code&gt; marks the Complete(d)P AdamH heuristic value. Use the dropdowns to choose the batch size, hidden dimension, and token horizon." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/delphi/hparam-scaling.json" data-plotly-src-mobile="/assets/openathena/assets/images/blog/delphi/hparam-scaling-mobile.json" role="img" style="min-height:560px;"></div></div></div><figcaption>The blue curve is the Gaussian-process partial-dependence estimate for one hyperparameter after averaging over the others. The shaded band is its posterior uncertainty. The blue rug at the bottom shows which values Vizier actually sampled in that cell. The black <code>x</code> marks the Complete(d)P AdamH heuristic value. Use the dropdowns to choose the batch size, hidden dimension, and token horizon.</figcaption></figure>
+<p>If the recipe is scaling well, the × should land inside the low-loss region of each curve. Since Delphi largely follows Complete(d)P, this grid acts as a sanity check that its prescription agrees reasonably well with what we measure at the scales we can actually run.</p>
+<h2 id="delphi-attempt-2-forecasts-1e23-to-within-02">Delphi attempt 2 forecasts 1e23 to within 0.2%<a aria-label="Link to section: Delphi attempt 2 forecasts 1e23 to within 0.2%" class="heading-anchor" href="#delphi-attempt-2-forecasts-1e23-to-within-02"></a></h2>
+<p>The second Delphi attempt scaling law was fit on the same 3e18 to 3e20 FLOP IsoFLOP budgets as first Delphi attempt, then used to forecast held-out runs at 1e21, 1e22, and 1e23 FLOPs. At 1e21, the run landed +0.5% over the forecast. At 1e22, the miss dropped from 2.5% under Delphi attempt 1 to +0.2%. At 1e23, the run that diverged under the first recipe now ran to completion and landed at +0.2%.</p>
+<p>The figure shows both parts of the result. In the right panel, all three held-out points sit on the continuation of the fit, even though the fitted IsoFLOP budgets stop at 3e20 FLOPs. In the left panel, Delphi attempt 2 sits below the first recipe at every overlapping point on every IsoFLOP parabola, with gaps ranging from about 0.01 to 0.15 loss. The parabola shapes are otherwise similar, which suggests the main effect is not a new compute-optimal allocation but a recipe that transfers more cleanly across scale. At the 3e20 bucket, Delphi attempt 2 still beats a compute-optimal Delphi attempt 1 run even when it trains at about 0.51× or 1.97× its own compute-optimal token count.</p>
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">The Delphi (AdamH) recipe</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="The Delphi (AdamH) recipe. Left: at each compute budget, I train a range of (model size, training duration) pairs totaling the same FLOPs and fit a parabola in (log tokens, loss). Its minimum (×) is the compute-optimal point for that budget. Right: the scaling-law fit on those optima (left of the divider) extrapolated to held-out 1e21, 1e22, and 1e23 runs (right of the divider)." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/delphi/delphi-ladder.json" data-plotly-src-mobile="/assets/openathena/assets/images/blog/delphi/delphi-ladder-mobile.json" role="img" style="min-height:380px;"></div></div></div><figcaption>Left: at each compute budget, I train a range of (model size, training duration) pairs totaling the same FLOPs and fit a parabola in (log tokens, loss). Its minimum (×) is the compute-optimal point for that budget. Right: the scaling-law fit on those optima (left of the divider) extrapolated to held-out 1e21, 1e22, and 1e23 runs (right of the divider).</figcaption></figure>
+<h3 id="predictions-are-accurate-for-downstream-evals-as-well">Predictions are accurate for downstream evals as well<a aria-label="Link to section: Predictions are accurate for downstream evals as well" class="heading-anchor" href="#predictions-are-accurate-for-downstream-evals-as-well"></a></h3>
+<p>There is reasonable consensus that pretraining loss follows predictable power laws with compute. Downstream metrics are less settled. Some studies find clean aggregate scaling (<a href="https://arxiv.org/abs/2403.08540">Gadre et al., 2024</a>), while others report individual tasks that look erratic, emergent, or noisy (<a href="https://arxiv.org/abs/2507.00885">Lourie, Hu, and Cho, 2025</a>). Delphi gives us a way to study this question at the same ablation scale used for loss: hold the recipe fixed, vary compute, and ask whether benchmark performance can be forecast from the smaller runs.</p>
+<p>The main issue is that the usual benchmark scores are discrete summaries of a continuous model. A language model assigns probabilities to sequences. A benchmark score first converts those probabilities into an answer, and then marks the answer right or wrong. For a multiple-choice task such as MMLU, this conversion chooses the option with the highest probability. For a generative task such as HumanEval, it decodes a program and then asks whether that program passes all the tests.</p>
+<p>This conversion can hide progress. On a four-choice MMLU question, the score changes only when the correct answer becomes more probable than every distractor. A model may steadily move probability mass toward the right answer, but accuracy will not change until that ordering flips. On HumanEval, pass@1<sup class="footnote-ref" id="fnref-8"><a href="#fn-8">8</a></sup> stays near zero until the model assigns enough probability to a complete passing program that one appears in a single decoding attempt. In both cases, the underlying probabilities can improve smoothly while the reported score remains flat (<a href="https://arxiv.org/abs/2304.15004">Schaeffer, Miranda, and Koyejo, 2023</a>).</p>
+<p>We therefore fit the scaling law to a soft version of each benchmark. For multiple-choice tasks, we use the log-probability of the correct answer relative to the alternatives. For generative tasks, we use the bits-per-byte assigned to the reference completion, which measures how well the model's distribution compresses the target output. These quantities are still benchmark-specific, but they vary continuously with compute. With a prompt format that reduces surface-form competition (<a href="https://arxiv.org/abs/2104.08315">Holtzman et al., 2021</a>)<sup class="footnote-ref" id="fnref-9"><a href="#fn-9">9</a></sup>, they give a usable signal across the whole Delphi budget range.</p>
+<p>To report the more familiar benchmark scores, we add a second step: an observational projection (<a href="https://arxiv.org/abs/2405.10938">Ruan, Maddison, and Hashimoto, 2024</a>; <a href="https://arxiv.org/abs/2407.21783">Llama 3 technical report, 2024</a>). We fit a sigmoid that maps soft score to hard score on a pool of public models, then compose that mapping with the Delphi soft-metric scaling law. This lets strong open-weight models establish the empirical relationship between the two measurements, while the Delphi runs determine how the soft measurement changes with compute. The figure below shows the resulting two-step forecast for broad knowledge (MMLU), code generation (HumanEval), and math word problems (GSM8K).</p>
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">Downstream evals across the Delphi suite</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="Downstream evals across the Delphi suite. Left: soft metric vs compute — per-choice log-prob for MMLU, bits-per-byte for HumanEval and GSM8K. Right: hard metric (accuracy, pass@1, exact-match) vs soft metric, with a sigmoid fit on the external model pool. The hollow &lt;code&gt;×&lt;/code&gt; at 1e25 FLOPs is the two-step forecast (scaling law + sigmoid). All numbers are for pure base models without midtraining, SFT, or RL. Dropdown switches between MMLU 0-shot / 5-shot, HumanEval 10-shot, and GSM8K 5-shot." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/delphi/mmlu-emergence.json" data-plotly-src-mobile="/assets/openathena/assets/images/blog/delphi/mmlu-emergence-mobile.json" role="img" style="min-height:460px;"></div></div></div><figcaption>Left: soft metric vs compute — per-choice log-prob for MMLU, bits-per-byte for HumanEval and GSM8K. Right: hard metric (accuracy, pass@1, exact-match) vs soft metric, with a sigmoid fit on the external model pool. The hollow <code>×</code> at 1e25 FLOPs is the two-step forecast (scaling law + sigmoid). All numbers are for pure base models without midtraining, SFT, or RL. Dropdown switches between MMLU 0-shot / 5-shot, HumanEval 10-shot, and GSM8K 5-shot.</figcaption></figure>
+<p>The left panel shows the soft-metric scaling law. Across all three evals, the seven IsoFLOP optima trace a reasonably clean power law, and the 1e21, 1e22, and 1e23 held-out runs land on its continuation. The fits are noisier than the pretraining-loss fit because the downstream targets are smaller and less matched to the training distribution, leaving more room for sampling variance and recency effects.</p>
+<p>The right panel shows the observational projection. A sigmoid fit on the external Llama, Qwen, and OLMo pool maps the soft metric into the hard metric. Under that fit, every Delphi checkpoint below roughly 1e21 FLOPs remains near chance: 25% on four-choice MMLU, essentially zero pass@1 on HumanEval, and a few percent exact match on GSM8K. Once the soft metric crosses the task's effective threshold, the hard metric rises to around 60% on MMLU, 19% on HumanEval, and 27% on GSM8K by 1e23 FLOPs. Seen only through the hard metric, the curve looks sudden. Seen through the soft metric underneath, the change is continuous.</p>
+<p>This is useful because small pretraining ablations often sit below the scale where the canonical downstream score moves. A 1e19 or 1e20 FLOP experiment may show no visible gain in accuracy or pass@1, even when the model is learning the task better. The soft metric preserves that signal, and the observational projection translates it back into the hard metric at the larger scale where the score becomes interpretable. This allows you to use these benchmarks to guide your experiments, even if you are only training models below the emergence threshold.</p>
+<h2 id="some-side-quests">Some side quests<a aria-label="Link to section: Some side quests" class="heading-anchor" href="#some-side-quests"></a></h2>
+<h3 id="quantifying-the-cost-of-leaving-compute-optimal">Quantifying the cost of leaving compute-optimal<a aria-label="Link to section: Quantifying the cost of leaving compute-optimal" class="heading-anchor" href="#quantifying-the-cost-of-leaving-compute-optimal"></a></h3>
+<p>Model configurations were originally termed as compute-optimal if they were configured at a ratio of parameters to tokens that achieve the lowest test loss for a fixed number of training FLOPs, and Delphi inherits that definition. However, broader notions of compute-optimality depend on which costs you choose to include. The most obvious addition is inference cost (<a href="https://arxiv.org/abs/2401.00448">Sardana and Frankle, 2024</a>). In an increasingly RL-driven world, rollout inference is also part of training cost, and the calculation becomes messier and more organization-specific. Both additions push most teams to "overtrain" by our definition, especially when they train smaller models. Llama 3 8B on 15T tokens is roughly 90× past the compute-optimal ratio, and OLMo 3 7B is roughly 40×. Delphi quantifies the penalty for moving away from compute-optimal, so you can weigh that penalty against the rest of your value function (cf. <a href="https://arxiv.org/abs/2502.06857">McLeish et al., 2025</a>, which makes a parallel argument on a different suite).</p>
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">How much do you pay to move off the optima? (drag the slider)</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="How much do you pay to move off the optima? (drag the slider). Each AdamH IsoFLOP parabola in gold, with × at the measured compute-optimal point $T^*$ and ○ at the same parabola evaluated at scale·$T^*$. The solid blue line is the compute-optimal regression (asymptotic power-law fit on the × losses); the dashed blue line is the sub-optimal regression, produced by adding an extrapolated overtraining penalty $\Delta(C)$ (fit as a power law on the per-bucket ○−× gaps) to the compute-optimal curve, extended past 1e23 until it reaches the compute-optimal forecast loss. The slider ranges from 0.2× (5× undertrained) to 10× overtrained; the label reports the extra compute an at-scale run would need to match what compute-optimal achieves at 1e23." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/delphi/overtraining-forecast.json" role="img" style="min-height:460px;"></div></div></div><figcaption>Each AdamH IsoFLOP parabola in gold, with × at the measured compute-optimal point $T^*$ and ○ at the same parabola evaluated at scale·$T^*$. The solid blue line is the compute-optimal regression (asymptotic power-law fit on the × losses); the dashed blue line is the sub-optimal regression, produced by adding an extrapolated overtraining penalty $\Delta(C)$ (fit as a power law on the per-bucket ○−× gaps) to the compute-optimal curve, extended past 1e23 until it reaches the compute-optimal forecast loss. The slider ranges from 0.2× (5× undertrained) to 10× overtrained; the label reports the extra compute an at-scale run would need to match what compute-optimal achieves at 1e23.</figcaption></figure>
+<p>The dashed line is that penalty extrapolated to 1e23 FLOPs. I fit a power law to the per-bucket ○−× gaps and add it to the compute-optimal curve, using the same asymptotic family and the same seven IsoFLOP buckets as the compute-optimal fit. At 10× overtrained, the dashed line sits at a loss that a compute-optimal configuration would only reach with roughly 6× the compute.</p>
+<p>That number deserves less trust than the compute-optimal one. The compute-optimal forecast has held-out validation at 1e21, 1e22, and 1e23, while the suboptimal forecast has none. The ○ points feeding the penalty fit also only reach 2× across the IsoFLOP data, so the 10× column is reading from parabolas well past their data.</p>
+<p>Even with that caveat, the figure gives some sense of the penalties labs accept in order to ship strong models at small parameter counts, and by proxy, the benefits open-weights inference providers receive from that investment in overtraining<sup class="footnote-ref" id="fnref-10"><a href="#fn-10">10</a></sup>.</p>
+<h3 id="seed-spread-is-10-tighter-than-the-forecast-ci">Seed spread is 10× tighter than the forecast CI<a aria-label="Link to section: Seed spread is 10× tighter than the forecast CI" class="heading-anchor" href="#seed-spread-is-10-tighter-than-the-forecast-ci"></a></h3>
+<p>While the cost of experiment often precludes the study of random seed noise for pretraining, we wanted to follow the best practice established by Pythia of controlling for seeds. We trained three seeds at both 1e21 and 1e22, and all of them landed inside the bootstrap 95% confidence interval of the scaling-law forecast. Their seed-to-seed spread is about 0.1%, which is roughly ten times tighter than the interval itself.</p>
+<p>To see how this compares to our expected error, we bootstrap over the compute budgets used to estimate the scaling law. The confidence interval widens as the extrapolation gets longer, growing from ±0.5% at 1e21 to ±4% at 1e23. The observed residual still stays between +0.2% and +0.5% across all three budgets. In that sense, it is promising that the results diverge less than we might expect.</p>
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">Bootstrap forecast CI vs held-out seed observations</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="Bootstrap forecast CI vs held-out seed observations. The shaded band is the 95% CI of the scaling-law forecast, obtained by resampling the seven AdamH IsoFLOP bucket optima with replacement and refitting the asymptotic power law on each resample. Dots are the individual held-out seed observations at each budget. Both are expressed as percent deviation from the point forecast. Runs within an isoFLOP are correlated, so the bootstrap resamples bucket optima rather than individual runs." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/delphi/lucky-seeds.json" role="img" style="min-height:320px;"></div></div></div><figcaption>The shaded band is the 95% CI of the scaling-law forecast, obtained by resampling the seven AdamH IsoFLOP bucket optima with replacement and refitting the asymptotic power law on each resample. Dots are the individual held-out seed observations at each budget. Both are expressed as percent deviation from the point forecast. Runs within an isoFLOP are correlated, so the bootstrap resamples bucket optima rather than individual runs.</figcaption></figure>
+<h2 id="whats-next">What's next<a aria-label="Link to section: What's next" class="heading-anchor" href="#whats-next"></a></h2>
+<p>Delphi is meant to be useful beyond the particular results in this post. The checkpoints, fit data, and training mixture make it a standard scaling-suite artifact, and the released recipe adds something more directly editable. Other groups should be able to fork it, vary one part of it, and compare against the baseline recipe at the budgets they can afford.</p>
+<p>Delphi is meant to build on the template of Pythia: open checkpoints across many scales, trained under one recipe, so other researchers can study scale without repeating the whole training run. For new studies that would otherwise start from Pythia by default, we hope Delphi is a useful modernized resource: it keeps the same artifact shape while adding a newer architecture, a stronger data mixture, a larger top-end run, and a parametric scaling recipe that can be inspected and modified directly.</p>
+<p>As with all of Marin's work, everything is released openly:</p>
+<ul>
+<li><strong>Checkpoints</strong> for every run, released on Hugging Face at <a href="https://huggingface.co/collections/marin-community/delphi-69f93cbd09845c03b070bae9">marin-community/delphi</a></li>
+<li><strong>Training mixture pipelines</strong> that deterministically reproduce the mix from the public Nemotron-CC, StarCoderData, and ProofPile 2 in the <a href="https://github.com/marin-community/marin/blob/67099b9aa5aa468155f0ce430276be72b39a3bd2/experiments/pretraining_datasets/nemotron.py">Marin repo</a></li>
+<li><strong>Recipe code</strong> as a forkable <a href="https://github.com/marin-community/marin/blob/78ae89a5324e09ddd9d0bc39af8565da40cfb3e9/experiments/scaling_law_sweeps/completed_adamh.py#L96"><code>CompletedAdamHParams</code> class</a> in the Marin repo</li>
+<li><strong>Development methodology</strong> as the <a href="https://github.com/marin-community/marin/blob/main/docs/recipes/add_scaling_heuristic.md"><code>add_scaling_heuristic</code> agent skill</a> in the Marin repo</li>
+<li><strong>Plot-ready data</strong> behind every figure in this post, with one config per figure and a <code>wandb_url</code> on every row, at <a href="https://huggingface.co/datasets/marin-community/delphi-blog-data">marin-community/delphi-blog-data</a></li>
+</ul>
+<p>If there's a resource you'd like shared for study that we haven't yet released, let us know on <a href="https://discord.com/invite/J9CTk7pqcM">Discord</a>.</p>
+<p>This release was only possible because of the <a href="https://sites.research.google/trc/about/">Google TPU Research Cloud</a>. Open scaling suites require much more compute than a single training run because the IsoFLOP grids, recipe iterations, held-out runs, and seed checks are all part of the artifact. Each is scientifically valuable, but hard to justify as the direct path to the best possible model in the short term. That is part of what made Pythia so valuable, and part of the reason open scaling suites remain rare. TRC made it possible for us to make this investment in Marin's own scaling research and release it as a public resource that we hope helps pay down the open research community's collective science debt.</p>
+<p>Delphi fits dense decoder-only transformers, and extending our recipes to MoEs is the next target. Follow <a href="https://github.com/marin-community/marin/issues/4697">marin#4697</a> to track that work. MoEs are where most frontier compute now goes, and openly released scaling suites should cover them too.</p>
+<section class="footnotes">
+<ol>
+<li id="fn-1"><p>I like the framing of scaling laws as wind tunnels, which I first saw from the OpenBMB team's <a href="https://openbmb.vercel.app/minicpm-en">MiniCPM</a> work. Nobody flies a newly designed plane without testing it inside increasingly realistic simulators first. A bad wind tunnel doesn't help you build better planes, it helps you build better toys. Get it right, though, and you can test risky designs before committing to the real flight.<a class="footnote" href="#fnref-1">↩</a></p></li>
+<li id="fn-2"><p>I used this parabolic IsoFLOP fitting following Approach 2 from Chinchilla. OpenAthena's own Eric Czech did concurrent work on <a href="https://openathena.ai/blog/problems-with-chinchilla-approach-2">Approach 2 biases</a> which identified subtle issues with this method. If I were to retrain Delphi, I would use his direct parametric fitting instead.<a class="footnote" href="#fnref-2">↩</a></p></li>
+<li id="fn-3"><p>Kaiyue Wen did a grid search of critical hparams in <a href="https://arxiv.org/abs/2509.02046">Fantastic Pretraining Optimizers and Where to Find Them</a>, which I cargo culted.<a class="footnote" href="#fnref-3">↩</a></p></li>
+<li id="fn-4"><p>Cautious AdamC is AdamW with two stability patches: AdamC rescales the weight-decay term so it stops inflating gradient norms late in training, and Caution zeros out momentum updates that disagree with the current gradient. Both smooth training, but needing them at all is a tell that the base recipe isn't stable on its own.<a class="footnote" href="#fnref-4">↩</a></p></li>
+<li id="fn-5"><p><a href="https://machinelearning.apple.com/research/completed-hyperparameter">Complete(d)P</a> factorizes stable hyperparameter transfer across width, depth, batch size, and training duration. Its derivation assumes a decoder-only transformer with prenorm and QK-norm, a cosine schedule, and an AdamW-style optimizer, and context-length scaling is explicitly out of scope. Calling those assumptions out matters because Delphi violates some of them — WSD instead of cosine, AdamH instead of AdamW — so the prescriptions aren't guaranteed to transfer, and that is why we modify and empirically revalidate the pieces we change rather than adopting the full recipe wholesale.<a class="footnote" href="#fnref-5">↩</a></p></li>
+<li id="fn-6"><p>The 0.3 is what a small Vizier hyperparameter grid at my scales pointed to. The per-point basis is weak. While it diverges from Complete(d)P, it agrees with prior empirical results on AdamW from <a href="https://arxiv.org/abs/2407.06324">Bjorck et al.</a>. After Delphi was complete, <a href="https://arxiv.org/abs/2603.28743">Ren et al.</a> independently found $\eta \propto T^{-0.320}$ on MuonH, which corroborates the number on a different Hyperball optimizer.<a class="footnote" href="#fnref-6">↩</a></p></li>
+<li id="fn-7"><p>I used <a href="https://proceedings.neurips.cc/paper/2021/file/12ced2db6f0193dda91ba86224ea1cd8-Paper.pdf">Moosbauer et al.</a>'s setup and fit a Gaussian process to the grid samples, then marginalized the posterior over every hyperparameter except one. The resulting curve is the expected loss as a function of that hyperparameter after averaging out the others, and the shaded band is the GP's posterior uncertainty. This lets me show a single curve per cell even though the grid sampled each cell at different combinations of the other axes.<a class="footnote" href="#fnref-7">↩</a></p></li>
+<li id="fn-8"><p>pass@$k$ is the fraction of HumanEval tasks for which at least one of $k$ independently sampled completions passes all of the task's unit tests. pass@1 is the single-sample case, equivalent to the probability that one greedy or sampled generation solves the problem. The metric was introduced alongside HumanEval by <a href="https://arxiv.org/abs/2107.03374">Chen et al.</a>.<a class="footnote" href="#fnref-8">↩</a></p></li>
+<li id="fn-9"><p>Holtzman et al. showed that in multiple-choice evaluation, probability mass on the correct answer gets split across paraphrases and synonyms that aren't in the choice set. Prompt formats that anchor the distribution on the choice strings (e.g., label+option) leak less mass and produce cleaner signal. You can measure how badly a format suffers by checking what fraction of the model's total probability mass falls on the answer choices.<a class="footnote" href="#fnref-9">↩</a></p></li>
+<li id="fn-10"><p>Mike Lewis, who led Llama 3 pretraining at Meta, was direct about this <a href="https://x.com/ml_perception/status/1781021776597942587">on Twitter</a>. "Yes, both the 8B and 70B are trained way more than is Chinchilla optimal - but we can eat the training cost to save you inference cost! One of the most interesting things to me was how quickly the 8B was improving even at 15T tokens."<a class="footnote" href="#fnref-10">↩</a></p></li>
+</ol>
+</section>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{held2026_delphi,
+  author = {Held, Will},
+  title = {Scaling Laws That Extrapolate 300× Past the Fit},
+  year = {2026},
+  month = {may},
+  howpublished = {\url{https://www.openathena.ai/blog/delphi/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$']],
+    displayMath: [['$$', '$$']]
+  },
+  output: {
+    displayOverflow: 'linebreak',
+    linebreaks: { inline: true }
+  }
+};
+</script>
+<script async="" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<script>
+(function() {
+  const content = document.querySelector('.blog-post-content');
+  const lists = document.querySelectorAll('.blog-toc-list');
+  if (!content || !lists.length) return;
+
+  const headings = Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+    .filter(function(h) { return !h.closest('.blog-post-citation'); });
+
+  // Find the minimum heading level used so it becomes the top-level TOC entry
+  var minLevel = 6;
+  headings.forEach(function(h) {
+    var level = parseInt(h.tagName[1]);
+    if (level < minLevel) minLevel = level;
+  });
+
+  function buildToc(list) {
+    headings.forEach(function(h) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+      var level = parseInt(h.tagName[1]);
+
+      if (level === minLevel) {
+        li.className = 'toc-h2';
+        li.dataset.sublist = '';
+        list.appendChild(li);
+      } else {
+        var parent = list.querySelector('li.toc-h2:last-child > ol');
+        if (!parent) {
+          parent = document.createElement('ol');
+          var lastTop = list.querySelector('li.toc-h2:last-child');
+          if (lastTop) lastTop.appendChild(parent);
+          else { li.className = 'toc-h3'; list.appendChild(li); return; }
+        }
+        li.className = 'toc-h3';
+        parent.appendChild(li);
+      }
+    });
+  }
+
+  lists.forEach(function(list) { buildToc(list); });
+
+  // Highlight active TOC entry on scroll
+  var tocLinks = document.querySelectorAll('.blog-toc-nav .blog-toc-list a');
+  if (tocLinks.length && headings.length) {
+    function updateActive() {
+      var current = null;
+      var threshold = window.innerHeight * 0.3;
+      for (var i = 0; i < headings.length; i++) {
+        if (headings[i].getBoundingClientRect().top <= threshold) current = headings[i];
+      }
+      // Find the parent top-level heading for the current heading
+      var parentH2 = null;
+      if (current) {
+        var currentLevel = parseInt(current.tagName[1]);
+        if (currentLevel === minLevel) {
+          parentH2 = current;
+        } else {
+          for (var j = Array.prototype.indexOf.call(headings, current) - 1; j >= 0; j--) {
+            if (parseInt(headings[j].tagName[1]) === minLevel) { parentH2 = headings[j]; break; }
+          }
+        }
+      }
+      var activeLink = null;
+      tocLinks.forEach(function(link) {
+        var isActive = current && link.getAttribute('href') === '#' + current.id;
+        var isParent = parentH2 && parentH2 !== current && link.getAttribute('href') === '#' + parentH2.id;
+        link.classList.toggle('active', isActive || isParent);
+        if (isActive) activeLink = link;
+      });
+
+      // Auto-scroll TOC to keep active link visible.
+      // IMPORTANT: do not use scrollIntoView — it scrolls every scrollable ancestor
+      // (including the window), which fights the user's page scroll. Adjust only
+      // the TOC's own scrollTop so the page position stays put.
+      if (activeLink && !userScrolledToc) {
+        var tocNav = document.querySelector('.blog-toc');
+        var linkRect = activeLink.getBoundingClientRect();
+        var tocRect = tocNav.getBoundingClientRect();
+        if (linkRect.bottom > tocRect.bottom || linkRect.top < tocRect.top) {
+          var target = (linkRect.top - tocRect.top) + tocNav.scrollTop
+                     - (tocRect.height - linkRect.height) / 2;
+          tocNav.scrollTop = Math.max(0, target);
+        }
+      }
+    }
+
+    // Track manual TOC scrolling
+    var userScrolledToc = false;
+    var tocEl = document.querySelector('.blog-toc');
+    var tocScrollTimer;
+    tocEl.addEventListener('scroll', function() {
+      userScrolledToc = true;
+      clearTimeout(tocScrollTimer);
+      tocScrollTimer = setTimeout(function() { userScrolledToc = false; }, 1000);
+    }, { passive: true });
+
+    window.addEventListener('scroll', updateActive, { passive: true });
+    updateActive();
+  }
+})();
+</script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script>
+(function() {
+  // Open Athena plotly theme — matches the site palette and typography.
+  var INK = '#1f1e1b';
+  var ACCENT = '#9e6d43';
+  var BODY_FONT = "'Lato', -apple-system, BlinkMacSystemFont, sans-serif";
+  var HEAD_FONT = "'Herbik', Georgia, serif";
+
+  var axisDefaults = {
+    gridcolor: 'rgba(82,81,78,0.12)',
+    zerolinecolor: 'rgba(31,30,27,0.25)',
+    linecolor: 'rgba(31,30,27,0.55)',
+    tickcolor: 'rgba(31,30,27,0.55)',
+    tickfont: { family: BODY_FONT, color: INK, size: 12 },
+    title: { font: { family: BODY_FONT, color: INK, size: 13 } },
+    ticks: 'outside',
+    automargin: true,
+  };
+
+  var OA_TEMPLATE = {
+    layout: {
+      colorway: ['#9e6d43','#2d4a3e','#7a3b2e','#4a5d8a','#6b5b3e','#8b3a62','#3d5a4f','#a86a2c'],
+      font: { family: BODY_FONT, color: INK, size: 13 },
+      title: { font: { family: HEAD_FONT, color: INK, size: 18 }, x: 0.02, xanchor: 'left', y: 0.96 },
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(235,222,200,0.55)',
+      xaxis: axisDefaults,
+      yaxis: axisDefaults,
+      legend: {
+        bgcolor: 'rgba(181,170,159,0.35)',
+        bordercolor: 'rgba(31,30,27,0.2)',
+        borderwidth: 1,
+        font: { family: BODY_FONT, color: INK, size: 12 }
+      },
+      hoverlabel: {
+        bgcolor: INK,
+        bordercolor: INK,
+        font: { family: BODY_FONT, color: '#fffdf3', size: 12 }
+      },
+      colorscale: {
+        sequential: [[0,'#ece3d5'],[0.5,'#b98a5a'],[1,'#4a2f18']],
+        sequentialminus: [[0,'#4a5d8a'],[0.5,'#b5aa9f'],[1,'#9e6d43']],
+        diverging: [[0,'#4a5d8a'],[0.5,'#ece3d5'],[1,'#9e6d43']]
+      },
+      shapedefaults: { line: { color: 'rgba(31,30,27,0.4)' } },
+      annotationdefaults: { font: { family: BODY_FONT, color: INK, size: 12 }, arrowcolor: 'rgba(31,30,27,0.5)' }
+    }
+  };
+
+  var figs = document.querySelectorAll('.plotly-figure[data-plotly-src]');
+  figs.forEach(function(el) {
+    // If a mobile-specific variant exists and the viewport is narrow, use
+    // it. Falls back to the desktop source otherwise.
+    var src = (window.innerWidth < 768 && el.dataset.plotlySrcMobile)
+      ? el.dataset.plotlySrcMobile
+      : el.dataset.plotlySrc;
+    fetch(src)
+      .then(function(r) {
+        if (!r.ok) throw new Error('Failed to load ' + src);
+        return r.json();
+      })
+      .then(function(spec) {
+        var layout = Object.assign(
+          { template: OA_TEMPLATE, autosize: true, margin: { t: 50, r: 24, b: 56, l: 64 } },
+          spec.layout || {}
+        );
+        var config = Object.assign({ responsive: true, displaylogo: false }, spec.config || {});
+        // Hide the modebar on mobile — on desktop it's hover-revealed,
+        // but touch devices lack hover so Plotly pins it always-on and
+        // it collides with the figure's own controls.
+        if (window.innerWidth < 768) config.displayModeBar = false;
+        Plotly.newPlot(el, spec.data || [], layout, config).then(function () {
+          if (spec.frames && spec.frames.length) {
+            Plotly.addFrames(el, spec.frames);
+            // Opt-in auto-play: figures set `layout.meta.autoplay = true`
+            // to have the animation roll forward from the slider's
+            // active step through the end of the frame list once the
+            // figure mounts.
+            var meta = (spec.layout && spec.layout.meta) || {};
+            if (meta.autoplay) {
+              var sliders = (spec.layout && spec.layout.sliders) || [];
+              var startIdx = (sliders[0] && sliders[0].active) || 0;
+              var names = spec.frames.slice(startIdx).map(function (f) {
+                return f.name;
+              });
+              setTimeout(function () {
+                Plotly.animate(el, names, {
+                  frame: { duration: 500, redraw: true },
+                  transition: { duration: 0 },
+                  mode: 'immediate'
+                });
+              }, 400);
+            }
+          }
+        });
+      })
+      .catch(function(err) {
+        el.innerHTML = '<p style="color:#a33">Plotly figure failed to load: ' + err.message + '</p>';
+      });
+  });
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

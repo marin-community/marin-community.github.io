@@ -1,0 +1,364 @@
+---
+layout: mirror
+title: Expert parallelism at hero scale
+authors:
+- Rafal Wojdyla
+date: '2026-09-29'
+categories: blog
+description: Expert Parallelism made a 535B-A23B model practical to train. We compare
+  FSDP, fixed-capacity EP, and results from a scaling ladder.
+source_url: https://openathena.ai/blog/expert-parallelism/
+canonical_url: https://www.openathena.ai/blog/expert-parallelism/
+source_content_sha256: ca258c7f069541aeca1f78a45f9f707f0886862837fed792adf7649c6d9c14c4
+excerpt: Expert Parallelism made a 535B-A23B model practical to train. We compare
+  FSDP, fixed-capacity EP, and results from a scaling ladder.
+---
+{% raw %}
+<div class="blog-post-body">
+<aside class="blog-toc">
+<nav class="blog-toc-nav">
+<div class="blog-toc-title">Contents</div>
+<ol class="blog-toc-list"></ol>
+</nav>
+<details class="blog-toc-mobile">
+<summary class="blog-toc-title">Contents</summary>
+<ol class="blog-toc-list"></ol>
+</details>
+</aside>
+<div class="blog-post-content project-detail-body">
+<h2 id="summary">Summary<a aria-label="Link to section: Summary" class="heading-anchor" href="#summary"></a></h2>
+<ul>
+<li><p>Expert Parallelism (EP) unlocked a ~50% larger model at the same ~23B active size (535B vs 360B total).</p>
+</li>
+<li><p>The hero run used our fixed-capacity EP kernel on an NVL72 cluster, reaching 21.5% model FLOPs utilization (MFU) with a 3.4% token-expert assignment drop rate.</p>
+</li>
+</ul>
+<p>The path to our EP configuration led through Fully Sharded Data Parallel (FSDP), off-the-shelf and custom kernels. Each option trades off token drop rate, throughput, and model capacity. Below is an account of our journey.</p>
+<h2 id="why-moe">Why MoE?<a aria-label="Link to section: Why MoE?" class="heading-anchor" href="#why-moe"></a></h2>
+<p>We use MoE because it provides greater model capacity for a given compute budget.</p>
+<p>In our <a href="https://openathena.ai/blog/delphi/">Delphi work</a>, we established a method for dense model selection through small-scale experiments and scaling recipes. The <a href="https://openathena.ai/blog/quantile-balancing/">Quantile Balancing experiment</a> validated a Mixture of Experts (MoE) with 32B total and 5B active parameters through 326B tokens.</p>
+<p>MoE activates only a subset of its experts’ weights for each token. This allows total parameter count to increase without a proportional increase in computation per token. Compared with a dense model of similar total parameter count, an MoE generally requires fewer floating-point operations (FLOPs) per token. That reduction allows more training tokens within a fixed FLOP budget. In practice, the benefit also depends on communication costs, padding, and kernel efficiency.</p>
+<figure aria-label="MoE token routing: forward pass" class="animation-figure" data-animation-src="/assets/openathena/assets/images/blog/expert-parallelism/moe-token-routing.json"><div class="animation-stage"><img alt="MoE token routing: forward pass" height="960" loading="lazy" src="/assets/openathena/assets/images/blog/expert-parallelism/moe-token-routing.png" width="1440"/></div><figcaption><strong>Figure 1:</strong> A learned router selects two of four experts for each token. The layer combines their weighted outputs into the output token representation.</figcaption></figure>
+<h2 id="why-shard">Why shard?<a aria-label="Link to section: Why shard?" class="heading-anchor" href="#why-shard"></a></h2>
+<p>Transformer training relies on efficient matrix multiplications, which require the operands and outputs to fit in the accelerator’s HBM. For example, with BF16 and FP32 mixed precision and an Adam optimizer, model state uses 16 bytes per parameter. A 535B model therefore requires almost 8 TiB for BF16 weights, BF16 gradients, FP32 master weights, and FP32 optimizer states. This excludes activations, communication buffers, and other overhead. That exceeds the 185 GiB available on a single B200. We must use multiple accelerators and distribute the model across them.</p>
+<p>Sharding means splitting weights or activations across multiple accelerators. Data Parallelism (DP), Fully Sharded Data Parallel (FSDP), and Expert Parallelism (EP) are three of many possible parallelism methods. See <a href="https://jax-ml.github.io/scaling-book/sharding/">How To Scale Your Model: Sharding</a> for more details. In practice, these methods are often combined to meet hardware and model constraints.</p>
+<figure><img alt="A GB200 node with four GPUs inside an NVL72 rack." src="/assets/openathena/assets/images/blog/expert-parallelism/gb200-node-nvl72.png"/><figcaption><strong>Figure 2:</strong> Our training setup uses NVLink for communication within a rack and InfiniBand across racks. Peak bandwidth per GPU per direction is 900 GB/s and 50 GB/s, respectively.</figcaption></figure>
+<p><a href="/assets/openathena/assets/images/blog/expert-parallelism/gb200-node-nvl72.png">View the full hardware diagram.</a></p>
+<p>Sharding across nodes or racks introduces communication, and its cost depends on the interconnect. Communication within a device, node, or NVLink domain is faster than communication across racks through InfiniBand. Our training setup uses NVL72 racks, with a guaranteed allocation of 16 nodes per rack and four B200s per node. Within a rack, each GPU has up to 900 GB/s of NVLink bandwidth in each direction, shared across transfers to other GPUs. InfiniBand connects the racks at 50 GB/s per GPU in each direction, one eighteenth of the NVLink bandwidth. An NVL72 rack with 72 GPUs is considered healthy when 64 GPUs are online<sup class="footnote-ref" id="fnref-1"><a href="#fn-1">1</a></sup>, and thus we can assume a single rack has 11.6 TiB of HBM.</p>
+<h2 id="fsdp-and-its-limits">FSDP and its limits<a aria-label="Link to section: FSDP and its limits" class="heading-anchor" href="#fsdp-and-its-limits"></a></h2>
+<p>The next question is how to shard the model. Data Parallelism (DP) splits the training batch across GPUs. For a fixed global batch, each GPU processes fewer tokens, which reduces activation memory per GPU. However, ordinary DP keeps a complete copy of the parameters, gradients, and optimizer state on each GPU. If that model state exceeds one GPU’s memory, DP alone cannot solve the problem.</p>
+<p>FSDP supports larger models by splitting weights, gradients, and optimizer state across GPUs. Each GPU processes a different shard of the batch. Before computing a layer, the GPUs gather the weights so each GPU can process its own tokens. During backward computation, each GPU calculates gradients from those tokens. The GPUs then combine these gradients and distribute the resulting shards to the GPUs that update the corresponding weights. FSDP scales to larger models at the cost of network communication.</p>
+<figure aria-label="FSDP: one training step" class="animation-figure" data-animation-src="/assets/openathena/assets/images/blog/expert-parallelism/fsdp.json"><div class="animation-stage"><img alt="FSDP: one training step" height="736" loading="lazy" src="/assets/openathena/assets/images/blog/expert-parallelism/fsdp.png" width="960"/></div><figcaption><strong>Figure 3:</strong> FSDP shards model state across GPUs and gathers weights for layer computation. Each GPU processes its own tokens, and the GPUs then combine gradients and distribute the resulting shards.</figcaption></figure>
+<p>The memory capacity and interconnect bandwidth of an NVL72 rack allow efficient FSDP-only training of large models. Our initial plan was to train a 360B-A23B model with FSDP alone, the largest model we could fit on a single rack in our setup. We then considered whether we could increase model capacity further.</p>
+<p>As total model size increases, FSDP encounters several constraints:</p>
+<ul>
+<li><p>The model can exceed the memory capacity of one NVLink domain. With the same batch size and memory strategy, this requires communication across racks, which increases communication costs.</p>
+</li>
+<li><p>A single layer’s weights and activations can exceed the memory available on an accelerator, leading to Out Of Memory (OOM) errors.</p>
+</li>
+<li><p>Transferring activations can become more efficient than transferring weights. At that point, EP can be more efficient than FSDP for expert MLP weights. See <a href="https://jax-ml.github.io/scaling-book/transformers/#transformer-accounting">How To Scale Your Model: Transformer Accounting</a> for more details.</p>
+</li>
+</ul>
+<p>Interconnect bandwidth has a substantial effect on FSDP efficiency. Sharding across racks increases communication costs because InfiniBand bandwidth is approximately an order of magnitude lower than NVLink bandwidth within a rack. Where possible, GPUs can perform other computations during these transfers. This is called communication/computation overlap.</p>
+<h2 id="why-ep">Why EP?<a aria-label="Link to section: Why EP?" class="heading-anchor" href="#why-ep"></a></h2>
+<p>As we scale up the MoE model capacity from small experiments to the hero shape, fairly quickly routed expert MLP weights account for most of the weights. In the 360B total parameter model, roughly 97% of the weights are the expert MLP weights. In vanilla FSDP, each GPU gathers the expert weights before computation. These temporary weights add to the memory required for optimizer state, gradients, and activations.</p>
+<p>EP keeps expert weights partitioned across GPUs. It transfers token representations to the GPUs that own the selected experts, then returns their outputs. Since EP does not require gathering all expert weights, it also unlocks larger total capacity model shapes. EP unlocked the 535B-A23B shape, a roughly 50% larger model at the same ~23B active size.</p>
+<figure aria-label="FSDP and Expert Parallelism: forward pass" class="animation-figure" data-animation-src="/assets/openathena/assets/images/blog/expert-parallelism/fsdp-ep.json"><div class="animation-stage"><img alt="FSDP and Expert Parallelism: forward pass" height="1108" loading="lazy" src="/assets/openathena/assets/images/blog/expert-parallelism/fsdp-ep.png" width="1200"/></div><figcaption><strong>Figure 4:</strong> EP keeps routed expert weights on their assigned GPUs and transfers token representations to those experts. FSDP handles the non-expert weights shown here.</figcaption></figure>
+<p>Going forward, when we say "tokens", we mean the token vector representation that flows through the LLM layers. In the context of EP, “dispatch” is the transfer of the tokens to their assigned expert; “combine” returns the expert outputs to their source GPUs and combines them into the layer output (see Figure 1).</p>
+<p><a href="https://github.com/marin-community/marin/issues/8435#issuecomment-5335872267">Issue #8435</a> describes the full 535B-A23B model architecture. We use <a href="https://arxiv.org/abs/2601.18089">LatentMoE</a> to reduce EP communication by projecting routed tokens from dimension 6,144 to dimension 3,072 before dispatch. This halves the token payload for routed expert dispatch and return. Of the 384 routed experts, eight are active per token. Two shared experts process every token. Routed expert weights are EP sharded, and shared experts and most of the non-expert weights are FSDP sharded.</p>
+<p>Consider the 535B-A23B variant, a batch of 1,024 sequences per rack, sequence length 4,096, and 64 GPUs. It uses top-8 routing and 3,072-dimension BF16 token representations. Suppose we want to compare FSDP vs EP sharding for the routed expert weights, using back-of-the-envelope estimates with balanced routing. These estimates exclude padding, metadata, and backward communication.</p>
+<p>For this same model shape, an FSDP forward pass would send approximately 20 GiB of routed expert weights per GPU per layer. EP requires approximately 6 GiB per GPU per layer for dispatch and combine. At fixed top-k, token width, token count, and GPU count, more experts increase the FSDP communication cost without increasing the EP token payload. See <a href="https://jax-ml.github.io/scaling-book/transformers/#transformer-accounting">How To Scale Your Model: Transformer Accounting</a> for more details.</p>
+<h2 id="from-ragged-all-to-all-to-fixed-capacity">From ragged-all-to-all to fixed capacity<a aria-label="Link to section: From ragged-all-to-all to fixed capacity" class="heading-anchor" href="#from-ragged-all-to-all-to-fixed-capacity"></a></h2>
+<p>In an MoE architecture, a learned router assigns tokens to experts. The number of tokens assigned to each expert varies with the router weights and the data. Which communication collective can handle these variable token assignments efficiently? How does the implementation handle routing imbalance?</p>
+<p>Specialized EP communication libraries include <a href="https://github.com/deepseek-ai/DeepEP">DeepEP</a>, <a href="https://developer.nvidia.com/blog/optimizing-communication-for-mixture-of-experts-training-with-hybrid-expert-parallel/">Hybrid-EP</a>, <a href="https://arxiv.org/abs/2603.13606">NCCL EP</a> and <a href="https://github.com/moonshotAI/moonep">MoonEP</a>. There are also MoE megakernels such as <a href="https://github.com/cursor/mixture-of-kittens">Mixture-of-Kittens</a>. Most were not directly usable in our JAX/XLA setup.</p>
+<p><a href="https://docs.jax.dev/en/latest/_autosummary/jax.lax.ragged_all_to_all.html">Ragged-all-to-all</a> is a communication collective that supports variable-sized data slices, which suits EP communication. Our initial experiments reached only 15% MFU, despite recent <a href="https://github.com/openxla/xla/pull/41903">performance improvements</a> in OpenXLA. Further experiments exposed unexpectedly slow transfers, failures and NCCL hangs. These early experiments used a different model and precision configuration, so the later MFU results do not isolate the gain from the communication kernel.</p>
+<p>After we collected profiles of the training steps, it was clear that we were not saturating the intra-rack network. The computation and communication overlap was far from optimal. We communicated the ragged-all-to-all performance issues to NVIDIA and proceeded to experiment with a custom EP communication kernel.</p>
+<p>In a serendipitous turn of events, our GPU allocation arrived earlier than expected. Our updated plan was to support the best model shape at a non-embarrassing minimum of 20% MFU. We would kick off the hero run as soon as possible and improve the kernels during training. To that end, we created a custom EP communication protocol to support the 535B-A23B shape.</p>
+<p>Our custom EP communication kernel, <a href="https://storage.googleapis.com/marin-public/rav/moe-fixed-wave-a2a-384/2026.08.17/index.html">fixed-pooled-wave-all-to-all</a><sup class="footnote-ref" id="fnref-2"><a href="#fn-2">2</a></sup>, reserves static capacity for the token assignments. Each sender GPU reserves one pool per destination GPU, and the six local experts<sup class="footnote-ref" id="fnref-3"><a href="#fn-3">3</a></sup> share the pool. The pooling allows busier experts to use transport slots that quieter experts do not use.</p>
+<p>The capacity factors control how much extra buffer to allow for imbalance. Each factor multiplies the assignment count expected with balanced routing. Sender capacity applies per sender–destination pair, and receiver capacity applies per expert, across all senders. Senders drop token assignments when the destination pool is full. Receivers drop token assignments when the expert capacity is full. A higher capacity factor reduces drops but increases memory use and communication overhead.</p>
+<p>Receivers take incoming assignments in round-robin order across source GPUs to reduce bias from sender order.</p>
+<p>Fixed sender pool and expert capacities allow us to use battle-tested and efficient all-to-all collectives and General Matrix Multiply (GEMM) for the MLP computation. We carry local expert IDs in the activation payload, so the receiver can group rows by expert without a separate metadata collective.</p>
+<p>Finally, the dispatch and combine happen in 3 token waves to reduce the memory footprint. We size the sender and receiver buffers for one wave at a time. XLA may overlap parts of the waves as it schedules them. The unintentionally overly verbose name hopefully is somewhat self-explanatory by now.</p>
+<figure class="figure-fit-screen">
+<img alt="Fixed pooled-wave all-to-all: sender pools, expert IDs and activation rows, receiver grouping, computation, return, and three sequential waves." height="3340" loading="lazy" src="/assets/openathena/assets/images/blog/expert-parallelism/fixed-pool-protocol.png" width="3200"/>
+<figcaption><a href="/assets/openathena/assets/images/blog/expert-parallelism/fixed-pool-protocol.png"><strong>Figure 5:</strong></a> Our fixed-capacity protocol pools assignments by destination GPU and carries expert IDs with the activation payload. Dispatch and combine use three waves to reduce memory use.</figcaption>
+</figure>
+<p>We found agents effective for kernel development when they had a clear goal to hill-climb and feedback loops from tests and performance measurements. We integrated <a href="https://openxla.org/xprof">XProf</a> and <a href="https://developer.nvidia.com/nsight-systems">Nsight Systems</a> profiling into the trainer and hosted the XProf viewer on <a href="https://openathena.ai/blog/cluster-scheduling-with-iris/">Iris</a>. We defined validation gates, from local tests through small-scale experiments to full-rack runs. We interrupted the inner agent development loop multiple times to steer the agent towards specific experiments, for example to avoid an extra metadata collective and to pack expert assignments along with the tokens.</p>
+<p>On a single rack and with a 4k sequence length, we reached approximately 256k tokens/s, with median MFU of 24% and median assignment drop rate of 2.4%<sup class="footnote-ref" id="fnref-4"><a href="#fn-4">4</a></sup>. These medians cover the <a href="https://github.com/marin-community/marin/issues/7279#issuecomment-5294194777">final 50 steps of a 200-step run</a>, with sender capacity factor 1.05 and receiver capacity factor 1.33.</p>
+<h2 id="does-token-dropping-offset-the-capacity-advantage">Does token dropping offset the capacity advantage?<a aria-label="Link to section: Does token dropping offset the capacity advantage?" class="heading-anchor" href="#does-token-dropping-offset-the-capacity-advantage"></a></h2>
+<p>The token assignment drop rate is the fraction of the token-expert assignments dropped due to capacity overflow. When an assignment for a given input token is dropped, the output token still receives contributions from the surviving expert assignments, the shared experts, and the residual path. In our experiments, longer sequences increased the drop rate at a fixed number of input tokens per GPU. Tokens in a single sequence tend to select the same experts.</p>
+<p>We had an efficient EP+FSDP configuration for the 535B-A23B model, with a small but non-zero token assignment drop rate. The alternative was a dropless FSDP-only configuration for the smaller 360B-A23B model. Despite our reasonable expectation<sup class="footnote-ref" id="fnref-5"><a href="#fn-5">5</a></sup> to improve both the efficiency and drop rate, we needed to understand the worst-case scenario of no improvements. Would the observed drop rate offset the capacity advantage of the larger model?</p>
+<p>A <a href="https://github.com/marin-community/marin/issues/8062">four-rung scaling ladder experiment</a> (54M to approximately 1B active parameters) compared smaller FSDP models with larger EP + LatentMoE models. We kept EP degree, batch size per rack, and sequence length at the anticipated hero-run values to approximate its token-dropping behavior. This ladder used an earlier model shape and fixed-all-to-all implementation, before the final 535B architecture and pooled-wave protocol.</p>
+<p>Under dropless evaluation<sup class="footnote-ref" id="fnref-6"><a href="#fn-6">6</a></sup>, EP + LatentMoE achieved lower loss at every size, despite training assignment drop rates of approximately 5.5-7.1%. Under an equal-throughput assumption, the loss differences corresponded to an <a href="https://github.com/marin-community/marin/issues/8062#issuecomment-5242360844">estimated 18–35% compute-efficiency gain</a> over the FSDP baselines. Our loss-scaling formula estimates that FSDP would need 1.18-1.35x the compute to reach the EP loss.</p>
+<figure><img alt="EP and LatentMoE have lower loss than the FSDP baseline at four model sizes." src="/assets/openathena/assets/images/blog/expert-parallelism/ep-results-8062.png"/><figcaption><strong>Figure 6:</strong> Larger EP + LatentMoE models achieved lower loss at every tested size under dropless evaluation. The largest FSDP baseline dropped 2.69% of assignments during training, which makes the upper gain estimate less certain.</figcaption></figure>
+<p><a href="/assets/openathena/assets/images/blog/expert-parallelism/ep-results-8062.png">View the full scaling ladder results.</a></p>
+<p>These results supported our <a href="https://github.com/marin-community/marin/issues/8062">decision to select EP</a>. They showed a loss advantage for the larger models despite assignment drops in the tested configurations.</p>
+<h2 id="from-fixed-capacity-back-to-ragged-all-to-all">From fixed capacity back to ragged-all-to-all<a aria-label="Link to section: From fixed capacity back to ragged-all-to-all" class="heading-anchor" href="#from-fixed-capacity-back-to-ragged-all-to-all"></a></h2>
+<p>Fixed-capacity EP made the 535B-A23B model practical to train, and the scaling ladder supported accepting a small assignment drop rate in exchange for greater model capacity. The <a href="https://wandb.ai/marin-community/marin_moe/reports/535B-A23B-18T-Token-Hero-Run-Scaling-Ladder--VmlldzoxNzc2MDM5Ng">535B-A23B-18T-Token-Hero-Run</a> is a public WandB report of the hero run.</p>
+<figure><img alt="Hero-run metrics show assignment drops, throughput, MFU, and routing entropy across training steps." src="/assets/openathena/assets/images/blog/expert-parallelism/hero-run-metrics.png"/><figcaption><strong>Figure 7:</strong> Throughput, MFU, assignment drop rates, and routing entropy during production training of the 535B-A23B model.</figcaption></figure>
+<p><a href="/assets/openathena/assets/images/blog/expert-parallelism/hero-run-metrics.png">View the full metrics screenshot.</a></p>
+<p>In the drop fraction pane, you can see the assignment drop rate settle around 3.5%. Most drops came from the sender pools. Receiver drops fell close to zero early in training, while routing entropy remained roughly stable afterward. The fixed-capacity kernel sustained approximately 21.5% MFU during production training.</p>
+<p>In the meantime, Matt Wittmann worked on fixing ragged-all-to-all. Around step 82k, we switched to improved ragged-all-to-all. Assignment drops fell to almost zero, while the MFU increased to approximately 23%. Further changes were made along the way. We plan to describe the ragged-all-to-all fixes and subsequent improvements in a future post.</p>
+<h2 id="contributions-and-acknowledgments">Contributions and acknowledgments<a aria-label="Link to section: Contributions and acknowledgments" class="heading-anchor" href="#contributions-and-acknowledgments"></a></h2>
+<ul>
+<li><strong><a href="https://github.com/ravwojdyla">Rafal Wojdyla</a>:</strong> Implemented the initial EP experiments and profiler integrations, evaluated EP communication kernels, and implemented the custom EP kernel. Integrated EP into the hero model. Prepared this post and its figures.</li>
+<li><strong><a href="https://github.com/mcwitt">Matt Wittmann</a>:</strong> Implemented the production ragged-all-to-all backend and subsequent performance improvements, which saved us weeks of compute time.</li>
+<li><strong><a href="https://github.com/ClassicLarry">Larry Dial</a>:</strong> Designed and ran the EP vs. FSDP scaling ladder experiments, which enabled the final decision. Implemented the receiver-overflow rotation.</li>
+<li><strong><a href="https://github.com/Helw150">Will Held</a>:</strong> Helped design the FSDP and EP experiments.</li>
+<li><strong><a href="https://github.com/muchanem">Mark Muchane</a>:</strong> Ported the MoK megakernel and evaluated it in Marin.</li>
+<li><strong><a href="https://github.com/dlwh">David Hall</a>:</strong> Developed early EP implementations and correctness fixes, including ring EP, ragged-all-to-all, and DeepEP integrations.</li>
+<li><strong><a href="https://github.com/rjpower">Russell Power</a>:</strong> Ran ragged-all-to-all experiments and improved infrastructure performance.</li>
+</ul>
+<p>We thank <a href="https://github.com/ClassicLarry">Larry Dial</a>, <a href="https://github.com/dlwh">David Hall</a>, <a href="https://github.com/Helw150">Will Held</a>, <a href="https://github.com/ihodes">Isaac Hodes</a>, <a href="https://github.com/percyliang">Percy Liang</a>, <a href="https://github.com/davidlundgren">David Lundgren</a>, <a href="https://github.com/muchanem">Mark Muchane</a>, <a href="https://github.com/atqamar">Ahmad Qamar</a>, <a href="https://github.com/mcwitt">Matt Wittmann</a>, and <a href="https://github.com/yonromai">Romain Yon</a> for feedback on this post.</p>
+<section class="footnotes">
+<ol>
+<li id="fn-1"><p>CoreWeave maintains this contract, if the rack goes below 64 healthy GPUs (16 nodes), the rack is taken out for repair.<a class="footnote" href="#fnref-1">↩</a></p></li>
+<li id="fn-2"><p><a href="https://github.com/marin-community/marin/blob/06da233d9a85735db5a81343fba228d1cb6a77e7/lib/levanter/src/levanter/grug/_moe/ep_fixed_pooled_wave_all_to_all.py">Source code</a>.<a class="footnote" href="#fnref-2">↩</a></p></li>
+<li id="fn-3"><p>With total of 384 routed experts, and EP-64 sharding, each GPU owns 6 experts.<a class="footnote" href="#fnref-3">↩</a></p></li>
+<li id="fn-4"><p>These measurements cover steps 150-199 of a 200-step performance test.<a class="footnote" href="#fnref-4">↩</a></p></li>
+<li id="fn-5"><p>Efficient and drop-less EP communication kernels existed.<a class="footnote" href="#fnref-5">↩</a></p></li>
+<li id="fn-6"><p>Evaluate in a dropless configuration to get fair and reliable evaluation scores. With assignment drops, batch variance aside, correlated evaluation data would cause higher drop rates and thus lower evaluation scores.<a class="footnote" href="#fnref-6">↩</a></p></li>
+</ol>
+</section>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{wojdyla2026_expert_parallelism,
+  author = {Wojdyla, Rafal},
+  title = {Expert parallelism at hero scale},
+  year = {2026},
+  month = {sep},
+  howpublished = {\url{https://www.openathena.ai/blog/expert-parallelism/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script defer="" src="/assets/openathena/js/animation-figures.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<script>
+(function() {
+  const content = document.querySelector('.blog-post-content');
+  const lists = document.querySelectorAll('.blog-toc-list');
+  if (!content || !lists.length) return;
+
+  const headings = Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+    .filter(function(h) { return !h.closest('.blog-post-citation'); });
+
+  // Find the minimum heading level used so it becomes the top-level TOC entry
+  var minLevel = 6;
+  headings.forEach(function(h) {
+    var level = parseInt(h.tagName[1]);
+    if (level < minLevel) minLevel = level;
+  });
+
+  function buildToc(list) {
+    headings.forEach(function(h) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+      var level = parseInt(h.tagName[1]);
+
+      if (level === minLevel) {
+        li.className = 'toc-h2';
+        li.dataset.sublist = '';
+        list.appendChild(li);
+      } else {
+        var parent = list.querySelector('li.toc-h2:last-child > ol');
+        if (!parent) {
+          parent = document.createElement('ol');
+          var lastTop = list.querySelector('li.toc-h2:last-child');
+          if (lastTop) lastTop.appendChild(parent);
+          else { li.className = 'toc-h3'; list.appendChild(li); return; }
+        }
+        li.className = 'toc-h3';
+        parent.appendChild(li);
+      }
+    });
+  }
+
+  lists.forEach(function(list) { buildToc(list); });
+
+  // Highlight active TOC entry on scroll
+  var tocLinks = document.querySelectorAll('.blog-toc-nav .blog-toc-list a');
+  if (tocLinks.length && headings.length) {
+    function updateActive() {
+      var current = null;
+      var threshold = window.innerHeight * 0.3;
+      for (var i = 0; i < headings.length; i++) {
+        if (headings[i].getBoundingClientRect().top <= threshold) current = headings[i];
+      }
+      // Find the parent top-level heading for the current heading
+      var parentH2 = null;
+      if (current) {
+        var currentLevel = parseInt(current.tagName[1]);
+        if (currentLevel === minLevel) {
+          parentH2 = current;
+        } else {
+          for (var j = Array.prototype.indexOf.call(headings, current) - 1; j >= 0; j--) {
+            if (parseInt(headings[j].tagName[1]) === minLevel) { parentH2 = headings[j]; break; }
+          }
+        }
+      }
+      var activeLink = null;
+      tocLinks.forEach(function(link) {
+        var isActive = current && link.getAttribute('href') === '#' + current.id;
+        var isParent = parentH2 && parentH2 !== current && link.getAttribute('href') === '#' + parentH2.id;
+        link.classList.toggle('active', isActive || isParent);
+        if (isActive) activeLink = link;
+      });
+
+      // Auto-scroll TOC to keep active link visible.
+      // IMPORTANT: do not use scrollIntoView — it scrolls every scrollable ancestor
+      // (including the window), which fights the user's page scroll. Adjust only
+      // the TOC's own scrollTop so the page position stays put.
+      if (activeLink && !userScrolledToc) {
+        var tocNav = document.querySelector('.blog-toc');
+        var linkRect = activeLink.getBoundingClientRect();
+        var tocRect = tocNav.getBoundingClientRect();
+        if (linkRect.bottom > tocRect.bottom || linkRect.top < tocRect.top) {
+          var target = (linkRect.top - tocRect.top) + tocNav.scrollTop
+                     - (tocRect.height - linkRect.height) / 2;
+          tocNav.scrollTop = Math.max(0, target);
+        }
+      }
+    }
+
+    // Track manual TOC scrolling
+    var userScrolledToc = false;
+    var tocEl = document.querySelector('.blog-toc');
+    var tocScrollTimer;
+    tocEl.addEventListener('scroll', function() {
+      userScrolledToc = true;
+      clearTimeout(tocScrollTimer);
+      tocScrollTimer = setTimeout(function() { userScrolledToc = false; }, 1000);
+    }, { passive: true });
+
+    window.addEventListener('scroll', updateActive, { passive: true });
+    updateActive();
+  }
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

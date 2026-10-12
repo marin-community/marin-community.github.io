@@ -1,0 +1,453 @@
+[
+  {
+    "source_url": "https://openathena.ai/blog/meet-our-team-tim-odonnell/",
+    "title": "Meet our team: Tim O'Donnell",
+    "date": "2026-10-08",
+    "authors": [
+      "Sophie Bushwick"
+    ],
+    "tags": [
+      "BEHIND THE SCENES"
+    ],
+    "status": "review",
+    "reason": "Unlabeled article mentions Marin; needs classification review"
+  },
+  {
+    "source_url": "https://openathena.ai/blog/expert-parallelism/",
+    "title": "Expert parallelism at hero scale",
+    "date": "2026-09-29",
+    "authors": [
+      "Rafal Wojdyla"
+    ],
+    "tags": [
+      "MARIN"
+    ],
+    "status": "included",
+    "reason": "Explicit public MARIN label",
+    "source_content_sha256": "ca258c7f069541aeca1f78a45f9f707f0886862837fed792adf7649c6d9c14c4",
+    "post": "_posts/2026-09-29-expert-parallelism.html",
+    "mirrored_html_sha256": "0dc29281e7f36b3178095502edd89a9da28d8e2a14d80639b5a7a1347131ff45",
+    "assets": {
+      "assets/openathena/assets/images/blog/expert-parallelism/ep-results-8062.png": "56c8afaed024679d36afb1b77d69f616ed86d7d14ee42d4805f045b852c783c0",
+      "assets/openathena/assets/images/blog/expert-parallelism/fixed-pool-protocol.png": "06c71e038af9ff2eda7255e70686e612bcf51b592552efdaade5250c4afcb68e",
+      "assets/openathena/assets/images/blog/expert-parallelism/fsdp-ep.json": "008441a0846fd9c7b9c09bae36dbbcf1cfa76ce665faa52b630adba8f12e49d1",
+      "assets/openathena/assets/images/blog/expert-parallelism/fsdp-ep.mp4": "dbab31ac5b015f755831d3ca4ffb9bfa5e92e8d75bb1d0c725c6740b5200ebf6",
+      "assets/openathena/assets/images/blog/expert-parallelism/fsdp-ep.png": "60c412d477c4b3c3c7b66c31c09d3323d17914b61643e3c8fb639a0a8ec96a65",
+      "assets/openathena/assets/images/blog/expert-parallelism/fsdp.json": "355a8deffed07ba55dd7c53e5c29b551f4ebcffd5502332fc387f3096766d601",
+      "assets/openathena/assets/images/blog/expert-parallelism/fsdp.mp4": "d91406cebdb49ca44d0021f5f375ab7746a8160bb76af486bb56e49264e4a370",
+      "assets/openathena/assets/images/blog/expert-parallelism/fsdp.png": "5b82648104e83600393e6066f695d1022ae40229e3ff4734be73f936a9f46727",
+      "assets/openathena/assets/images/blog/expert-parallelism/gb200-node-nvl72.png": "3f865181a354d97ec36202d5aa1d4e23cc0e667b32d3686f89b72a4452de25e1",
+      "assets/openathena/assets/images/blog/expert-parallelism/hero-run-metrics.png": "fd3596d7a880ea00614e26998c77abacaff96dd583e574ed6352878d2c7f4e38",
+      "assets/openathena/assets/images/blog/expert-parallelism/moe-token-routing.json": "5ce5151a1625dd025ccf4ee549c8ec6ec61a9f8efbb958acc0c96908ec30b7df",
+      "assets/openathena/assets/images/blog/expert-parallelism/moe-token-routing.mp4": "412e99dc1112f9405cae538b2ed570411adcf0ec647adf5ac3ae55c83944b015",
+      "assets/openathena/assets/images/blog/expert-parallelism/moe-token-routing.png": "305437b6e9ad46ecd659f0c007e662288e42a78968aedcf7f5017ea14cc3b68f",
+      "assets/openathena/js/animation-figures.js": "217ba1094a8cd2c6b3867252609269da42af9bd308c8890011762d0a8ebe9f31",
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
+  },
+  {
+    "source_url": "https://openathena.ai/blog/open-athena-selected-as-an-aria-activation-partner/",
+    "title": "Open Athena selected as an ARIA Activation Partner",
+    "date": "2026-09-22",
+    "authors": [
+      "Open Athena"
+    ],
+    "tags": [],
+    "status": "excluded",
+    "reason": "Unrelated Open Athena article; no MARIN label or Marin content"
+  },
+  {
+    "source_url": "https://openathena.ai/blog/meet-our-team-jesse-rusak/",
+    "title": "Meet our team: Jesse Rusak",
+    "date": "2026-09-17",
+    "authors": [
+      "Sophie Bushwick"
+    ],
+    "tags": [
+      "BEHIND THE SCENES"
+    ],
+    "status": "review",
+    "reason": "Unlabeled article mentions Marin; needs classification review"
+  },
+  {
+    "source_url": "https://openathena.ai/blog/marin-data-pipeline-overview/",
+    "title": "Curating 25 Trillion Tokens for LLM Pretraining",
+    "date": "2026-09-11",
+    "authors": [
+      "Will Held"
+    ],
+    "tags": [
+      "MARIN"
+    ],
+    "status": "included",
+    "reason": "Explicit public MARIN label",
+    "source_content_sha256": "67f7711081010edafd8cf28364170a874bb44b77560a04c5fadf18aeec036cd8",
+    "post": "_posts/2026-09-11-marin-data-pipeline-overview.html",
+    "mirrored_html_sha256": "4309f226d5d20f3780b4bbc7cf275c3c466c8a849ec6939b80826278b590cc54",
+    "assets": {
+      "assets/openathena/assets/images/blog/marin-data-pipeline-overview/bucket-grid.json": "ae3b541e6fbc8bbfbf1665cb3e6f461d6a6afe87e6d862b40a809a8bc9215b41",
+      "assets/openathena/assets/images/blog/marin-data-pipeline-overview/catalog-heavy-tail.json": "0876ffc573068dfc1af374bf0c0ff7589c03138186f07710ffd30a7e569e0079",
+      "assets/openathena/assets/images/blog/marin-data-pipeline-overview/contamination-matrix.json": "4c930143bce0847193e9cfb9708835bb05b79a1702b421122ce9ae83f9319acf",
+      "assets/openathena/assets/images/blog/marin-data-pipeline-overview/data-loop.json": "b55e5f59e03e6094dab2aebe424cedf7844afdc38747ae234ba5814a607c9a3d",
+      "assets/openathena/assets/images/blog/marin-data-pipeline-overview/dedup-source-overlap.json": "bd473f59bbe96c47b49dc65b1384dea7052bddd2315b3d7f7deb6a43eeb1dd8b",
+      "assets/openathena/assets/images/blog/marin-data-pipeline-overview/topic-quality-sankey.json": "75258b06e4fcbc66b10e55319a79ed14ce6be04d93489179631fafa8117f3b6a",
+      "assets/openathena/assets/images/blog/marin-data-pipeline-overview/uncheatable-correlations.json": "87015dea6aedc6f743fc3f9f093fd19b2f0419d9f07da27bfc0fb725bc2e02dd",
+      "assets/openathena/js/datakit-figures.js": "aa4b8dd530aa4e5f11abf0a61e1ccdf4f73262556ed2093616fd44705d0ba870",
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css",
+      "https://cdn.jsdelivr.net/npm/d3@7"
+    ]
+  },
+  {
+    "source_url": "https://openathena.ai/blog/marin-535b-launch-note/",
+    "title": "Marin 535B-A23B launch note",
+    "date": "2026-09-03",
+    "authors": [
+      "David Hall"
+    ],
+    "tags": [
+      "MARIN"
+    ],
+    "status": "included",
+    "reason": "Explicit public MARIN label",
+    "source_content_sha256": "db59decdbe80b861f59e29709954e6927f571999a1fc5b34188a173fa357bc72",
+    "post": "_posts/2026-09-03-marin-535b-launch-note.html",
+    "mirrored_html_sha256": "50fb9cac1581c85a528e4d524939a0165b940c84825c835bb7bb226906a2688c",
+    "assets": {
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
+  },
+  {
+    "source_url": "https://openathena.ai/blog/huang-foundation-marin-535b-training-run/",
+    "title": "Marin's 535 billion parameter model training run launched with support of The Jen-Hsun and Lori Huang Foundation GPU gift",
+    "date": "2026-09-02",
+    "authors": [
+      "Open Athena"
+    ],
+    "tags": [
+      "MARIN"
+    ],
+    "status": "included",
+    "reason": "Explicit public MARIN label",
+    "source_content_sha256": "ea1cc3b3b9dbf324caa3c9d69c506629501dffcec43e346cd11504673f9f1204",
+    "post": "_posts/2026-09-02-huang-foundation-marin-535b-training-run.html",
+    "mirrored_html_sha256": "22c5c56da91ed4104b731016eaf7f3fbe4732c8458f945fb300c62b32c46cf5c",
+    "assets": {
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
+  },
+  {
+    "source_url": "https://openathena.ai/blog/meet-our-team-alex-merose/",
+    "title": "Meet our team: Alex Merose",
+    "date": "2026-08-27",
+    "authors": [
+      "Sophie Bushwick"
+    ],
+    "tags": [
+      "BEHIND THE SCENES"
+    ],
+    "status": "review",
+    "reason": "Unlabeled article mentions Marin; needs classification review"
+  },
+  {
+    "source_url": "https://openathena.ai/blog/meet-our-team-will-held/",
+    "title": "Meet our team: Will Held",
+    "date": "2026-08-06",
+    "authors": [
+      "Sophie Bushwick"
+    ],
+    "tags": [
+      "BEHIND THE SCENES"
+    ],
+    "status": "review",
+    "reason": "Unlabeled article mentions Marin; needs classification review"
+  },
+  {
+    "source_url": "https://openathena.ai/blog/marin-dna/",
+    "title": "A 1B standard Transformer rivals Evo 2 40B on variant effect prediction",
+    "date": "2026-08-03",
+    "authors": [
+      "Gonzalo Benegas & Eric Czech"
+    ],
+    "tags": [
+      "MARIN",
+      "DNA"
+    ],
+    "status": "included",
+    "reason": "Explicit public MARIN label",
+    "source_content_sha256": "30569e8ba35fdf50a093a784d307193117777973e23724b0c1ce08609e1b9311",
+    "post": "_posts/2026-08-03-marin-dna.html",
+    "mirrored_html_sha256": "e5bdd6a7684a5cf4a3e32ccdee9d6cc4b25c04929f7b623d7cc46da59233fd34",
+    "assets": {
+      "assets/openathena/assets/images/blog/marin-dna/annotation_derived_training_pool.svg": "0bbd20606b38a5ed20235ad6d8f9397ad96a95e6585aeee26d731bf1f59a6a2f",
+      "assets/openathena/assets/images/blog/marin-dna/continued_training_data_exposures.svg": "465377019dffbe5bfc691faee5dcbed72cf5bf46d4e1acbeb2d8c4ff0bcf7585",
+      "assets/openathena/assets/images/blog/marin-dna/data_provenance_training_datasets-679eced7cd.svg": "42884a6ab5b6ec5c469ce9c65d9c410be60933f7732e778f612b4fc907b973f0",
+      "assets/openathena/assets/images/blog/marin-dna/eval_apparatus-c093b005e0.svg": "c2bc2a6f2ce5ed59afa9985d50c2a750399a8e1087c593f669163a9a3cff33e8",
+      "assets/openathena/assets/images/blog/marin-dna/eval_datasets.svg": "1da582346ace96fa7c081e4cc94860d0a21260939d663a5d3482a1521cf3cadd",
+      "assets/openathena/assets/images/blog/marin-dna/figure11_leaderboard_heatmap__mendelian_llr.svg": "932aa802de6478a8ca363a7f1d10a534107b971b3d4ee41c2d801235272affd9",
+      "assets/openathena/assets/images/blog/marin-dna/figure11_leaderboard_heatmap__mendelian_probe.svg": "57a602862e230839bfb778d2a1bc0ece094276319fc5dd09bca1714caa4dfa73",
+      "assets/openathena/assets/images/blog/marin-dna/figure16_offline_lineage_llr_prototype-ec83c60b82.svg": "19eb59416469126822b5d18a444aa6c08b89b42b5b5603aa0b8ac29685aa7a8a",
+      "assets/openathena/assets/images/blog/marin-dna/figure16_offline_lineage_probe_prototype-ec83c60b82.svg": "819aa1f0077529266cee5ace019459d1f7bd58c394ffd8e3b13f4f02f3835918",
+      "assets/openathena/assets/images/blog/marin-dna/figure1_lr_transfer.svg": "3890f10b59d2ac564eb626192105eb98690436bb91cdf93c70714025f10a417a",
+      "assets/openathena/assets/images/blog/marin-dna/figure2_beta2_epsilon_transfer.svg": "788504d8a9dd076d2bea9468eceb4c5cd90f9561055e40dc4727af7ff60f786d",
+      "assets/openathena/assets/images/blog/marin-dna/figure3_region_hyper_transfer.svg": "74ffaff8db95c5a0b26eaa4b76e4ba02afda69752b14635b6577c7142f12fb84",
+      "assets/openathena/assets/images/blog/marin-dna/figure4_loss_scaling-538667fe00.svg": "f0dad44d576b04629532074ee230217c1b59353d734483af94c2983d030ef833",
+      "assets/openathena/assets/images/blog/marin-dna/figure5_params_vs_vep_auprc-36db25252b.svg": "51d8f908e5e4437fd2bdf0ab67932d1fda30d83fe496992698c7a5c806037cff",
+      "assets/openathena/assets/images/blog/marin-dna/figure6_loss_vs_vep_auprc-87e6294c13.svg": "eb0e0d815be2e6d94147c7b2a63ac5869205043005c95c887cb9971a8c2534f2",
+      "assets/openathena/assets/images/blog/marin-dna/figure6b_marin_evo2_missense-36db25252b.svg": "ad0f14f7c6b3d6ec7e75dc4e574788a3acfadf2961cd5d577129dc823ff976d6",
+      "assets/openathena/assets/images/blog/marin-dna/headline_cost_performance-9b066dc2f9.svg": "5d51899c7f3fdbe0fa526b3fc0d4d5e27cce3bdaac0e2ee1bf444929af98bdfd",
+      "assets/openathena/assets/images/blog/marin-dna/parameter_transfer_methodology_v1.svg": "00525eaeecac6bcc9d12864739b69fe5ffca6f57314d332c7f69228676569f52",
+      "assets/openathena/assets/images/blog/marin-dna/promoter_cds_specialists.svg": "be572c91408b5fcb148eb7b02adcae9eb5e17cb57866ca0fdb437947fc7eb0dd",
+      "assets/openathena/assets/images/blog/marin-dna/upstream_cds_balance.svg": "fb19e450f519c3bddc2abc7983d747d253c6db95f4ce5eb347b9630ee85be3ae",
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
+  },
+  {
+    "source_url": "https://openathena.ai/blog/scaling-samudra/",
+    "title": "Scaling Samudra: Our journey towards better ocean emulators",
+    "date": "2026-07-30",
+    "authors": [
+      "Alexander Merose"
+    ],
+    "tags": [
+      "DEEP DIVE"
+    ],
+    "status": "excluded",
+    "reason": "Unrelated Open Athena article; no MARIN label or Marin content"
+  },
+  {
+    "source_url": "https://openathena.ai/blog/david-siegel-fortune-open-source-ai/",
+    "title": "I argued with the father of open source for 2 years. Now the AI fight is the same — only bigger.",
+    "date": "2026-07-27",
+    "authors": [
+      "David Siegel"
+    ],
+    "tags": [],
+    "status": "excluded",
+    "reason": "Unrelated Open Athena article; no MARIN label or Marin content"
+  },
+  {
+    "source_url": "https://openathena.ai/blog/research-software-engineering-in-the-age-of-agentic-tooling/",
+    "title": "Research Software Engineering in the Age of Agentic Tooling",
+    "date": "2026-07-16",
+    "authors": [
+      "Yael Elmatad"
+    ],
+    "tags": [],
+    "status": "review",
+    "reason": "Unlabeled article mentions Marin; needs classification review"
+  },
+  {
+    "source_url": "https://openathena.ai/blog/meet-our-team-betsy-cannon/",
+    "title": "Meet our team: Betsy Cannon",
+    "date": "2026-07-09",
+    "authors": [
+      "Sophie Bushwick"
+    ],
+    "tags": [
+      "BEHIND THE SCENES"
+    ],
+    "status": "excluded",
+    "reason": "Unrelated Open Athena article; no MARIN label or Marin content"
+  },
+  {
+    "source_url": "https://openathena.ai/blog/open-development-of-frontier-ai/",
+    "title": "Open Development of Frontier AI",
+    "date": "2026-06-29",
+    "authors": [
+      "David Hall"
+    ],
+    "tags": [
+      "MARIN"
+    ],
+    "status": "included",
+    "reason": "Explicit public MARIN label",
+    "source_content_sha256": "305a0c82301a30436c255ab2ef2cf3576ea1526eed7e72ce19f3cc8a53dbd847",
+    "post": "_posts/2026-06-29-open-development-of-frontier-ai.html",
+    "mirrored_html_sha256": "eb7cc603628f3aa2ca4b5b0a3469653ab829f96a9f932f6f0bd79735206597fa",
+    "assets": {
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
+  },
+  {
+    "source_url": "https://openathena.ai/blog/cluster-scheduling-with-iris/",
+    "title": "Cluster Scheduling with Iris",
+    "date": "2026-06-25",
+    "authors": [
+      "Russell Power"
+    ],
+    "tags": [
+      "MARIN"
+    ],
+    "status": "included",
+    "reason": "Explicit public MARIN label",
+    "source_content_sha256": "0ac56c47471b58ed04b4faceadc69ebfa66ebed6a9da6c22df726315174cc095",
+    "post": "_posts/2026-06-25-cluster-scheduling-with-iris.html",
+    "mirrored_html_sha256": "b76036ae99cc810c8a63e9fc863f8443fe8702738a21b70acfc4fc227b12584c",
+    "assets": {
+      "assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image1.png": "6f5fbc84b86523afb72e4b6fdb13ac716f0dd6fb597cbd2701c95bea3742bf66",
+      "assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image2.png": "e1148b0133085cfed51569c8f37e3d16e64f32e374fff592be3cdfd32ea650bb",
+      "assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image3.png": "2384788475f25f72646de28e0dd61cb6c1ae13b4da3372a5adb024b4d51c4bf2",
+      "assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image4.png": "1b3cf81b8812d4b555f57a0b9d4dc5c05108ed36a61deb08ab4711cce145b426",
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
+  },
+  {
+    "source_url": "https://openathena.ai/blog/preparing-for-the-ai-future-with-ethics-in-mind/",
+    "title": "Preparing for the AI Future with Ethics in Mind",
+    "date": "2026-06-17",
+    "authors": [
+      "Jared Crooks"
+    ],
+    "tags": [],
+    "status": "excluded",
+    "reason": "Unrelated Open Athena article; no MARIN label or Marin content"
+  },
+  {
+    "source_url": "https://openathena.ai/blog/pretraining-speedup/",
+    "title": "Improving our LLM Pretraining Efficiency",
+    "date": "2026-06-03",
+    "authors": [
+      "Larry Dial"
+    ],
+    "tags": [
+      "MARIN"
+    ],
+    "status": "included",
+    "reason": "Explicit public MARIN label",
+    "source_content_sha256": "48995e7eaef4814e67a2e683e9330cf2af65e15b571aa9547e78ada65e866a32",
+    "post": "_posts/2026-06-03-pretraining-speedup.html",
+    "mirrored_html_sha256": "b2ee5a0762325028ef0943a6fcb088260417d0ad25703178d41f69fe69f45a5a",
+    "assets": {
+      "assets/openathena/assets/images/blog/pretraining-speedup/baseline-scaling-curve.png": "a70de00d5d339694bc035ec1483f907ac754fd7850f610917ab52b438f7c2b72",
+      "assets/openathena/assets/images/blog/pretraining-speedup/combined-speedup.png": "149fd89f72a289e56146e0cfc7008afa375264d346c4d7942da68fc93b6f4070",
+      "assets/openathena/assets/images/blog/pretraining-speedup/dense-vs-moe.png": "bab4aa87212527ece56bf19deb06507b44360996cf0f625150c511d9af338d2a",
+      "assets/openathena/assets/images/blog/pretraining-speedup/expert-sparsity.png": "f180101bd3bd2b41b9ee8c890bad97374b26732cfac2fd71dee914bc8d374ba0",
+      "assets/openathena/assets/images/blog/pretraining-speedup/gate2-speedups.png": "5eac6eb3c1fa834e521e2eb6c46da02ce54c96208fb2e96f62b071801106800a",
+      "assets/openathena/assets/images/blog/pretraining-speedup/isoflop-compare.png": "6fa0e5838f017ea271abbb9cf8588d31a0e186e62fcb4341320e8339fc00d3ed",
+      "assets/openathena/assets/images/blog/pretraining-speedup/isoflop-curves.png": "0ccb0f91ed5bf58ea16aca5a00209fb6c66a5b131d1ef61d1066621244d22098",
+      "assets/openathena/assets/images/blog/pretraining-speedup/loss-curve.png": "99c9100fcbe939af00da876e3ca22b9f4f587eeb602ce19de9d25319dae1ae67",
+      "assets/openathena/assets/images/blog/pretraining-speedup/lr-bpb-grid.png": "6f50354d604db0ea276f300bc5f4964be0ae33205b97148e2df31ecd1c50e785",
+      "assets/openathena/assets/images/blog/pretraining-speedup/lr-formula-fit.png": "ca75fb065268abdbf1f5a382a4c1acfd589559ccee02c4cdca54bc4f45347039",
+      "assets/openathena/assets/images/blog/pretraining-speedup/mha-no-gqa.png": "6545422e448847f88fd6e77888f540accfe2c6c3fdcb87291eb37fed997bfd99",
+      "assets/openathena/assets/images/blog/pretraining-speedup/muonh.png": "a13cb637685558fa4b125a331fba1f7ec3039560290e183bac2b891882f0b13a",
+      "assets/openathena/assets/images/blog/pretraining-speedup/pko-example-cpp.svg": "3bd0965c2318f018c7a1b3f77dcf17e6e9d7077b112518363234801fe4a952f1",
+      "assets/openathena/assets/images/blog/pretraining-speedup/pko-example-latex.svg": "72e57f1fd92982e3631c8b07824b9f5fb419332d1cbd0ff8dbdb87957ec5097d",
+      "assets/openathena/assets/images/blog/pretraining-speedup/pko-example-wiki.svg": "c445bf709141caa440f776c924bc86a7ed1e2993732173c401c3fab3d7ca3173",
+      "assets/openathena/assets/images/blog/pretraining-speedup/pko.png": "6da07d06de9758604bdb9fabbb9723af042c3929859c1659af7a2cc6e5df4e31",
+      "assets/openathena/assets/images/blog/pretraining-speedup/routed-expert-norm.png": "730d9982210ef2b850671360742309dfea31edec52819fb7ac5d45ef795ec06e",
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css",
+      "https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"
+    ]
+  },
+  {
+    "source_url": "https://openathena.ai/blog/delphi/",
+    "title": "Scaling Laws That Extrapolate 300× Past the Fit",
+    "date": "2026-05-11",
+    "authors": [
+      "Will Held"
+    ],
+    "tags": [
+      "MARIN"
+    ],
+    "status": "included",
+    "reason": "Explicit public MARIN label",
+    "source_content_sha256": "921687cb3dbf6041c9f6c95891e81e92beea7e6d63814806cd6a54b8cc0a4189",
+    "post": "_posts/2026-05-11-delphi.html",
+    "mirrored_html_sha256": "7aca02b1829e2318046475f8faf97dc4d2a5e5df3167e616f7a67d44ac4b73a9",
+    "assets": {
+      "assets/openathena/assets/images/blog/delphi/delphi-ladder-mobile.json": "cb23db74d07c572381df8bc552599781713839ceec9cdf477bf9379ef786a7ab",
+      "assets/openathena/assets/images/blog/delphi/delphi-ladder.json": "3a0a05b559de7d6b39dbffd5903127456d8324baa7915f60657384c039881708",
+      "assets/openathena/assets/images/blog/delphi/extrapolation.json": "9790b1704bedd107b2c582c8dfd2d9d07edb969adc1689f57d90951b6882a437",
+      "assets/openathena/assets/images/blog/delphi/first-ladder-mobile.json": "e664a5b2e7e8f5ad243890de59c4d687cf9fadec32ecd4912e16fbd2e8b62891",
+      "assets/openathena/assets/images/blog/delphi/first-ladder.json": "8b32f2f3ad92cab35c8e7d71f6208eb5e90a8a1c460929753a33f27581f7a067",
+      "assets/openathena/assets/images/blog/delphi/hparam-scaling-mobile.json": "02ba480dc9cdd303df90c4d0cff51382217f07752bf26a7ad88413ce0f28bf65",
+      "assets/openathena/assets/images/blog/delphi/hparam-scaling.json": "c273b3b32a3edd5aff23b70939949df2254c0a0cbebdff6dad7a78ba6d1fe103",
+      "assets/openathena/assets/images/blog/delphi/hparam-transfer-mobile.json": "f28f0756157146cee5b6a6bcfc36c773e28ad9d020e7ab3f60f990c312cd7385",
+      "assets/openathena/assets/images/blog/delphi/hparam-transfer.json": "549cbb53b0705d386397f012402e394cc1634e69a935d5ce935223596e7ed4cf",
+      "assets/openathena/assets/images/blog/delphi/lucky-seeds.json": "04eff5d1f6bbd585fc8da53ebe5a7156da9c38b891e41329fe65d1cf0857f844",
+      "assets/openathena/assets/images/blog/delphi/mmlu-emergence-mobile.json": "be2ccace42060a422cd9de13c2f40903c4f046d9e278d95a52b776ad8ed11eed",
+      "assets/openathena/assets/images/blog/delphi/mmlu-emergence.json": "0667d47e798fa392888deb0265c3f58bfbe96751dec3716bbc7cc8ee477c0a96",
+      "assets/openathena/assets/images/blog/delphi/overtraining-forecast.json": "f6c2c04ad549794bc09de1b930b3681b927854f042fa766236727a878d6112a8",
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css",
+      "https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js",
+      "https://cdn.plot.ly/plotly-2.35.2.min.js"
+    ]
+  },
+  {
+    "source_url": "https://openathena.ai/blog/quantile-balancing/",
+    "title": "Mixture of Experts Quantile Balancing: Validated at 32B-A5B (1e22 FLOPs) Scale",
+    "date": "2026-04-10",
+    "authors": [
+      "Larry Dial"
+    ],
+    "tags": [
+      "MARIN"
+    ],
+    "status": "included",
+    "reason": "Explicit public MARIN label",
+    "source_content_sha256": "59fe584043b5b85f829625077de101fffc13a467b3124d0e7e5fa3d27eb5bf74",
+    "post": "_posts/2026-04-10-quantile-balancing.html",
+    "mirrored_html_sha256": "e3423642f6a63d2f72d33209faa1f89b5acfbf0f83ef903c4f953042293dcf85",
+    "assets": {
+      "assets/openathena/assets/images/blog/quantile-balancing/expert-routing-1e21.gif": "fb460b40b4b305743a9f2c7896e98364e24cf72d445466c3ba35595da62d2353",
+      "assets/openathena/assets/images/blog/quantile-balancing/expert-routing-layer4.gif": "e0709c44c2c92b57bd8bbf1dc47fcdceb8e48d9aa2ba682987e47686fdb4763b",
+      "assets/openathena/assets/images/blog/quantile-balancing/expert-routing-no-qb.gif": "05bcbf83e9c301a7a2e2ee8f07d2fc0670ce8555de493612bb9e31811c83ad31",
+      "assets/openathena/assets/images/blog/quantile-balancing/expert-routing-qb.gif": "9997ece9c4aa2797f00192ecec6da02df9e20bda2cc8d9d3a09e7e190aa257b6",
+      "assets/openathena/assets/images/blog/quantile-balancing/loss-curve.png": "aaedad26d09703c5644016d866a3f1ae11be5f67a4b23ee2d6889cafe4942c8d",
+      "assets/openathena/assets/images/blog/quantile-balancing/router-bias.gif": "ed8751e98a9b006c383fae9889242c4d7ef2e75a0d1ba06c4bd5e9d5ebbb8675",
+      "assets/openathena/assets/images/blog/quantile-balancing/router-cosine-similarity.gif": "f0654c4039bde2a9f36561e1057c9f75ace6f7858a6a14dc67e4edfaab760858",
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
+  },
+  {
+    "source_url": "https://openathena.ai/blog/problems-with-chinchilla-approach-2/",
+    "title": "Problems with Chinchilla Approach 2",
+    "date": "2026-03-27",
+    "authors": [
+      "Eric Czech"
+    ],
+    "tags": [],
+    "status": "review",
+    "reason": "Unlabeled article mentions Marin; needs classification review"
+  }
+]

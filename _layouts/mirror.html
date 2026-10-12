@@ -1,0 +1,14 @@
+---
+layout: blog
+---
+<article class="post mirror-post">
+  <header class="post-header">
+    <a class="back-link" href="{{ '/blog/' | relative_url }}">← All writing</a>
+    <p class="eyebrow">Marin · Open Athena</p>
+    <h1>{{ page.title | escape }}</h1>
+    <p class="post-meta"><time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: '%-d %B %Y' }}</time> · {{ page.authors | join: ', ' | escape }}</p>
+    <p class="source-note">Originally published by <a href="{{ page.source_url | escape }}">Open Athena</a>. Mirrored here with the original authorship and publication date. <a href="{{ page.canonical_url | escape }}">Read the source →</a></p>
+  </header>
+  <div class="oa-mirror has-toc">{{ content }}</div>
+  <p class="post-end"><a href="{{ '/blog/' | relative_url }}">← More from Marin</a> · <a href="{{ page.source_url | escape }}">Original article</a></p>
+</article>

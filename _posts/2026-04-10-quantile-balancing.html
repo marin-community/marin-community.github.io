@@ -1,0 +1,334 @@
+---
+layout: mirror
+title: 'Mixture of Experts Quantile Balancing: Validated at 32B-A5B (1e22 FLOPs) Scale'
+authors:
+- Larry Dial
+date: '2026-04-10'
+categories: blog
+description: 'Quantile Balancing (QB) is a hyperparameter-free load balancer for Mixture
+  of Experts models, introduced by Jianlin Su. We validated it on a 32B-A5B (1e22
+  FLOPs) Marin run over 326B tokens: zero hyperparameters, zero loss spikes, and no
+  need for leading dense layers, auxiliary losses, or capacity overload factors.'
+source_url: https://openathena.ai/blog/quantile-balancing/
+canonical_url: https://www.openathena.ai/blog/quantile-balancing/
+source_content_sha256: 59fe584043b5b85f829625077de101fffc13a467b3124d0e7e5fa3d27eb5bf74
+excerpt: 'Quantile Balancing (QB) is a hyperparameter-free load balancer for Mixture
+  of Experts models, introduced by Jianlin Su. We validated it on a 32B-A5B (1e22
+  FLOPs) Marin run over 326B tokens: zero hyperparameters, zero loss spikes, and no
+  need for leading dense layers, auxiliary losses, or capacity overload factors.'
+---
+{% raw %}
+<div class="blog-post-body">
+<aside class="blog-toc">
+<nav class="blog-toc-nav">
+<div class="blog-toc-title">Contents</div>
+<ol class="blog-toc-list"></ol>
+</nav>
+<details class="blog-toc-mobile">
+<summary class="blog-toc-title">Contents</summary>
+<ol class="blog-toc-list"></ol>
+</details>
+</aside>
+<div class="blog-post-content project-detail-body">
+<p>This post highlights Quantile Balancing (QB), a load balancing method for Mixture of Experts (MoE) models developed by Jianlin Su. The Marin team validated QB on a 32B total 5B active-parameter (32B-A5B) model trained on Marin infrastructure over 326B tokens (1e22 FLOP compute budget). In this post, I will get into our motivation for using the MoE model family, explain why load balancing is necessary, survey prior approaches to balancing, and share performance results for QB.</p>
+<p><strong>Summary</strong></p>
+<ul>
+<li>QB is a hyperparameter-free MoE load balancer from Jianlin Su.</li>
+<li>The Marin team validated it at 32B-A5B / 1e22 FLOPs over 326B tokens on Marin.</li>
+<li>The model run showed zero loss spikes and didn't need leading dense layers or auxiliary losses to achieve balancing.</li>
+<li>This outperforms our prior fixed-increment-bias + aux-loss setup at 1e21.</li>
+</ul>
+<h2 id="why-use-moes">Why use MoEs?<a aria-label="Link to section: Why use MoEs?" class="heading-anchor" href="#why-use-moes"></a></h2>
+<p>The short answer is that they empirically work. The following provides intuition for why that is the case, although the real picture is more nuanced<sup class="footnote-ref" id="fnref-1"><a href="#fn-1">1</a></sup>. Large language models are composed of millions of neurons that work together to build a prediction. The mathematics of a single neuron can be loosely understood as a noisy IF-THEN operation. If properties (A, B, C, ...) exist in the current prediction, then activate and write properties (X, Y, Z, ...). For instance, if (Michael, Jordan) exists, then write (Basketball, Bulls). In practice, most neurons activate on only a small fraction of inputs, often under 5–10%<sup class="footnote-ref" id="fnref-2"><a href="#fn-2">2</a></sup>. However, due to how modern hardware works, we still pay the full computational cost on every input. That is, in this analogy, for every token we check if (Michael, Jordan), and if not, we still write 0 * (Basketball, Bulls). It would be more efficient if we had some up-front filter to say "is this in the sports category?", and if not, skip all neurons related to sports. This is where MoE comes in.</p>
+<h2 id="why-care-about-load-balancing">Why care about load balancing?<a aria-label="Link to section: Why care about load balancing?" class="heading-anchor" href="#why-care-about-load-balancing"></a></h2>
+<p>Within each layer of the MoE network, neurons are grouped into sets called experts. A lightweight filter decides which experts a token should route to. The standard approach is to let each token get processed by the top K experts it matches with, where K is some fixed number like 4, out of a larger pool such as 64 total experts. An expert is said to be underloaded if very few tokens select it. Left unchecked, underloaded experts enter a negative feedback loop: when an expert sees fewer tokens, it learns less. This causes fewer future tokens to select it, which causes it to learn even less, eventually resulting in it dying out. An example of what happens with no active load balancing is shown below: a large number of experts immediately die across all layers.</p>
+<figure><img alt="Dead experts under no load balancing" src="/assets/openathena/assets/images/blog/quantile-balancing/expert-routing-no-qb.gif"/><figcaption><strong>Figure 1:</strong> Per-expert token counts across layers in a baseline run with no active load balancing. Many experts immediately die out.</figcaption></figure>
+<h2 id="prior-load-balancing-techniques">Prior load balancing techniques<a aria-label="Link to section: Prior load balancing techniques" class="heading-anchor" href="#prior-load-balancing-techniques"></a></h2>
+<p>In the top-K routing paradigm there are two standard approaches to preventing dead experts.</p>
+<ol>
+<li><strong>Auxiliary Loss.</strong> The model is trained to minimize <code>(prediction_loss + a * balancing_loss)</code>, where <code>balancing_loss</code> quantifies how balanced the experts are.</li>
+<li><strong>Aux-Loss-Free Bias.</strong> Each expert gets a bonus score, which is increased for underloaded experts. Each token selects its top K of <code>(expert_alignment + expert_bonus)</code>.</li>
+</ol>
+<p>The auxiliary loss approach was first demonstrated at scale in GShard<sup class="footnote-ref" id="fnref-3"><a href="#fn-3">3</a></sup>. It has been used in many successful models, but requires substantial tuning to get optimal performance (okay performance can be achieved out of the box with <code>coef=0.001</code>). If the coefficient <code>a</code> is set too low, experts can still die off; if it is set too high, the model focuses more on balancing than on actually learning. The optimal coefficient can change depending on the layer, model size, and loss regime.</p>
+<p>The aux-loss-free approach was later introduced in DeepSeek<sup class="footnote-ref" id="fnref-4"><a href="#fn-4">4</a></sup>. Instead of requiring the model to learn its own balancing, it increments each expert's bonus (known as its "bias") up or down by 0.001 each step, depending on whether the expert is underloaded or overloaded. Empirically, this gave stronger performance. The approach has since been refined by Arcee through their SMEBU technique<sup class="footnote-ref" id="fnref-5"><a href="#fn-5">5</a></sup>, which incorporates momentum into the bias update.</p>
+<h2 id="quantile-load-balancing">Quantile load balancing<a aria-label="Link to section: Quantile load balancing" class="heading-anchor" href="#quantile-load-balancing"></a></h2>
+<p>All of the techniques listed thus far have tunable parameters: the balancing coefficient, the magnitude of the bias update, the momentum coefficient. What if there were a completely hyperparameter-free way to solve for optimal routing? QB requires zero hyperparameters and is robust across all tested compute scales up to 1e22 FLOPs (with 1e23 underway). Under QB, we found that supplementary methods to assist with balancing—such as leading dense layers, auxiliary losses, or extra capacity overload factors—were unnecessary.</p>
+<p>A full breakdown of the method is available in Jianlin's <a href="https://kexue.fm/archives/11619">Feb 2026 blog post</a>. A brief overview is provided here. QB directly solves for the bias update that would have maximized balancing on the prior step. Conceptually, it can be understood as a two-part process run after each step, based on the scores that each token generates for each expert.</p>
+<ol>
+<li>For each token, compute the threshold score required to become activated.</li>
+<li>For each expert, using the result from step 1, determine the bias that would activate a balanced number of tokens.</li>
+</ol>
+<p>Our recent 32B-A5B run had 64 routed experts, 4 of which are active per token, on each of 32 layers. Each expert had 1,600 neurons, for a total of roughly 3 million neurons across all routed experts. Below is an animation showing the balancing across experts for the first layer, middle layer 16, and final layer 32 across the first 50,000 training steps.</p>
+<figure><img alt="Per-expert routing counts under QB" src="/assets/openathena/assets/images/blog/quantile-balancing/expert-routing-qb.gif"/><figcaption><strong>Figure 2:</strong> Per-expert token counts under QB for layer 1, layer 16, and layer 32 over the first 50,000 training steps of the 32B-A5B run. Balancing emerges quickly and is maintained throughout training.</figcaption></figure>
+<p>Below is the associated loss curve, which showed zero loss spikes over the 326 billion token run.</p>
+<figure><img alt="Training loss curve over 326B tokens" src="/assets/openathena/assets/images/blog/quantile-balancing/loss-curve.png"/><figcaption><strong>Figure 3:</strong> Training loss for the 32B-A5B run over 326B tokens. No loss spikes were observed.</figcaption></figure>
+<p>An animation of the bias terms used to balance the experts is shown below. Early layers, which are typically much harder to balance, show larger bias terms.</p>
+<figure><img alt="Per-expert bias terms under QB" src="/assets/openathena/assets/images/blog/quantile-balancing/router-bias.gif"/><figcaption><strong>Figure 4:</strong> Per-expert bias terms learned by QB over training.</figcaption></figure>
+<p>As a comparison point, the animation below shows the routing quality of our prior 1e21 run, which used a combination of a fixed-increment bias term and a small load balancing loss, following a similar convention to Nemotron 3 Super<sup class="footnote-ref" id="fnref-6"><a href="#fn-6">6</a></sup>. Despite also having two leading dense layers, the 1e21 run had a harder time achieving balancing in the first 5,000 steps.</p>
+<figure><img alt="Per-expert routing counts for the 1e21 comparison run" src="/assets/openathena/assets/images/blog/quantile-balancing/expert-routing-1e21.gif"/><figcaption><strong>Figure 5:</strong> Per-expert token counts for the prior 1e21 run using a fixed-increment bias and an auxiliary balancing loss. Early layers are chaotic for the first 5,000 steps, with some experts dead for 50+ steps before recovering.</figcaption></figure>
+<p>In this 1e21 run, the model eventually balanced to a reasonable level, but the early layers were quite chaotic for the first 5,000 steps, with some experts completely dead for 50+ steps. This left us wondering: should we increase the load balancing coefficient in earlier layers? Should we scale up the bias increment? Should we implement SMEBU and tune the coefficients? What will happen if we scale up 10x? We found that when we later shifted to QB the experts balanced much faster during warmup, giving us confidence to scale up.</p>
+<p>Once we've proven out MoEs at 1e23 scale on Marin infrastructure, we plan to look for every 1-2% efficiency gain we can find. For instance, we noticed that layer 4 had a pair of experts consistently running at around 70% of balanced load. This is not a degenerate case (early layers may naturally have different loads across the token space), but there is a possibility we can eke out slightly improved performance here. The current QB implementation is a one-step approximation based on the prior step's routing scores. In future work, we can step through the exact calculations driving the load on these two experts, to understand if there is an update that would pull them back to 100%, or if there is any material impact to the loss curve.</p>
+<figure><img alt="Layer 4 per-expert token counts" src="/assets/openathena/assets/images/blog/quantile-balancing/expert-routing-layer4.gif"/><figcaption><strong>Figure 6:</strong> Per-expert token counts in layer 4 of the 32B-A5B run. A pair of experts consistently sits near 70% of balanced load.</figcaption></figure>
+<p>Since QB does not directly push the routing vectors apart, and only adds a secondary bonus term, we also looked at how the routing vectors behave over training. More details on the math of routing vectors can be found in prior work from Google<sup class="footnote-ref" id="fnref-7"><a href="#fn-7">7</a></sup>.</p>
+<p>The cosine similarity between each pair of routing vectors is plotted below, which lets us see if any experts are converging to the same routing representation. In the first layer, the expert routing vectors converge around step 4,000, then gradually spread out into their own portions of the vector space by step 60,000. The geometry of the routing vectors in the later layers is less dynamic.</p>
+<figure><img alt="Pairwise cosine similarity of routing vectors" src="/assets/openathena/assets/images/blog/quantile-balancing/router-cosine-similarity.gif"/><figcaption><strong>Figure 7:</strong> Pairwise cosine similarity between expert routing vectors over training. In layer 1, vectors converge near step 4,000 and then spread apart by step 60,000; later layers are far less dynamic.</figcaption></figure>
+<p>We plan to continue using QB in our MoE runs as long as it keeps giving promising results, and we recommend it to others who are looking for a robust load balancing technique.</p>
+<p>The full 1e22 run plotted above is available on <a href="https://wandb.ai/marin-community/marin/reports/MoE-1e22-March--VmlldzoxNjQ1MzEzNw">Weights &amp; Biases</a>.</p>
+<p>The QB implementation in JAX used in this run is available in the Marin repo:</p>
+<ul>
+<li><a href="https://github.com/marin-community/marin/blob/c4ce3ae9e427e57d625ece10248911c5310e5991/experiments/grug/moe/model.py#L349-L394">MoE <code>__call__</code> forward (bias application + QB-β computation)</a></li>
+<li><a href="https://github.com/marin-community/marin/blob/c4ce3ae9e427e57d625ece10248911c5310e5991/experiments/grug/moe/train.py#L240-L253"><code>_apply_qb_betas</code> helper</a></li>
+<li><a href="https://github.com/marin-community/marin/blob/6cd46219613ef4bfe7441f324823d31336a4571e/experiments/grug/moe_mar26/job_summary.md">Run job summary</a></li>
+</ul>
+<section class="footnotes">
+<ol>
+<li id="fn-1"><p>See Anthropic's <a href="https://transformer-circuits.pub/2022/toy_model/index.html"><em>Toy Models of Superposition</em></a> for why individual neurons rarely correspond cleanly to single concepts.<a class="footnote" href="#fnref-1">↩</a></p></li>
+<li id="fn-2"><p>Li et al., <a href="https://arxiv.org/abs/2210.06313"><em>The Lazy Neuron Phenomenon: On Emergence of Activation Sparsity in Transformers</em></a>, ICLR 2023. Reports as low as 3.0% nonzero MLP activations for T5-Base and 6.3% for ViT-B16, with sparsity emerging naturally across architectures and modalities.<a class="footnote" href="#fnref-2">↩</a></p></li>
+<li id="fn-3"><p>Lepikhin et al., <a href="https://arxiv.org/abs/2006.16668"><em>GShard: Scaling Giant Models with Conditional Computation and Automatic Sharding</em></a>, 2020.<a class="footnote" href="#fnref-3">↩</a></p></li>
+<li id="fn-4"><p>Wang et al., <a href="https://arxiv.org/abs/2408.15664"><em>Auxiliary-Loss-Free Load Balancing Strategy for Mixture-of-Experts</em></a>, 2024.<a class="footnote" href="#fnref-4">↩</a></p></li>
+<li id="fn-5"><p>Singh et al., <a href="https://arxiv.org/abs/2602.17004"><em>Arcee Trinity Large Technical Report</em></a>, which introduces Soft-clamped Momentum Expert Bias Updates (SMEBU).<a class="footnote" href="#fnref-5">↩</a></p></li>
+<li id="fn-6"><p>NVIDIA, <a href="https://research.nvidia.com/labs/nemotron/files/NVIDIA-Nemotron-3-Super-Technical-Report.pdf"><em>Nemotron 3 Super Technical Report</em></a>.<a class="footnote" href="#fnref-6">↩</a></p></li>
+<li id="fn-7"><p>Fedus, Dean, and Zoph, <a href="https://arxiv.org/abs/2209.01667"><em>A Review of Sparse Expert Models in Deep Learning</em></a>, 2022.<a class="footnote" href="#fnref-7">↩</a></p></li>
+</ol>
+</section>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{dial2026_quantile_balancing,
+  author = {Dial, Larry},
+  title = {Mixture of Experts Quantile Balancing: Validated at 32B-A5B (1e22 FLOPs) Scale},
+  year = {2026},
+  month = {apr},
+  howpublished = {\url{https://www.openathena.ai/blog/quantile-balancing/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<script>
+(function() {
+  const content = document.querySelector('.blog-post-content');
+  const lists = document.querySelectorAll('.blog-toc-list');
+  if (!content || !lists.length) return;
+
+  const headings = Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+    .filter(function(h) { return !h.closest('.blog-post-citation'); });
+
+  // Find the minimum heading level used so it becomes the top-level TOC entry
+  var minLevel = 6;
+  headings.forEach(function(h) {
+    var level = parseInt(h.tagName[1]);
+    if (level < minLevel) minLevel = level;
+  });
+
+  function buildToc(list) {
+    headings.forEach(function(h) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+      var level = parseInt(h.tagName[1]);
+
+      if (level === minLevel) {
+        li.className = 'toc-h2';
+        li.dataset.sublist = '';
+        list.appendChild(li);
+      } else {
+        var parent = list.querySelector('li.toc-h2:last-child > ol');
+        if (!parent) {
+          parent = document.createElement('ol');
+          var lastTop = list.querySelector('li.toc-h2:last-child');
+          if (lastTop) lastTop.appendChild(parent);
+          else { li.className = 'toc-h3'; list.appendChild(li); return; }
+        }
+        li.className = 'toc-h3';
+        parent.appendChild(li);
+      }
+    });
+  }
+
+  lists.forEach(function(list) { buildToc(list); });
+
+  // Highlight active TOC entry on scroll
+  var tocLinks = document.querySelectorAll('.blog-toc-nav .blog-toc-list a');
+  if (tocLinks.length && headings.length) {
+    function updateActive() {
+      var current = null;
+      var threshold = window.innerHeight * 0.3;
+      for (var i = 0; i < headings.length; i++) {
+        if (headings[i].getBoundingClientRect().top <= threshold) current = headings[i];
+      }
+      // Find the parent top-level heading for the current heading
+      var parentH2 = null;
+      if (current) {
+        var currentLevel = parseInt(current.tagName[1]);
+        if (currentLevel === minLevel) {
+          parentH2 = current;
+        } else {
+          for (var j = Array.prototype.indexOf.call(headings, current) - 1; j >= 0; j--) {
+            if (parseInt(headings[j].tagName[1]) === minLevel) { parentH2 = headings[j]; break; }
+          }
+        }
+      }
+      var activeLink = null;
+      tocLinks.forEach(function(link) {
+        var isActive = current && link.getAttribute('href') === '#' + current.id;
+        var isParent = parentH2 && parentH2 !== current && link.getAttribute('href') === '#' + parentH2.id;
+        link.classList.toggle('active', isActive || isParent);
+        if (isActive) activeLink = link;
+      });
+
+      // Auto-scroll TOC to keep active link visible.
+      // IMPORTANT: do not use scrollIntoView — it scrolls every scrollable ancestor
+      // (including the window), which fights the user's page scroll. Adjust only
+      // the TOC's own scrollTop so the page position stays put.
+      if (activeLink && !userScrolledToc) {
+        var tocNav = document.querySelector('.blog-toc');
+        var linkRect = activeLink.getBoundingClientRect();
+        var tocRect = tocNav.getBoundingClientRect();
+        if (linkRect.bottom > tocRect.bottom || linkRect.top < tocRect.top) {
+          var target = (linkRect.top - tocRect.top) + tocNav.scrollTop
+                     - (tocRect.height - linkRect.height) / 2;
+          tocNav.scrollTop = Math.max(0, target);
+        }
+      }
+    }
+
+    // Track manual TOC scrolling
+    var userScrolledToc = false;
+    var tocEl = document.querySelector('.blog-toc');
+    var tocScrollTimer;
+    tocEl.addEventListener('scroll', function() {
+      userScrolledToc = true;
+      clearTimeout(tocScrollTimer);
+      tocScrollTimer = setTimeout(function() { userScrolledToc = false; }, 1000);
+    }, { passive: true });
+
+    window.addEventListener('scroll', updateActive, { passive: true });
+    updateActive();
+  }
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

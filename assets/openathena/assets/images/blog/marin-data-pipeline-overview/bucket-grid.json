@@ -1,0 +1,1417 @@
+{
+  "source_store_artifact": "s3://marin-us-east-02a/marin/datakit/store_4d2e363d/.artifact.json",
+  "tokenizer": "marin-community/marin-tokenizer",
+  "quality_order": "q0 through q4, low to high",
+  "bucket_semantics": {
+    "domains": "Harrier 40-way assignments",
+    "quality": "ordinal q0-q4 with v5 content-type-specific cutoffs",
+    "exact_match_to_historical": false
+  },
+  "cells": [
+    {
+      "cell": "c00q0",
+      "cluster": 0,
+      "domain": "Geopolitics and World News",
+      "quality": 0,
+      "available_tokens": 9126994294
+    },
+    {
+      "cell": "c00q1",
+      "cluster": 0,
+      "domain": "Geopolitics and World News",
+      "quality": 1,
+      "available_tokens": 92394931129
+    },
+    {
+      "cell": "c00q2",
+      "cluster": 0,
+      "domain": "Geopolitics and World News",
+      "quality": 2,
+      "available_tokens": 218832257133
+    },
+    {
+      "cell": "c00q3",
+      "cluster": 0,
+      "domain": "Geopolitics and World News",
+      "quality": 3,
+      "available_tokens": 223411862423
+    },
+    {
+      "cell": "c00q4",
+      "cluster": 0,
+      "domain": "Geopolitics and World News",
+      "quality": 4,
+      "available_tokens": 125883349751
+    },
+    {
+      "cell": "c01q0",
+      "cluster": 1,
+      "domain": "Consumer Health and Supplements",
+      "quality": 0,
+      "available_tokens": 95635656381
+    },
+    {
+      "cell": "c01q1",
+      "cluster": 1,
+      "domain": "Consumer Health and Supplements",
+      "quality": 1,
+      "available_tokens": 103288668624
+    },
+    {
+      "cell": "c01q2",
+      "cluster": 1,
+      "domain": "Consumer Health and Supplements",
+      "quality": 2,
+      "available_tokens": 187730109502
+    },
+    {
+      "cell": "c01q3",
+      "cluster": 1,
+      "domain": "Consumer Health and Supplements",
+      "quality": 3,
+      "available_tokens": 273200491980
+    },
+    {
+      "cell": "c01q4",
+      "cluster": 1,
+      "domain": "Consumer Health and Supplements",
+      "quality": 4,
+      "available_tokens": 281971382139
+    },
+    {
+      "cell": "c02q0",
+      "cluster": 2,
+      "domain": "Arts, History, and Culture",
+      "quality": 0,
+      "available_tokens": 1270175271
+    },
+    {
+      "cell": "c02q1",
+      "cluster": 2,
+      "domain": "Arts, History, and Culture",
+      "quality": 1,
+      "available_tokens": 14005300543
+    },
+    {
+      "cell": "c02q2",
+      "cluster": 2,
+      "domain": "Arts, History, and Culture",
+      "quality": 2,
+      "available_tokens": 46511789897
+    },
+    {
+      "cell": "c02q3",
+      "cluster": 2,
+      "domain": "Arts, History, and Culture",
+      "quality": 3,
+      "available_tokens": 66999107457
+    },
+    {
+      "cell": "c02q4",
+      "cluster": 2,
+      "domain": "Arts, History, and Culture",
+      "quality": 4,
+      "available_tokens": 66824740487
+    },
+    {
+      "cell": "c03q0",
+      "cluster": 3,
+      "domain": "Finance, Insurance, and Markets",
+      "quality": 0,
+      "available_tokens": 53370021055
+    },
+    {
+      "cell": "c03q1",
+      "cluster": 3,
+      "domain": "Finance, Insurance, and Markets",
+      "quality": 1,
+      "available_tokens": 321772086179
+    },
+    {
+      "cell": "c03q2",
+      "cluster": 3,
+      "domain": "Finance, Insurance, and Markets",
+      "quality": 2,
+      "available_tokens": 254352149544
+    },
+    {
+      "cell": "c03q3",
+      "cluster": 3,
+      "domain": "Finance, Insurance, and Markets",
+      "quality": 3,
+      "available_tokens": 237133584842
+    },
+    {
+      "cell": "c03q4",
+      "cluster": 3,
+      "domain": "Finance, Insurance, and Markets",
+      "quality": 4,
+      "available_tokens": 138365996387
+    },
+    {
+      "cell": "c04q0",
+      "cluster": 4,
+      "domain": "Consumer Tech and Cybersecurity",
+      "quality": 0,
+      "available_tokens": 3008627624
+    },
+    {
+      "cell": "c04q1",
+      "cluster": 4,
+      "domain": "Consumer Tech and Cybersecurity",
+      "quality": 1,
+      "available_tokens": 30712078426
+    },
+    {
+      "cell": "c04q2",
+      "cluster": 4,
+      "domain": "Consumer Tech and Cybersecurity",
+      "quality": 2,
+      "available_tokens": 81079729232
+    },
+    {
+      "cell": "c04q3",
+      "cluster": 4,
+      "domain": "Consumer Tech and Cybersecurity",
+      "quality": 3,
+      "available_tokens": 49217811940
+    },
+    {
+      "cell": "c04q4",
+      "cluster": 4,
+      "domain": "Consumer Tech and Cybersecurity",
+      "quality": 4,
+      "available_tokens": 10049270109
+    },
+    {
+      "cell": "c05q0",
+      "cluster": 5,
+      "domain": "Government Notices and Environment",
+      "quality": 0,
+      "available_tokens": 8574515190
+    },
+    {
+      "cell": "c05q1",
+      "cluster": 5,
+      "domain": "Government Notices and Environment",
+      "quality": 1,
+      "available_tokens": 36412825779
+    },
+    {
+      "cell": "c05q2",
+      "cluster": 5,
+      "domain": "Government Notices and Environment",
+      "quality": 2,
+      "available_tokens": 135591693692
+    },
+    {
+      "cell": "c05q3",
+      "cluster": 5,
+      "domain": "Government Notices and Environment",
+      "quality": 3,
+      "available_tokens": 313664659415
+    },
+    {
+      "cell": "c05q4",
+      "cluster": 5,
+      "domain": "Government Notices and Environment",
+      "quality": 4,
+      "available_tokens": 198049852057
+    },
+    {
+      "cell": "c06q0",
+      "cluster": 6,
+      "domain": "Public Policy Debates",
+      "quality": 0,
+      "available_tokens": 805821263
+    },
+    {
+      "cell": "c06q1",
+      "cluster": 6,
+      "domain": "Public Policy Debates",
+      "quality": 1,
+      "available_tokens": 14131588839
+    },
+    {
+      "cell": "c06q2",
+      "cluster": 6,
+      "domain": "Public Policy Debates",
+      "quality": 2,
+      "available_tokens": 57427237664
+    },
+    {
+      "cell": "c06q3",
+      "cluster": 6,
+      "domain": "Public Policy Debates",
+      "quality": 3,
+      "available_tokens": 72181108296
+    },
+    {
+      "cell": "c06q4",
+      "cluster": 6,
+      "domain": "Public Policy Debates",
+      "quality": 4,
+      "available_tokens": 58383851342
+    },
+    {
+      "cell": "c07q0",
+      "cluster": 7,
+      "domain": "Games and Gambling",
+      "quality": 0,
+      "available_tokens": 39578004461
+    },
+    {
+      "cell": "c07q1",
+      "cluster": 7,
+      "domain": "Games and Gambling",
+      "quality": 1,
+      "available_tokens": 77934832336
+    },
+    {
+      "cell": "c07q2",
+      "cluster": 7,
+      "domain": "Games and Gambling",
+      "quality": 2,
+      "available_tokens": 90182392877
+    },
+    {
+      "cell": "c07q3",
+      "cluster": 7,
+      "domain": "Games and Gambling",
+      "quality": 3,
+      "available_tokens": 69945168581
+    },
+    {
+      "cell": "c07q4",
+      "cluster": 7,
+      "domain": "Games and Gambling",
+      "quality": 4,
+      "available_tokens": 16381862261
+    },
+    {
+      "cell": "c08q0",
+      "cluster": 8,
+      "domain": "Schools and Children's Programs",
+      "quality": 0,
+      "available_tokens": 314008466
+    },
+    {
+      "cell": "c08q1",
+      "cluster": 8,
+      "domain": "Schools and Children's Programs",
+      "quality": 1,
+      "available_tokens": 5678048451
+    },
+    {
+      "cell": "c08q2",
+      "cluster": 8,
+      "domain": "Schools and Children's Programs",
+      "quality": 2,
+      "available_tokens": 40671465004
+    },
+    {
+      "cell": "c08q3",
+      "cluster": 8,
+      "domain": "Schools and Children's Programs",
+      "quality": 3,
+      "available_tokens": 58438357130
+    },
+    {
+      "cell": "c08q4",
+      "cluster": 8,
+      "domain": "Schools and Children's Programs",
+      "quality": 4,
+      "available_tokens": 23530350229
+    },
+    {
+      "cell": "c09q0",
+      "cluster": 9,
+      "domain": "Study Skills and Academic Writing",
+      "quality": 0,
+      "available_tokens": 4916919913
+    },
+    {
+      "cell": "c09q1",
+      "cluster": 9,
+      "domain": "Study Skills and Academic Writing",
+      "quality": 1,
+      "available_tokens": 31503327914
+    },
+    {
+      "cell": "c09q2",
+      "cluster": 9,
+      "domain": "Study Skills and Academic Writing",
+      "quality": 2,
+      "available_tokens": 71020180045
+    },
+    {
+      "cell": "c09q3",
+      "cluster": 9,
+      "domain": "Study Skills and Academic Writing",
+      "quality": 3,
+      "available_tokens": 45437413086
+    },
+    {
+      "cell": "c09q4",
+      "cluster": 9,
+      "domain": "Study Skills and Academic Writing",
+      "quality": 4,
+      "available_tokens": 10253598214
+    },
+    {
+      "cell": "c10q0",
+      "cluster": 10,
+      "domain": "Personal Wellbeing and Conduct",
+      "quality": 0,
+      "available_tokens": 11447607230
+    },
+    {
+      "cell": "c10q1",
+      "cluster": 10,
+      "domain": "Personal Wellbeing and Conduct",
+      "quality": 1,
+      "available_tokens": 77986521009
+    },
+    {
+      "cell": "c10q2",
+      "cluster": 10,
+      "domain": "Personal Wellbeing and Conduct",
+      "quality": 2,
+      "available_tokens": 92535349845
+    },
+    {
+      "cell": "c10q3",
+      "cluster": 10,
+      "domain": "Personal Wellbeing and Conduct",
+      "quality": 3,
+      "available_tokens": 49969559043
+    },
+    {
+      "cell": "c10q4",
+      "cluster": 10,
+      "domain": "Personal Wellbeing and Conduct",
+      "quality": 4,
+      "available_tokens": 18589120997
+    },
+    {
+      "cell": "c11q0",
+      "cluster": 11,
+      "domain": "Food and Recipes",
+      "quality": 0,
+      "available_tokens": 7123849798
+    },
+    {
+      "cell": "c11q1",
+      "cluster": 11,
+      "domain": "Food and Recipes",
+      "quality": 1,
+      "available_tokens": 44857278765
+    },
+    {
+      "cell": "c11q2",
+      "cluster": 11,
+      "domain": "Food and Recipes",
+      "quality": 2,
+      "available_tokens": 104183512071
+    },
+    {
+      "cell": "c11q3",
+      "cluster": 11,
+      "domain": "Food and Recipes",
+      "quality": 3,
+      "available_tokens": 77489113544
+    },
+    {
+      "cell": "c11q4",
+      "cluster": 11,
+      "domain": "Food and Recipes",
+      "quality": 4,
+      "available_tokens": 19707101099
+    },
+    {
+      "cell": "c12q0",
+      "cluster": 12,
+      "domain": "Travel and Destinations",
+      "quality": 0,
+      "available_tokens": 9205782066
+    },
+    {
+      "cell": "c12q1",
+      "cluster": 12,
+      "domain": "Travel and Destinations",
+      "quality": 1,
+      "available_tokens": 65736044499
+    },
+    {
+      "cell": "c12q2",
+      "cluster": 12,
+      "domain": "Travel and Destinations",
+      "quality": 2,
+      "available_tokens": 146340886002
+    },
+    {
+      "cell": "c12q3",
+      "cluster": 12,
+      "domain": "Travel and Destinations",
+      "quality": 3,
+      "available_tokens": 129220574680
+    },
+    {
+      "cell": "c12q4",
+      "cluster": 12,
+      "domain": "Travel and Destinations",
+      "quality": 4,
+      "available_tokens": 36091063654
+    },
+    {
+      "cell": "c13q0",
+      "cluster": 13,
+      "domain": "Command-Line Agent Transcripts",
+      "quality": 0,
+      "available_tokens": 135733770
+    },
+    {
+      "cell": "c13q1",
+      "cluster": 13,
+      "domain": "Command-Line Agent Transcripts",
+      "quality": 1,
+      "available_tokens": 53240514881
+    },
+    {
+      "cell": "c13q2",
+      "cluster": 13,
+      "domain": "Command-Line Agent Transcripts",
+      "quality": 2,
+      "available_tokens": 127059719825
+    },
+    {
+      "cell": "c13q3",
+      "cluster": 13,
+      "domain": "Command-Line Agent Transcripts",
+      "quality": 3,
+      "available_tokens": 285965924857
+    },
+    {
+      "cell": "c13q4",
+      "cluster": 13,
+      "domain": "Command-Line Agent Transcripts",
+      "quality": 4,
+      "available_tokens": 122937150666
+    },
+    {
+      "cell": "c14q0",
+      "cluster": 14,
+      "domain": "Software Development and Web Code",
+      "quality": 0,
+      "available_tokens": 54409524381
+    },
+    {
+      "cell": "c14q1",
+      "cluster": 14,
+      "domain": "Software Development and Web Code",
+      "quality": 1,
+      "available_tokens": 535569502071
+    },
+    {
+      "cell": "c14q2",
+      "cluster": 14,
+      "domain": "Software Development and Web Code",
+      "quality": 2,
+      "available_tokens": 481055435884
+    },
+    {
+      "cell": "c14q3",
+      "cluster": 14,
+      "domain": "Software Development and Web Code",
+      "quality": 3,
+      "available_tokens": 412165290166
+    },
+    {
+      "cell": "c14q4",
+      "cluster": 14,
+      "domain": "Software Development and Web Code",
+      "quality": 4,
+      "available_tokens": 72590241395
+    },
+    {
+      "cell": "c15q0",
+      "cluster": 15,
+      "domain": "Clinical Treatment and Dentistry",
+      "quality": 0,
+      "available_tokens": 6251580758
+    },
+    {
+      "cell": "c15q1",
+      "cluster": 15,
+      "domain": "Clinical Treatment and Dentistry",
+      "quality": 1,
+      "available_tokens": 44648775922
+    },
+    {
+      "cell": "c15q2",
+      "cluster": 15,
+      "domain": "Clinical Treatment and Dentistry",
+      "quality": 2,
+      "available_tokens": 103614058265
+    },
+    {
+      "cell": "c15q3",
+      "cluster": 15,
+      "domain": "Clinical Treatment and Dentistry",
+      "quality": 3,
+      "available_tokens": 86559406875
+    },
+    {
+      "cell": "c15q4",
+      "cluster": 15,
+      "domain": "Clinical Treatment and Dentistry",
+      "quality": 4,
+      "available_tokens": 46822643439
+    },
+    {
+      "cell": "c16q0",
+      "cluster": 16,
+      "domain": "Sports and Competition",
+      "quality": 0,
+      "available_tokens": 11860894340
+    },
+    {
+      "cell": "c16q1",
+      "cluster": 16,
+      "domain": "Sports and Competition",
+      "quality": 1,
+      "available_tokens": 45410531830
+    },
+    {
+      "cell": "c16q2",
+      "cluster": 16,
+      "domain": "Sports and Competition",
+      "quality": 2,
+      "available_tokens": 99231272924
+    },
+    {
+      "cell": "c16q3",
+      "cluster": 16,
+      "domain": "Sports and Competition",
+      "quality": 3,
+      "available_tokens": 110064852336
+    },
+    {
+      "cell": "c16q4",
+      "cluster": 16,
+      "domain": "Sports and Competition",
+      "quality": 4,
+      "available_tokens": 36223433324
+    },
+    {
+      "cell": "c17q0",
+      "cluster": 17,
+      "domain": "SEO and Online Business",
+      "quality": 0,
+      "available_tokens": 66324600654
+    },
+    {
+      "cell": "c17q1",
+      "cluster": 17,
+      "domain": "SEO and Online Business",
+      "quality": 1,
+      "available_tokens": 153913537852
+    },
+    {
+      "cell": "c17q2",
+      "cluster": 17,
+      "domain": "SEO and Online Business",
+      "quality": 2,
+      "available_tokens": 253233636000
+    },
+    {
+      "cell": "c17q3",
+      "cluster": 17,
+      "domain": "SEO and Online Business",
+      "quality": 3,
+      "available_tokens": 190734628515
+    },
+    {
+      "cell": "c17q4",
+      "cluster": 17,
+      "domain": "SEO and Online Business",
+      "quality": 4,
+      "available_tokens": 50865307701
+    },
+    {
+      "cell": "c18q0",
+      "cluster": 18,
+      "domain": "Business Software and Strategy",
+      "quality": 0,
+      "available_tokens": 11022710269
+    },
+    {
+      "cell": "c18q1",
+      "cluster": 18,
+      "domain": "Business Software and Strategy",
+      "quality": 1,
+      "available_tokens": 67075966496
+    },
+    {
+      "cell": "c18q2",
+      "cluster": 18,
+      "domain": "Business Software and Strategy",
+      "quality": 2,
+      "available_tokens": 113189681389
+    },
+    {
+      "cell": "c18q3",
+      "cluster": 18,
+      "domain": "Business Software and Strategy",
+      "quality": 3,
+      "available_tokens": 56791084377
+    },
+    {
+      "cell": "c18q4",
+      "cluster": 18,
+      "domain": "Business Software and Strategy",
+      "quality": 4,
+      "available_tokens": 13450703885
+    },
+    {
+      "cell": "c19q0",
+      "cluster": 19,
+      "domain": "Home Maintenance and Trades",
+      "quality": 0,
+      "available_tokens": 9425278805
+    },
+    {
+      "cell": "c19q1",
+      "cluster": 19,
+      "domain": "Home Maintenance and Trades",
+      "quality": 1,
+      "available_tokens": 58524820904
+    },
+    {
+      "cell": "c19q2",
+      "cluster": 19,
+      "domain": "Home Maintenance and Trades",
+      "quality": 2,
+      "available_tokens": 99625123830
+    },
+    {
+      "cell": "c19q3",
+      "cluster": 19,
+      "domain": "Home Maintenance and Trades",
+      "quality": 3,
+      "available_tokens": 63685428967
+    },
+    {
+      "cell": "c19q4",
+      "cluster": 19,
+      "domain": "Home Maintenance and Trades",
+      "quality": 4,
+      "available_tokens": 18804288116
+    },
+    {
+      "cell": "c20q0",
+      "cluster": 20,
+      "domain": "School Curricula and Teacher Training",
+      "quality": 0,
+      "available_tokens": 5477723872
+    },
+    {
+      "cell": "c20q1",
+      "cluster": 20,
+      "domain": "School Curricula and Teacher Training",
+      "quality": 1,
+      "available_tokens": 100249166719
+    },
+    {
+      "cell": "c20q2",
+      "cluster": 20,
+      "domain": "School Curricula and Teacher Training",
+      "quality": 2,
+      "available_tokens": 132321864750
+    },
+    {
+      "cell": "c20q3",
+      "cluster": 20,
+      "domain": "School Curricula and Teacher Training",
+      "quality": 3,
+      "available_tokens": 78502794177
+    },
+    {
+      "cell": "c20q4",
+      "cluster": 20,
+      "domain": "School Curricula and Teacher Training",
+      "quality": 4,
+      "available_tokens": 49399445920
+    },
+    {
+      "cell": "c21q0",
+      "cluster": 21,
+      "domain": "Christian Faith and Devotion",
+      "quality": 0,
+      "available_tokens": 8235894817
+    },
+    {
+      "cell": "c21q1",
+      "cluster": 21,
+      "domain": "Christian Faith and Devotion",
+      "quality": 1,
+      "available_tokens": 59658214221
+    },
+    {
+      "cell": "c21q2",
+      "cluster": 21,
+      "domain": "Christian Faith and Devotion",
+      "quality": 2,
+      "available_tokens": 168390618648
+    },
+    {
+      "cell": "c21q3",
+      "cluster": 21,
+      "domain": "Christian Faith and Devotion",
+      "quality": 3,
+      "available_tokens": 197397103526
+    },
+    {
+      "cell": "c21q4",
+      "cluster": 21,
+      "domain": "Christian Faith and Devotion",
+      "quality": 4,
+      "available_tokens": 81250050950
+    },
+    {
+      "cell": "c22q0",
+      "cluster": 22,
+      "domain": "Application and Web Development",
+      "quality": 0,
+      "available_tokens": 3385150
+    },
+    {
+      "cell": "c22q1",
+      "cluster": 22,
+      "domain": "Application and Web Development",
+      "quality": 1,
+      "available_tokens": 7277783508
+    },
+    {
+      "cell": "c22q2",
+      "cluster": 22,
+      "domain": "Application and Web Development",
+      "quality": 2,
+      "available_tokens": 25270050516
+    },
+    {
+      "cell": "c22q3",
+      "cluster": 22,
+      "domain": "Application and Web Development",
+      "quality": 3,
+      "available_tokens": 41237013556
+    },
+    {
+      "cell": "c22q4",
+      "cluster": 22,
+      "domain": "Application and Web Development",
+      "quality": 4,
+      "available_tokens": 13739869632
+    },
+    {
+      "cell": "c23q0",
+      "cluster": 23,
+      "domain": "Consumer Devices and Vehicles",
+      "quality": 0,
+      "available_tokens": 33442175308
+    },
+    {
+      "cell": "c23q1",
+      "cluster": 23,
+      "domain": "Consumer Devices and Vehicles",
+      "quality": 1,
+      "available_tokens": 102698381477
+    },
+    {
+      "cell": "c23q2",
+      "cluster": 23,
+      "domain": "Consumer Devices and Vehicles",
+      "quality": 2,
+      "available_tokens": 175099130494
+    },
+    {
+      "cell": "c23q3",
+      "cluster": 23,
+      "domain": "Consumer Devices and Vehicles",
+      "quality": 3,
+      "available_tokens": 206343248821
+    },
+    {
+      "cell": "c23q4",
+      "cluster": 23,
+      "domain": "Consumer Devices and Vehicles",
+      "quality": 4,
+      "available_tokens": 93593312759
+    },
+    {
+      "cell": "c24q0",
+      "cluster": 24,
+      "domain": "Emotions, Relationships, and Wellbeing",
+      "quality": 0,
+      "available_tokens": 32828365718
+    },
+    {
+      "cell": "c24q1",
+      "cluster": 24,
+      "domain": "Emotions, Relationships, and Wellbeing",
+      "quality": 1,
+      "available_tokens": 117693413773
+    },
+    {
+      "cell": "c24q2",
+      "cluster": 24,
+      "domain": "Emotions, Relationships, and Wellbeing",
+      "quality": 2,
+      "available_tokens": 206697670510
+    },
+    {
+      "cell": "c24q3",
+      "cluster": 24,
+      "domain": "Emotions, Relationships, and Wellbeing",
+      "quality": 3,
+      "available_tokens": 142439679042
+    },
+    {
+      "cell": "c24q4",
+      "cluster": 24,
+      "domain": "Emotions, Relationships, and Wellbeing",
+      "quality": 4,
+      "available_tokens": 70691319928
+    },
+    {
+      "cell": "c25q0",
+      "cluster": 25,
+      "domain": "Whimsical and Fan Fiction Writing",
+      "quality": 0,
+      "available_tokens": 84131376119
+    },
+    {
+      "cell": "c25q1",
+      "cluster": 25,
+      "domain": "Whimsical and Fan Fiction Writing",
+      "quality": 1,
+      "available_tokens": 224952417578
+    },
+    {
+      "cell": "c25q2",
+      "cluster": 25,
+      "domain": "Whimsical and Fan Fiction Writing",
+      "quality": 2,
+      "available_tokens": 336581702471
+    },
+    {
+      "cell": "c25q3",
+      "cluster": 25,
+      "domain": "Whimsical and Fan Fiction Writing",
+      "quality": 3,
+      "available_tokens": 227503317134
+    },
+    {
+      "cell": "c25q4",
+      "cluster": 25,
+      "domain": "Whimsical and Fan Fiction Writing",
+      "quality": 4,
+      "available_tokens": 56068798843
+    },
+    {
+      "cell": "c26q0",
+      "cluster": 26,
+      "domain": "Council and Board Meeting Records",
+      "quality": 0,
+      "available_tokens": 34223044226
+    },
+    {
+      "cell": "c26q1",
+      "cluster": 26,
+      "domain": "Council and Board Meeting Records",
+      "quality": 1,
+      "available_tokens": 144128148630
+    },
+    {
+      "cell": "c26q2",
+      "cluster": 26,
+      "domain": "Council and Board Meeting Records",
+      "quality": 2,
+      "available_tokens": 354149874102
+    },
+    {
+      "cell": "c26q3",
+      "cluster": 26,
+      "domain": "Council and Board Meeting Records",
+      "quality": 3,
+      "available_tokens": 529615447748
+    },
+    {
+      "cell": "c26q4",
+      "cluster": 26,
+      "domain": "Council and Board Meeting Records",
+      "quality": 4,
+      "available_tokens": 676090234529
+    },
+    {
+      "cell": "c27q0",
+      "cluster": 27,
+      "domain": "General Knowledge and Trivia",
+      "quality": 0,
+      "available_tokens": 108902469
+    },
+    {
+      "cell": "c27q1",
+      "cluster": 27,
+      "domain": "General Knowledge and Trivia",
+      "quality": 1,
+      "available_tokens": 6598935732
+    },
+    {
+      "cell": "c27q2",
+      "cluster": 27,
+      "domain": "General Knowledge and Trivia",
+      "quality": 2,
+      "available_tokens": 29677828804
+    },
+    {
+      "cell": "c27q3",
+      "cluster": 27,
+      "domain": "General Knowledge and Trivia",
+      "quality": 3,
+      "available_tokens": 16326038816
+    },
+    {
+      "cell": "c27q4",
+      "cluster": 27,
+      "domain": "General Knowledge and Trivia",
+      "quality": 4,
+      "available_tokens": 2757740081
+    },
+    {
+      "cell": "c28q0",
+      "cluster": 28,
+      "domain": "Performance Logs and Low-Level Code",
+      "quality": 0,
+      "available_tokens": 5323448180
+    },
+    {
+      "cell": "c28q1",
+      "cluster": 28,
+      "domain": "Performance Logs and Low-Level Code",
+      "quality": 1,
+      "available_tokens": 374070365939
+    },
+    {
+      "cell": "c28q2",
+      "cluster": 28,
+      "domain": "Performance Logs and Low-Level Code",
+      "quality": 2,
+      "available_tokens": 393727594298
+    },
+    {
+      "cell": "c28q3",
+      "cluster": 28,
+      "domain": "Performance Logs and Low-Level Code",
+      "quality": 3,
+      "available_tokens": 534130536099
+    },
+    {
+      "cell": "c28q4",
+      "cluster": 28,
+      "domain": "Performance Logs and Low-Level Code",
+      "quality": 4,
+      "available_tokens": 258064765630
+    },
+    {
+      "cell": "c29q0",
+      "cluster": 29,
+      "domain": "Courses, Tutoring, and School Services",
+      "quality": 0,
+      "available_tokens": 60923658863
+    },
+    {
+      "cell": "c29q1",
+      "cluster": 29,
+      "domain": "Courses, Tutoring, and School Services",
+      "quality": 1,
+      "available_tokens": 84295572435
+    },
+    {
+      "cell": "c29q2",
+      "cluster": 29,
+      "domain": "Courses, Tutoring, and School Services",
+      "quality": 2,
+      "available_tokens": 216434266352
+    },
+    {
+      "cell": "c29q3",
+      "cluster": 29,
+      "domain": "Courses, Tutoring, and School Services",
+      "quality": 3,
+      "available_tokens": 277025556227
+    },
+    {
+      "cell": "c29q4",
+      "cluster": 29,
+      "domain": "Courses, Tutoring, and School Services",
+      "quality": 4,
+      "available_tokens": 90715880563
+    },
+    {
+      "cell": "c30q0",
+      "cluster": 30,
+      "domain": "Natural Sciences Research",
+      "quality": 0,
+      "available_tokens": 4993751663
+    },
+    {
+      "cell": "c30q1",
+      "cluster": 30,
+      "domain": "Natural Sciences Research",
+      "quality": 1,
+      "available_tokens": 36262090103
+    },
+    {
+      "cell": "c30q2",
+      "cluster": 30,
+      "domain": "Natural Sciences Research",
+      "quality": 2,
+      "available_tokens": 137136974019
+    },
+    {
+      "cell": "c30q3",
+      "cluster": 30,
+      "domain": "Natural Sciences Research",
+      "quality": 3,
+      "available_tokens": 391990542275
+    },
+    {
+      "cell": "c30q4",
+      "cluster": 30,
+      "domain": "Natural Sciences Research",
+      "quality": 4,
+      "available_tokens": 675660118643
+    },
+    {
+      "cell": "c31q0",
+      "cluster": 31,
+      "domain": "Fiction, Film, and Television",
+      "quality": 0,
+      "available_tokens": 1745375031
+    },
+    {
+      "cell": "c31q1",
+      "cluster": 31,
+      "domain": "Fiction, Film, and Television",
+      "quality": 1,
+      "available_tokens": 17092610876
+    },
+    {
+      "cell": "c31q2",
+      "cluster": 31,
+      "domain": "Fiction, Film, and Television",
+      "quality": 2,
+      "available_tokens": 43488746531
+    },
+    {
+      "cell": "c31q3",
+      "cluster": 31,
+      "domain": "Fiction, Film, and Television",
+      "quality": 3,
+      "available_tokens": 42286271197
+    },
+    {
+      "cell": "c31q4",
+      "cluster": 31,
+      "domain": "Fiction, Film, and Television",
+      "quality": 4,
+      "available_tokens": 20713754607
+    },
+    {
+      "cell": "c32q0",
+      "cluster": 32,
+      "domain": "Software Infrastructure and Security",
+      "quality": 0,
+      "available_tokens": 69897000600
+    },
+    {
+      "cell": "c32q1",
+      "cluster": 32,
+      "domain": "Software Infrastructure and Security",
+      "quality": 1,
+      "available_tokens": 370088825645
+    },
+    {
+      "cell": "c32q2",
+      "cluster": 32,
+      "domain": "Software Infrastructure and Security",
+      "quality": 2,
+      "available_tokens": 401116079837
+    },
+    {
+      "cell": "c32q3",
+      "cluster": 32,
+      "domain": "Software Infrastructure and Security",
+      "quality": 3,
+      "available_tokens": 572169058417
+    },
+    {
+      "cell": "c32q4",
+      "cluster": 32,
+      "domain": "Software Infrastructure and Security",
+      "quality": 4,
+      "available_tokens": 212401486301
+    },
+    {
+      "cell": "c33q0",
+      "cluster": 33,
+      "domain": "Racing, Sports, and Entertainment Records",
+      "quality": 0,
+      "available_tokens": 4331212607
+    },
+    {
+      "cell": "c33q1",
+      "cluster": 33,
+      "domain": "Racing, Sports, and Entertainment Records",
+      "quality": 1,
+      "available_tokens": 58499962687
+    },
+    {
+      "cell": "c33q2",
+      "cluster": 33,
+      "domain": "Racing, Sports, and Entertainment Records",
+      "quality": 2,
+      "available_tokens": 143327785843
+    },
+    {
+      "cell": "c33q3",
+      "cluster": 33,
+      "domain": "Racing, Sports, and Entertainment Records",
+      "quality": 3,
+      "available_tokens": 173522812369
+    },
+    {
+      "cell": "c33q4",
+      "cluster": 33,
+      "domain": "Racing, Sports, and Entertainment Records",
+      "quality": 4,
+      "available_tokens": 176266030811
+    },
+    {
+      "cell": "c34q0",
+      "cluster": 34,
+      "domain": "Pets, Gardening, and Pest Control",
+      "quality": 0,
+      "available_tokens": 1291596327
+    },
+    {
+      "cell": "c34q1",
+      "cluster": 34,
+      "domain": "Pets, Gardening, and Pest Control",
+      "quality": 1,
+      "available_tokens": 14164511374
+    },
+    {
+      "cell": "c34q2",
+      "cluster": 34,
+      "domain": "Pets, Gardening, and Pest Control",
+      "quality": 2,
+      "available_tokens": 41182098402
+    },
+    {
+      "cell": "c34q3",
+      "cluster": 34,
+      "domain": "Pets, Gardening, and Pest Control",
+      "quality": 3,
+      "available_tokens": 45273398286
+    },
+    {
+      "cell": "c34q4",
+      "cluster": 34,
+      "domain": "Pets, Gardening, and Pest Control",
+      "quality": 4,
+      "available_tokens": 22890858644
+    },
+    {
+      "cell": "c35q0",
+      "cluster": 35,
+      "domain": "Crafts, Design, and Home Decor",
+      "quality": 0,
+      "available_tokens": 27358972188
+    },
+    {
+      "cell": "c35q1",
+      "cluster": 35,
+      "domain": "Crafts, Design, and Home Decor",
+      "quality": 1,
+      "available_tokens": 110255950169
+    },
+    {
+      "cell": "c35q2",
+      "cluster": 35,
+      "domain": "Crafts, Design, and Home Decor",
+      "quality": 2,
+      "available_tokens": 161228309539
+    },
+    {
+      "cell": "c35q3",
+      "cluster": 35,
+      "domain": "Crafts, Design, and Home Decor",
+      "quality": 3,
+      "available_tokens": 108866262653
+    },
+    {
+      "cell": "c35q4",
+      "cluster": 35,
+      "domain": "Crafts, Design, and Home Decor",
+      "quality": 4,
+      "available_tokens": 28723266675
+    },
+    {
+      "cell": "c36q0",
+      "cluster": 36,
+      "domain": "Gambling and Financial Services",
+      "quality": 0,
+      "available_tokens": 10185722594
+    },
+    {
+      "cell": "c36q1",
+      "cluster": 36,
+      "domain": "Gambling and Financial Services",
+      "quality": 1,
+      "available_tokens": 47308984232
+    },
+    {
+      "cell": "c36q2",
+      "cluster": 36,
+      "domain": "Gambling and Financial Services",
+      "quality": 2,
+      "available_tokens": 66863061548
+    },
+    {
+      "cell": "c36q3",
+      "cluster": 36,
+      "domain": "Gambling and Financial Services",
+      "quality": 3,
+      "available_tokens": 34279164037
+    },
+    {
+      "cell": "c36q4",
+      "cluster": 36,
+      "domain": "Gambling and Financial Services",
+      "quality": 4,
+      "available_tokens": 13116111455
+    },
+    {
+      "cell": "c37q0",
+      "cluster": 37,
+      "domain": "Law, Courts, and Regulation",
+      "quality": 0,
+      "available_tokens": 16267548024
+    },
+    {
+      "cell": "c37q1",
+      "cluster": 37,
+      "domain": "Law, Courts, and Regulation",
+      "quality": 1,
+      "available_tokens": 63387710123
+    },
+    {
+      "cell": "c37q2",
+      "cluster": 37,
+      "domain": "Law, Courts, and Regulation",
+      "quality": 2,
+      "available_tokens": 154018760118
+    },
+    {
+      "cell": "c37q3",
+      "cluster": 37,
+      "domain": "Law, Courts, and Regulation",
+      "quality": 3,
+      "available_tokens": 218086875830
+    },
+    {
+      "cell": "c37q4",
+      "cluster": 37,
+      "domain": "Law, Courts, and Regulation",
+      "quality": 4,
+      "available_tokens": 169629481466
+    },
+    {
+      "cell": "c38q0",
+      "cluster": 38,
+      "domain": "History, Literature, and Heritage",
+      "quality": 0,
+      "available_tokens": 72928747665
+    },
+    {
+      "cell": "c38q1",
+      "cluster": 38,
+      "domain": "History, Literature, and Heritage",
+      "quality": 1,
+      "available_tokens": 173875485292
+    },
+    {
+      "cell": "c38q2",
+      "cluster": 38,
+      "domain": "History, Literature, and Heritage",
+      "quality": 2,
+      "available_tokens": 329742921399
+    },
+    {
+      "cell": "c38q3",
+      "cluster": 38,
+      "domain": "History, Literature, and Heritage",
+      "quality": 3,
+      "available_tokens": 378068246608
+    },
+    {
+      "cell": "c38q4",
+      "cluster": 38,
+      "domain": "History, Literature, and Heritage",
+      "quality": 4,
+      "available_tokens": 275247282072
+    },
+    {
+      "cell": "c39q0",
+      "cluster": 39,
+      "domain": "Mathematics Problems and Proofs",
+      "quality": 0,
+      "available_tokens": 3709201072
+    },
+    {
+      "cell": "c39q1",
+      "cluster": 39,
+      "domain": "Mathematics Problems and Proofs",
+      "quality": 1,
+      "available_tokens": 45248850619
+    },
+    {
+      "cell": "c39q2",
+      "cluster": 39,
+      "domain": "Mathematics Problems and Proofs",
+      "quality": 2,
+      "available_tokens": 231989873489
+    },
+    {
+      "cell": "c39q3",
+      "cluster": 39,
+      "domain": "Mathematics Problems and Proofs",
+      "quality": 3,
+      "available_tokens": 101070401818
+    },
+    {
+      "cell": "c39q4",
+      "cluster": 39,
+      "domain": "Mathematics Problems and Proofs",
+      "quality": 4,
+      "available_tokens": 99165829357
+    }
+  ],
+  "renderer": "bucket-grid",
+  "total_tokens": 23106103007622,
+  "dataset_revision": "6f6c05e9c689316d3f30abc5a334d361a3839ffb",
+  "source_sha256": "d9b8a4580dc6acd55a19d83ab21bbecdb97f561b6335618d0e86bb337f7fd584",
+  "source_url": "https://huggingface.co/datasets/marin-community/grug-moe-mix-swarm/blob/6f6c05e9c689316d3f30abc5a334d361a3839ffb/registry/v1/swarms/h100-d512-from10pct-store-4d2e363d/buckets.parquet"
+}

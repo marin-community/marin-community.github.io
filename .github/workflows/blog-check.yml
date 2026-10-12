@@ -1,0 +1,32 @@
+name: Blog build and content checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  blog-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.3'
+          bundler-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/blog-sync-requirements.txt
+      - name: Build site
+        run: bundle exec jekyll build
+        env:
+          JEKYLL_ENV: production
+          JEKYLL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAGES_REPO_NWO: ${{ github.repository }}
+          JEKYLL_BUILD_REVISION: ${{ github.sha }}
+      - name: Check content, attribution, figures and local links
+        run: python scripts/check_blog.py
