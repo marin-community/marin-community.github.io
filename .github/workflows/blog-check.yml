@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2.3'
@@ -27,6 +29,6 @@ jobs:
           JEKYLL_ENV: production
           JEKYLL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PAGES_REPO_NWO: ${{ github.repository }}
-          JEKYLL_BUILD_REVISION: ${{ github.sha }}
+          JEKYLL_BUILD_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Check content, attribution, figures and local links
         run: python scripts/check_blog.py

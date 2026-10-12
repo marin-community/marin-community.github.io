@@ -19,3 +19,6 @@ exclude:
   - make_figures.py
   - scripts
   - docs
+  - vendor
+  - Gemfile
+  - Gemfile.lock

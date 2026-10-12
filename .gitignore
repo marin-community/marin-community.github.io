@@ -2,3 +2,5 @@ _site
 .sass-cache/
 __pycache__/
 .venv/
+.bundle/
+vendor/bundle/
