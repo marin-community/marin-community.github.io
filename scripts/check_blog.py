@@ -43,6 +43,9 @@ def main():
             errors.append(f'Missing mirror URL: {route}')
             continue
         page = BeautifulSoup(target.read_text(), 'html.parser')
+        scripts = [s.get('src') or s.get_text() for s in page.select('.oa-mirror script')]
+        if len(scripts) != len(set(scripts)):
+            errors.append(f'Duplicate source script execution: {route}')
         content = page.select_one('.blog-post-content')
         if content is None or sha(content.get_text(' ', strip=True).encode()) != r['source_content_sha256']:
             errors.append(f'Full source text differs after rendering: {route}')

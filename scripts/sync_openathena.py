@@ -143,7 +143,8 @@ def main():
             body = BeautifulSoup(str(body), 'html.parser')
             # Scripts already inside article body are retained once, in source order.
             extras = [s for s in page.find_all(['script', 'link'])
-                      if (s.name == 'script' and not s.find_parent(class_='blog-post-body'))
+                      if (s.name == 'script' and not s.find_parent(class_='blog-post-body')
+                          and not s.find_parent(class_='blog-post-content'))
                       or (s.name == 'link' and 'stylesheet' in s.get('rel', [])
                           and 'highlightjs/' in s.get('href', ''))]
             fragment = BeautifulSoup(str(body) + '\n' + '\n'.join(str(s) for s in extras), 'html.parser')

@@ -92,32 +92,6 @@ excerpt: Open Athena announces the launch of Marin's largest training run yet—
 })();
 </script>
 </div>
-<script>
-(function () {
-  var btn = document.querySelector('.blog-post-citation-copy');
-  var pre = document.getElementById('blog-post-citation-bibtex');
-  if (!btn || !pre) return;
-  btn.addEventListener('click', function () {
-    var text = pre.innerText;
-    var restore = function () { btn.classList.remove('is-copied'); };
-    var done = function () {
-      btn.classList.add('is-copied');
-      setTimeout(restore, 1500);
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, function () {});
-    } else {
-      var range = document.createRange();
-      range.selectNodeContents(pre);
-      var sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-      try { document.execCommand('copy'); done(); } catch (e) {}
-      sel.removeAllRanges();
-    }
-  });
-})();
-</script>
 <script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
 <script>
 (function() {
