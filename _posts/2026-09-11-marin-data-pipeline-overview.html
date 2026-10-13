@@ -1,0 +1,371 @@
+---
+layout: mirror
+post_kind: mirror
+title: Curating 25 Trillion Tokens for LLM Pretraining
+authors:
+- Will Held
+date: '2026-09-11'
+categories: blog
+description: How Marin deduplicates and decontaminates permissively licensed data,
+  scores quality, tags topics, and learns how often to sample each data bucket.
+source_url: https://openathena.ai/blog/marin-data-pipeline-overview/
+canonical_url: https://www.openathena.ai/blog/marin-data-pipeline-overview/
+source_content_sha256: 67f7711081010edafd8cf28364170a874bb44b77560a04c5fadf18aeec036cd8
+excerpt: How Marin deduplicates and decontaminates permissively licensed data, scores
+  quality, tags topics, and learns how often to sample each data bucket.
+---
+{% raw %}
+<div class="blog-post-body">
+<aside class="blog-toc">
+<nav class="blog-toc-nav">
+<div class="blog-toc-title">Contents</div>
+<ol class="blog-toc-list"></ol>
+</nav>
+<details class="blog-toc-mobile">
+<summary class="blog-toc-title">Contents</summary>
+<ol class="blog-toc-list"></ol>
+</details>
+</aside>
+<div class="blog-post-content project-detail-body">
+<p>Pretraining a large language model requires many trillions of tokens of text and code from a wide range of sources and topics. Some documents demonstrate key skills and knowledge and are worth repeating many times; others are relatively low-quality but still useful, as much of what the model encounters in the world will be messy. To train a good model, we need to choose what it sees and how often with some care.</p>
+<p>Datakit is the Marin team’s pipeline for turning more than a hundred open datasets into such a pretraining mixture. It catalogues all the data used in the Marin project, globally deduplicates and decontaminates it, groups it into semantic categories, and then lets us learn empirically how much data to sample from each category.</p>
+<p>For our most recent large-scale run, Datakit began with 18.71 billion raw documents containing 25.25 trillion Llama 3 tokens. We globally deduplicated and decontaminated those documents, categorized them by both quality and topic, and then ran just over 1,000 small-scale training experiments to fit a regression that estimates benchmark performance from the sampling weights over those topic and quality buckets. Our <a href="https://github.com/marin-community/marin/blob/64a9483cf1a928e6db97b83130d8a5d171a4aead/lib/marin/src/marin/datakit/sources.py">source registry</a>, <a href="https://github.com/marin-community/marin/tree/64a9483cf1a928e6db97b83130d8a5d171a4aead/lib/marin/src/marin/datakit">processing code</a>, and <a href="https://huggingface.co/datasets/marin-community/grug-moe-mix-swarm">proxy-run dataset</a> are all open source. Future posts will explore parts of this pipeline in more depth.</p>
+<figure class="plotly-figure-block"><div class="plotly-frame-outer"><div class="plotly-frame-title">How data flows through Datakit</div><div class="plotly-frame-inner"><div aria-label="How data flows through Datakit. Datakit removes most tokens during deduplication, then learns how to sample the retained corpus from 200 topic-quality buckets. Ribbon width shows token volume through curation and across 40 topics; the separate bar shows five quality bands. The inset uses PCA to project the initial weights of 872 proxy runs, with nearby points marking similar mixtures. Evaluations of those runs feed a regression that guides the final weights." class="d3-figure" data-d3-renderer="data-loop" data-d3-src="/assets/openathena/assets/images/blog/marin-data-pipeline-overview/data-loop.json" role="group" style="min-height:390px"></div></div></div><figcaption>Datakit removes most tokens during deduplication, then learns how to sample the retained corpus from 200 topic-quality buckets. Ribbon width shows token volume through curation and across 40 topics; the separate bar shows five quality bands. The inset uses PCA to project the initial weights of 872 proxy runs, with nearby points marking similar mixtures. Evaluations of those runs feed a regression that guides the final weights.</figcaption></figure>
+<p><strong>Summary</strong></p>
+<ul>
+<li>Datakit starts with 152 open datasets containing 25.25 trillion tokens, although most of that volume comes from just a handful of open-source labs.</li>
+<li>Global deduplication removes 2.33 billion documents—2.13 trillion tokens.</li>
+<li>Decontamination—removing benchmark answers from our training data—using exact 13-word n-gram matching, removes every flagged document, another 13.66 billion tokens under the current policy.</li>
+<li>Each document is assigned to one of 40 topics using an unsupervised embedding model, while a supervised quality scorer places it in one of five quality bands, with quality thresholds calibrated separately by content type, such as code, prose, and mathematics. Together these form 200 sampling buckets.</li>
+<li>More than 1,000 small proxy runs fit a regression that predicts benchmark performance from candidate weights over those buckets.</li>
+</ul>
+<h2 id="beauty-and-chaos-in-open-data">Beauty and Chaos in Open Data<a aria-label="Link to section: Beauty and Chaos in Open Data" class="heading-anchor" href="#beauty-and-chaos-in-open-data"></a></h2>
+<p>Training a capable model requires not only good data but an enormous amount of it: recent open-weight models train on anywhere from 15 to 40 trillion tokens. Assembling that much data while keeping it high-quality, well licensed, and openly accessible is difficult. Thankfully, open-source work is a community effort. Many other big labs, academic groups, and individual developers have put enormous effort into building open datasets, most of them easily reached on the HuggingFace Hub. The attractive course, whenever possible, is thus to stand on the shoulders of these giants and use the open data that already exists.</p>
+<p>But what does “using existing data” actually mean? It turns out that many datasets are largely duplicates, often derived from the same sources (the Common Crawl, for example). Some are tiny and exceptionally high-quality, while others are enormous but have relatively little information per example. A single dataset may cover topics as broad as the whole web or as narrow as a set of LeetCode interview questions. And even the labels can be misleading: a split called <code>train</code> may contain the <code>test</code> set of an existing benchmark.</p>
+<p>Even if all you want to do is reuse existing data, you still need tools for curating it. For this blog, I’ll divide the pipeline into three stages. First, we prepare the data so documents from different sources can be used together. Then we organize those documents into buckets by topic and quality. Finally, we learn a mixture by testing how often to sample from each bucket.</p>
+<h2 id="1-prepare-the-data">1. Prepare the data<a aria-label="Link to section: 1. Prepare the data" class="heading-anchor" href="#1-prepare-the-data"></a></h2>
+<p>Datakit first rewrites every source into a standard data format, and then applies the same corpus-wide cleanup for duplication and contamination. Downstream experiments can therefore reasonably assume that the data has passed the same checks, without source-specific special-casing.</p>
+<h3 id="download-and-normalize">Download and normalize<a aria-label="Link to section: Download and normalize" class="heading-anchor" href="#download-and-normalize"></a></h3>
+<p>A good curator begins by writing down what there is to work with. In Datakit, we catalogue our data in <a href="https://github.com/marin-community/marin/blob/64a9483cf1a928e6db97b83130d8a5d171a4aead/lib/marin/src/marin/datakit/sources.py">code</a>, tracking the provenance of 152 data sources as of the time this post is written. Most of the data comes from a few datasets produced by major open-source modeling organizations: <a href="https://allenai.org/">AI2</a>, <a href="https://huggingface.co/nvidia">NVIDIA</a>, <a href="https://huggingface.co">HuggingFace</a>, and <a href="https://hplt-project.org/about">the EU's High-Performance Language Technologies project</a>. These major sources are derived from general purpose public crawls such as the <a href="https://archive.org">Internet Archive</a>, the <a href="https://archive.softwareheritage.org">Software Heritage Archive</a>, and the <a href="https://data.commoncrawl.org">Common Crawl</a>. But there is also a long tail of high-quality, targeted data from smaller, one-off sources: <a href="https://huggingface.co/datasets/common-pile/arxiv_papers_filtered">papers from Eleuther AI</a>, <a href="https://huggingface.co/collections/institutional/institutional-books">books from the Institutional Data Initiative</a>, <a href="https://huggingface.co/datasets/AI-MO/NuminaMath-1.5">mathematics problems and solutions from Project Numina</a>, <a href="https://huggingface.co/datasets/AlienKevin/SWE-ZERO-12M-trajectories">agent traces from Kevin Xiang Li</a><sup class="footnote-ref" id="fnref-1"><a href="#fn-1">1</a></sup>, and <a href="https://huggingface.co/datasets/nyuuzyou/svgfind">SVG illustrations from SVGFind</a>.</p>
+<figure class="plotly-figure-block"><div class="plotly-frame-outer"><div class="plotly-frame-title">Standing on the Shoulders of Giant Datasets</div><div class="plotly-frame-inner"><div aria-label="Standing on the Shoulders of Giant Datasets. A few datasets supply most of the tokens, followed by a long tail spanning nearly eight orders of magnitude. Bars rank 152 dataset groups by token count on a logarithmic scale (with our own Ben Feuer's 142 trace datasets treated as one group). The black line shows cumulative token share, and the gold marker shows where it reaches 80%." class="d3-figure" data-d3-renderer="catalog-heavy-tail" data-d3-src="/assets/openathena/assets/images/blog/marin-data-pipeline-overview/catalog-heavy-tail.json" role="group" style="min-height:460px"></div></div></div><figcaption>A few datasets supply most of the tokens, followed by a long tail spanning nearly eight orders of magnitude. Bars rank 152 dataset groups by token count on a logarithmic scale (with our own Ben Feuer's 142 trace datasets treated as one group). The black line shows cumulative token share, and the gold marker shows where it reaches 80%.</figcaption></figure>
+<p>Each entry in the catalogue records where Marin obtained the data and as much version info as is available, usually a HuggingFace repository pinned to a particular commit. Many datasets require extra formatting or processing, which is recorded as part of the download step within Marin. We ingest datasets which either have broadly permissive licensing from the creator or explicitly permit model training. You can view the datasets, along with their licenses, provenance, and Llama 3 token count on our <a href="https://huggingface.co/spaces/marin-community/token-count-viewer">token count viewer</a>. The goal here is to have clean pipelines which allow anyone to replicate Marin’s ingestion process from the original sources we use. Notably, we do not republish duplicates of upstreamed data and do not plan to! While this creates some work when setting up a new cluster, it preserves attribution to the original creators and leaves them, rather than us, in control of their data. If a creator takes down all or part of a dataset, that decision carries through to Marin since our pipeline reads the data they maintain.</p>
+<p>This choice does have an obvious downside compared with rehosting the data directly: some external reproducibility is lost! While pinning commits prevents minor or methodological drift, data that is taken down is unfortunately inherently unreproducible. Consider the <a href="https://huggingface.co/datasets/HuggingFaceCode/stack-v3-train">Stack v3</a> from HuggingFace, which we use and which is regularly updated to respect <a href="https://huggingface.co/spaces/HuggingFaceCode/in-the-stack">opt-out requests</a>. Each time you use Datakit to download and normalize this source, a small fraction of the data may therefore have been removed. This makes the overall dataset not exactly reproducible, but this tradeoff is necessary to avoid hosting copies which create a sort of whack-a-mole for dataset creators or their underlying contributors.</p>
+<p>Once a dataset is catalogued, we <a href="https://github.com/marin-community/marin/blob/main/lib/marin/src/marin/datakit/normalize.py">normalize</a> its records and metadata into a common representation. Datakit writes the text to Parquet, together with a stable hash of the text, a <code>source_id</code>, and catch-all source-specific metadata. Along the way it removes empty records, compacts excess whitespace,<sup class="footnote-ref" id="fnref-2"><a href="#fn-2">2</a></sup> enforces some reasonable file/row-group sizes, and puts the records in a stable order. Ideally, normalization is uneventful: its only purpose is to let the corpus-wide operations that follow proceed efficiently and without any special casing!</p>
+<h3 id="deduplicate-across-sources">Deduplicate across sources<a aria-label="Link to section: Deduplicate across sources" class="heading-anchor" href="#deduplicate-across-sources"></a></h3>
+<p>When training language models, epochs—the number of times data is repeated—can be an important factor in whether your model generalizes or memorizes. So in downstream experiments we want epoching behaviour to be a cleanly controlled hyperparameter. Unfortunately, individual data points are frequently duplicated, both within and especially across datasets! While natural duplication can carry information about document quality,<sup class="footnote-ref" id="fnref-3"><a href="#fn-3">3</a></sup> that is certainly not the case when repetition occurs instead because we have ingested two sources that parsed the same webpage, or for other non-natural reasons. Thus it's important that we have reasonable confidence that every document in our corpus occurs only once.</p>
+<p>Datakit therefore deduplicates globally. It first catches exact duplicates using the hash produced during normalization. This amounts to around 500 million exact duplicates within sources with another 5 million or so exact duplicates across sources. But the same document can vary slightly because of parsing, boilerplate removal, or other minor formatting differences that leave its fundamental information unchanged. To find these fuzzy duplicates without comparing every pair of documents, Datakit uses locality-sensitive hashing (LSH) to retrieve likely near-copies from MinHash signatures computed over word 5-grams.<sup class="footnote-ref" id="fnref-4"><a href="#fn-4">4</a></sup></p>
+<p>Unfortunately, upon inspection, we found that LSH deduplication collapsed some datasets which were not highly duplicated semantically, such as our genetic sequence and tool-calling datasets, into only a few examples. Why? We tune LSH to tolerate small differences deliberately so it can catch near duplicates. For data in which small differences are meaningful—such as DNA, where a single base pair edit can change a gene’s function—that same tolerance causes false positives. To account for this, we apply additional heuristics that would be too expensive across the entire corpus but become practical once LSH has narrowed the search, to reduce false positives. We’ll explore them in a later post; for now, see the <a href="https://github.com/marin-community/marin/blob/64a9483cf1a928e6db97b83130d8a5d171a4aead/experiments/datakit/reference_pipeline.py">pipeline implementation</a>.</p>
+<p>In our latest large-scale run, deduplication removed 2.33 billion documents—12.5% of the raw data pool—and 2.13 trillion tokens, or 8.4%. Most of these duplicates come from datasets that explicitly share source data. The largest source, for example, is the overlap between Nemotron’s processing of Common Crawl and its synthetic rephrasings of the same documents: many of the synthetic documents still overlap significantly with the real seed documents from which they were generated.</p>
+<figure class="plotly-figure-block"><div class="plotly-frame-outer"><div class="plotly-frame-title">Which datasets share duplicate documents?</div><div class="plotly-frame-inner"><div aria-label="Which datasets share duplicate documents?. Three source pairs account for 93.2% of the 686 million verified duplicate links between sources. Rows contain removed copies; columns contain the representatives retained from their duplicate groups. Circle radius uses a logarithmic scale. Hover for exact aggregate counts." class="d3-figure" data-d3-renderer="dedup-source-overlap" data-d3-src="/assets/openathena/assets/images/blog/marin-data-pipeline-overview/dedup-source-overlap.json" role="group" style="min-height:620px"></div></div></div><figcaption>Three source pairs account for 93.2% of the 686 million verified duplicate links between sources. Rows contain removed copies; columns contain the representatives retained from their duplicate groups. Circle radius uses a logarithmic scale. Hover for exact aggregate counts.</figcaption></figure>
+<h3 id="remove-benchmark-contamination">Remove benchmark contamination<a aria-label="Link to section: Remove benchmark contamination" class="heading-anchor" href="#remove-benchmark-contamination"></a></h3>
+<p>Despite entertaining papers to the <a href="https://arxiv.org/abs/2309.08632">contrary</a>, training on the test set is widely considered bad form. The most obvious reason is that contamination can dishonestly inflate benchmark scores.<sup class="footnote-ref" id="fnref-5"><a href="#fn-5">5</a></sup> More subtly, it can bias architecture research toward models with greater memorization capacity but limited generalization—leaving lasting harms even after the contamination is removed. Rigorous decontamination is therefore important both for internal development sets and for benchmarks that will be reported as test sets upon model release.</p>
+<p>Fortunately decontamination is smaller scale than deduplication which makes costly, high-precision filtering tractable.<sup class="footnote-ref" id="fnref-6"><a href="#fn-6">6</a></sup> Datakit searches exactly for 13-word n-gram overlaps with the Artificial Analysis Intelligence Index and Marin’s pretraining evaluation sets. For each paragraph in the pretraining data, we ask what fraction of its eligible 13-gram occurrences also appear in the evaluation material (if an n-gram is repeated, we count every occurrence). Our threshold is 50%: if at least half of the eligible 13-gram occurrences in any one paragraph match, we flag the document.<sup class="footnote-ref" id="fnref-7"><a href="#fn-7">7</a></sup> This rule favours precision—it catches obvious copies, but misses paraphrases and some embedded examples. Even so, the figure below finds possible contamination in many of the large datasets we train on.</p>
+<figure class="plotly-figure-block"><div class="plotly-frame-outer"><div class="plotly-frame-title">Which datasets contain benchmark overlap?</div><div class="plotly-frame-inner"><div aria-label="Which datasets contain benchmark overlap?. Benchmark overlap concentrates in particular source-benchmark pairs. Each square counts distinct overlapping documents, while the side bars show documents removed from each source. A document can appear in several squares, so the cells are not additive. The figure detects overlap, not its cause." class="d3-figure" data-d3-renderer="contamination-matrix" data-d3-src="/assets/openathena/assets/images/blog/marin-data-pipeline-overview/contamination-matrix.json" role="group" style="min-height:460px"></div></div></div><figcaption>Benchmark overlap concentrates in particular source-benchmark pairs. Each square counts distinct overlapping documents, while the side bars show documents removed from each source. A document can appear in several squares, so the cells are not additive. The figure detects overlap, not its cause.</figcaption></figure>
+<h2 id="2-organize-the-data-into-buckets">2. Organize the data into buckets<a aria-label="Link to section: 2. Organize the data into buckets" class="heading-anchor" href="#2-organize-the-data-into-buckets"></a></h2>
+<p>Once we've normalized, deduplicated, and decontaminated each source, we can actually start training on this data. A simple sampling policy is to draw from each source in proportion to the number of tokens it contains. This approach, called proportional sampling, is a strong baseline!<sup class="footnote-ref" id="fnref-8"><a href="#fn-8">8</a></sup> Still, we might expect some of our data to be more useful than others, depending on our goals.</p>
+<p>Let's say we want to make a model dedicated to solving math problems. We might reasonably want to upsample high-quality data related to mathematics. For some sources, the dataset description tells us that's what they contain. But math data also appears in larger, heterogeneous datasets like web crawls, jumbled up with recipes, advertisements, and much else.<sup class="footnote-ref" id="fnref-9"><a href="#fn-9">9</a></sup> A sampling policy expressed purely in terms of sources doesn't let us upweight these documents alongside the dedicated math data.</p>
+<p>To enable policies that upsample data in this more intuitive, semantic fashion, we label each document with a quality score and a topic tag. These annotations route documents into buckets, grouping together data of similar topics and quality. One source can contribute to many buckets, and one bucket can contain documents from many sources.</p>
+<p>A data mixture is then expressed as sampling weights over these buckets, with each weight specifying the fraction of training tokens its bucket supplies.<sup class="footnote-ref" id="fnref-10"><a href="#fn-10">10</a></sup> Whether that uses only part of the bucket or repeats its documents several times depends on how much data the bucket contains and how long we train. To learn this mixture, balancing tradeoffs across domains and making better use of our data, we train many small models on different mixtures, then fit a regression to estimate how their sampling weights affect performance.</p>
+<figure class="plotly-figure-block"><div class="plotly-frame-outer"><div class="plotly-frame-title">Where does each data source land?</div><div class="plotly-frame-inner"><div aria-label="Where does each data source land?. Data sources have distinct topic and quality profiles. Select a source to see how its post-decontamination tokens divide by topic and quality; ribbon width represents token count. Topics accounting for less than 2% of the source are grouped as ‘Everything else.’" class="d3-figure" data-d3-renderer="topic-quality-sankey" data-d3-src="/assets/openathena/assets/images/blog/marin-data-pipeline-overview/topic-quality-sankey.json" role="group" style="min-height:630px"></div></div></div><figcaption>Data sources have distinct topic and quality profiles. Select a source to see how its post-decontamination tokens divide by topic and quality; ribbon width represents token count. Topics accounting for less than 2% of the source are grouped as ‘Everything else.’</figcaption></figure>
+<h3 id="embed-the-documents">Embed the documents<a aria-label="Link to section: Embed the documents" class="heading-anchor" href="#embed-the-documents"></a></h3>
+<p>Our first order of business is to categorize the data. But how? Should we assign each document to one of a list of topics, as <a href="https://arxiv.org/html/2502.10341"><em>Organize the Web</em></a> does? Should we annotate separate properties, as <a href="https://arxiv.org/html/2602.12414">Propella</a> does? Or should we take inspiration from librarians and use a Dewey-inspired system, as <a href="https://arxiv.org/html/2506.14111">Essential AI</a> does?</p>
+<p>All three are reasonable, and all draw distinctions that make sense when you look at the data. But it doesn't necessarily follow that they draw the best distinctions for training a model, especially as data distributions shift over time. Should code be a single bucket, or should we, for example, mix software repositories separately from agentic traces? Ideally, we could try different taxonomies flexibly and at relatively low compute cost.</p>
+<p>To try and enable this, Datakit separates out the (expensive) work of mapping a document to features using a neural network from the (relatively cheaper) work of using those features to map a document to a human-interpretable class. We embed every document with <a href="https://huggingface.co/microsoft/harrier-oss-v1-0.6b">Harrier</a>, an open-source model from Microsoft. Harrier is a fine-tuned version of Qwen designed for prompt-guided retrieval, and its large, 1,024-dimensional embeddings precompute multifaceted aspects of a document for downstream use.</p>
+<p>These embeddings themselves are not a taxonomy. They aren't human-interpretable, which means using them alone wouldn't allow us to sanity-check the reasonableness of our mixture. Nor are they magical: there are certainly some categorizations that they are unlikely to make separable in embedding space.<sup class="footnote-ref" id="fnref-11"><a href="#fn-11">11</a></sup> However, their precomputed representations allow us to iterate on different types and granularities of taxonomy relatively quickly using lightweight models conditioned on this more costly, relatively general-purpose representation.</p>
+<h3 id="cluster-by-topic">Cluster by topic<a aria-label="Link to section: Cluster by topic" class="heading-anchor" href="#cluster-by-topic"></a></h3>
+<p>Data mixtures are best understood as upsampling or downsampling different topics compared to their natural frequency. However, since repetition is eventually harmful, we are limited in how much we can upsample any dataset. A topic with very few tokens therefore has limited influence over the overall mixture, even if it is very high quality. The effects of such small changes can be hard to measure, leaving the relative sizes of topics in the taxonomy to dictate much of the sampling policy. We therefore aim for evenly sized buckets, giving each weight comparable influence over what the model sees. With a fixed taxonomy, though, we have little reason to expect different topics to be equally represented in our data. Instead, we use an unsupervised clustering process in the Harrier embedding space to determine document topics, with the only constraint being to keep cluster size relatively uniform.</p>
+<p>We first use spherical k-means to divide a sample of the corpus into 5,000 compact regions, then assign a much larger sample to those regions to estimate their sizes across the whole corpus. These fine-grained clusters are then agglomeratively merged into 40 larger topics, each containing at least 1% of the total data.</p>
+<p>To iterate and measure progress on our clustering process, we adopt Chang et al.'s randomized <a href="https://proceedings.neurips.cc/paper/2009/hash/f92586a25bb3145facd64ab20fd554ff-Abstract.html">intruder study</a> with an LLM judge. We show the judge several documents from the same cluster and a single document from another cluster: the intruder. The judge then tries to identify the intruder. In small intruder tests, the judge identified the odd document out in 84.4% of cases for the unagglomerated 1,000 clusters, and 62.5% for the margin-refined 40-topic taxonomy. Both exceed the 20% chance baseline, with p &lt; 0.001 under one-sided exact binomial tests. This does not prove that our taxonomy is unique or optimal, but it does give us a lightweight reliable measure to hill climb for the semantic coherence of our clusters.</p>
+<h3 id="score-quality">Score quality<a aria-label="Link to section: Score quality" class="heading-anchor" href="#score-quality"></a></h3>
+<p>While upsampling relevant topics is great, upsampling bad data from relevant topics is not so great. As such, every document receives a second label which ultimately places it into one of five quality bands, with thresholds calibrated by content type. We combine this band with the document’s topic to select its sampling bucket. Our classifier follows the pattern established by <a href="https://arxiv.org/abs/2406.17557">FineWeb-Edu</a>, which first labels documents using a large model given a rubric for quality, then distills this into a lightweight classifier which can be used to label the entire corpus with scores.</p>
+<p>Notably, we use these scores to group data rather than filter it in advance. Similar to our use of embedding, this is to avoid the need for reprocessing if our requirements change. In particular, data filtering has been repeatedly shown to be conditional on budget.<sup class="footnote-ref" id="fnref-12"><a href="#fn-12">12</a></sup> With a small amount of compute, data needs to be heavily filtered as flops should be spent on your best data. However, over a larger run, diversity can be worth decreased quality tradeoffs to avoid overfitting to a small number of documents. By scoring rather than filtering, Datakit allows downstream usage to be more easily re-calibrated depending on budget.</p>
+<figure class="plotly-figure-block"><div class="plotly-frame-outer"><div class="plotly-frame-title">How much data is in each bucket?</div><div class="plotly-frame-inner"><div aria-label="How much data is in each bucket?. Each cell is one topic-quality bucket, labeled with its share of the 23.11 trillion available tokens. Darker cells contain more data. These are the proportions available before we learn how often to sample each bucket." class="d3-figure" data-d3-renderer="bucket-grid" data-d3-src="/assets/openathena/assets/images/blog/marin-data-pipeline-overview/bucket-grid.json" role="group"></div></div></div><figcaption>Each cell is one topic-quality bucket, labeled with its share of the 23.11 trillion available tokens. Darker cells contain more data. These are the proportions available before we learn how often to sample each bucket.</figcaption></figure>
+<h2 id="3-learn-the-data-mixture">3. Learn the data mixture<a aria-label="Link to section: 3. Learn the data mixture" class="heading-anchor" href="#3-learn-the-data-mixture"></a></h2>
+<p>Crossing 40 topics with five quality bands gives us 200 independently weighted buckets. How do we choose among possible weights for each bucket to create a mixture which produces a strong model?</p>
+<p>Trying to brute force the candidates at full scale would be ruinously expensive, so we train a swarm of small proxy models on different mixtures.<sup class="footnote-ref" id="fnref-13"><a href="#fn-13">13</a></sup> Each proxy gets a training budget proportional to its active parameter count, along with a proportionally scaled-down data pool for every bucket.<sup class="footnote-ref" id="fnref-14"><a href="#fn-14">14</a></sup> Under a given mixture, the proxy therefore repeats each bucket roughly as many times as the hero would: a short-run simulation of the hero’s epoching. This lets us explore the tradeoff between repeating higher-quality data and seeing more unique data that may be lower quality.</p>
+<p>The pipeline described here is the one we used to prepare the data and learn the mixture for our most recent hero run. The proxy dataset now contains 872 observations from our smallest possible MoE setup. We fit a regression to the proxy evaluation results, then use it to predict and optimize the data mixture, using a functional form inspired by <a href="https://github.com/marin-community/marin/pull/2393">Calvin Xu's work on the topic in Marin</a>.<sup class="footnote-ref" id="fnref-15"><a href="#fn-15">15</a></sup> This procedure is increasingly common, though we plan to spend a future post in this series diving deeper into our approach and experiments.</p>
+<figure class="plotly-figure-block"><div class="plotly-frame-outer"><div class="plotly-frame-title">Which buckets track performance?</div><div class="plotly-frame-inner"><div aria-label="Which buckets track performance?. The buckets associated with better performance change with the evaluation. Select an UncheatableEval subset to see the Spearman correlation between each bucket’s weight and BPB across 872 proxy runs, separately for pretraining and cooldown. Blue accompanies lower, better BPB; red accompanies higher, worse BPB; grey means the weight did not vary. These associations are not isolated effects because every mixture’s weights sum to one." class="d3-figure" data-d3-renderer="uncheatable-correlations" data-d3-src="/assets/openathena/assets/images/blog/marin-data-pipeline-overview/uncheatable-correlations.json" role="group" style="min-height:900px"></div></div></div><figcaption>The buckets associated with better performance change with the evaluation. Select an UncheatableEval subset to see the Spearman correlation between each bucket’s weight and BPB across 872 proxy runs, separately for pretraining and cooldown. Blue accompanies lower, better BPB; red accompanies higher, worse BPB; grey means the weight did not vary. These associations are not isolated effects because every mixture’s weights sum to one.</figcaption></figure>
+<p>Before launching the hero run, we compare the optimized mixture with proportional sampling—the naive baseline—across a ladder of larger models, asking whether its advantage survives scale.</p>
+<h2 id="whats-next">What's next<a aria-label="Link to section: What's next" class="heading-anchor" href="#whats-next"></a></h2>
+<p>Among the follow-ups, we’ll look more closely at deduplication and decontamination; embeddings, topic clustering, and quality scoring; mixture experiment design, including surrogate modeling and optimization, validation, and proxy-to-target transfer; and the datasets Marin built itself for our most recent hero run.</p>
+<p>As with all of Marin’s work, all software used is released openly:</p>
+<ul>
+<li><strong>Source registry:</strong> the upstream repository, revision, and license for every source, recorded in a readable <a href="https://github.com/marin-community/marin/blob/64a9483cf1a928e6db97b83130d8a5d171a4aead/lib/marin/src/marin/datakit/sources.py"><code>sources.py</code> catalogue</a></li>
+<li><strong>Processing code:</strong> normalization, deduplication, and decontamination in the <a href="https://github.com/marin-community/marin/tree/64a9483cf1a928e6db97b83130d8a5d171a4aead/lib/marin/src/marin/datakit">Datakit module</a></li>
+<li><strong>Proxy-run dataset:</strong> the mixture weights and evaluation results behind the opening figure, at <a href="https://huggingface.co/datasets/marin-community/grug-moe-mix-swarm">marin-community/grug-moe-mix-swarm</a></li>
+<li><strong>Token counts and licenses:</strong> per-source totals in the <a href="https://huggingface.co/spaces/marin-community/token-count-viewer">token count viewer</a></li>
+</ul>
+<p>For the reasons above, we leave the upstream datasets with the people who made them. But if there’s a Datakit artifact you’d like us to release that we haven’t, let us know on <a href="https://discord.com/invite/J9CTk7pqcM">Discord</a>.</p>
+<h2 id="contributions-and-acknowledgments">Contributions and acknowledgments<a aria-label="Link to section: Contributions and acknowledgments" class="heading-anchor" href="#contributions-and-acknowledgments"></a></h2>
+<ul>
+<li><strong><a href="https://github.com/ravwojdyla">Rafal Wojdyla</a>:</strong> Implemented Datakit’s data-processing pipeline, including normalization, exact and fuzzy deduplication, decontamination, and the core infrastructure for quality classification.</li>
+<li><strong><a href="https://github.com/Helw150">Will Held</a>:</strong> Integrated data sources, implemented the Harrier embedding pipeline and mixture-swarm tooling, and developed topic clustering for the hero run. Prepared this post and its figures.</li>
+<li><strong><a href="https://github.com/muchanem">Mark Muchane</a>:</strong> Developed the quality classifier used for the hero run.</li>
+<li><strong><a href="https://github.com/rjpower">Russell Power</a> and <a href="https://github.com/wmoss">Will Moss</a>:</strong> Built and improved the execution, storage, and resource-management infrastructure used to process the corpus at scale.</li>
+<li><strong><a href="https://github.com/Calvin-Xu">Calvin Xu</a>:</strong> Developed earlier mixture-learning experiments and regression methods that informed this approach.</li>
+</ul>
+<p>We thank the dataset contributors who made this work possible: AI2, NVIDIA, Hugging Face, BigCode, EleutherAI, the Common Pile contributors, HPLT, the Institutional Data Initiative, Project Numina, Essential AI, Amazon Science, Alibaba Apsara, GAIR, Locus Lab, Nebius, Open Thoughts, PleIAs, Prime Intellect, SuperDoc, Teraflop AI, Together AI, Trillion Labs, Common Crawl, the National Science Foundation, the GHALogs contributors, <a href="https://huggingface.co/penfever">Ben Feuer</a>, <a href="https://kevinx.li/">Kevin Xiang Li</a>, <a href="https://timodonnell.github.io/">Tim O’Donnell</a>, <a href="https://huggingface.co/andyrdt">Andy Arditi</a>, <a href="https://huggingface.co/KantaHayashiAI">Kanta Hayashi</a>, <a href="https://huggingface.co/nyuuzyou">nyuuzyou</a>, and the Marin community.</p>
+<p>We gratefully acknowledge the Jen-Hsun and Lori Huang Foundation for providing a computational grant used for this study.</p>
+<p>We thank <a href="https://www.linkedin.com/in/isaachodes/">Isaac Hodes</a>, <a href="https://cs.stanford.edu/~pliang/">Percy Liang</a>, <a href="https://github.com/dlwh">David Hall</a>, and <a href="https://github.com/ravwojdyla">Rafal Wojdyla</a> for feedback on this post.</p>
+<section class="footnotes">
+<ol>
+<li id="fn-1"><p>Kevin produced this massive trace dataset as part of an RAship <a href="https://x.com/kevin_x_li/status/2054600962137100493">working on Marin at Stanford</a>.<a class="footnote" href="#fnref-1">↩</a></p></li>
+<li id="fn-2"><p>We added this after truly heroic runs of whitespace consumed an entire tokenization job’s memory. Somewhere on the open web is a page that is 99% spacebar; we have met it.<a class="footnote" href="#fnref-2">↩</a></p></li>
+<li id="fn-3"><p><a href="https://arxiv.org/html/2503.07879">Fang et al.</a> found that duplicate count can signal document quality during subsampling, although retaining the duplicates themselves performed much worse.<a class="footnote" href="#fnref-3">↩</a></p></li>
+<li id="fn-4"><p>Marin’s <a href="https://github.com/marin-community/marin/issues/2093#issuecomment-3609095675">deduplication literature review</a> led us to MinHash and LSH.<a class="footnote" href="#fnref-4">↩</a></p></li>
+<li id="fn-5"><p>Contamination can also lower a score: during the <a href="https://marin.readthedocs.io/en/latest/reports/marin-32b-retro/#contamination-anomaly-gsm8k">Marin 32B Bison cooldown</a>, seeing GSM8K test items in one prompt format made the model worse on another.<a class="footnote" href="#fnref-5">↩</a></p></li>
+<li id="fn-6"><p>Because evaluation sets are much smaller than training corpora, comparing each evaluation item with the corpus is far cheaper than all-pairs deduplication; Datakit makes it cheaper still by indexing evaluation n-grams first.<a class="footnote" href="#fnref-6">↩</a></p></li>
+<li id="fn-7"><p>We follow <a href="https://arxiv.org/abs/2402.00159">Dolma</a> in using a Bloom filter for n-gram matching, with a guarded exact match for short alphabetic paragraphs that have no 13-grams.<a class="footnote" href="#fnref-7">↩</a></p></li>
+<li id="fn-8"><p><a href="https://arxiv.org/abs/2501.11747">In previous work</a>, I found that simple token-count heuristics are surprisingly effective baselines! When in doubt, using proportional sampling or <a href="https://arxiv.org/abs/2304.09151">UniMax</a> will probably be better than a poorly executed learned mixture.<a class="footnote" href="#fnref-8">↩</a></p></li>
+<li id="fn-9"><p>This is one of the key insights from <a href="https://arxiv.org/html/2502.10341v3"><em>Organize the Web</em></a>. If we can “construct meaningful domains for monolithic web corpora,” we can produce much more expressive mixtures, as done in <a href="https://arxiv.org/abs/2602.12237"><em>OLMix</em></a> for OLMo 3. Both works are incredible reads for understanding the origins of our approach!<a class="footnote" href="#fnref-9">↩</a></p></li>
+<li id="fn-10"><p>I am a broken record on this topic but filtering and mixing are subsets of the same policy space with mildly different constraints. Filtering can be expressed as a data mix where some weights are exactly zero. While filtering cannot represent downsampling or upsampling, it generally acts on a per example basis rather than on groups of data. Both are subsets of data selection with replacement.<a class="footnote" href="#fnref-10">↩</a></p></li>
+<li id="fn-11"><p>Consider a collection of programs before and after off-by-one errors are fixed. While a single character can determine whether a program works, it minimally shifts the Harrier representation. We should not, as such, expect a linear classifier using the Harrier embeddings to distinguish buggy programs from correct ones.<a class="footnote" href="#fnref-11">↩</a></p></li>
+<li id="fn-12"><p><a href="https://arxiv.org/html/2404.07177v1">Vision-language</a> and <a href="https://arxiv.org/html/2605.19407v1">language-model</a> experiments both suggest that aggressive filtering helps at low compute, while broader pools can win once repetition becomes the bigger problem. <a href="https://arxiv.org/abs/2412.02595">Nemotron-CC</a> offers the useful compromise of retaining quality scores and using them to control sampling.<a class="footnote" href="#fnref-12">↩</a></p></li>
+<li id="fn-13"><p>The recipe follows <a href="https://arxiv.org/html/2407.01492v2">RegMix</a>—train proxy models, fit a regression, and optimize the mixture—with <a href="https://github.com/marin-community/marin/pull/2393">Calvin Xu’s work</a> motivating our treatment of repetition. Whether the fitted response transfers to larger models remains to be tested.<a class="footnote" href="#fnref-13">↩</a></p></li>
+<li id="fn-14"><p>We chose the target training budget by balancing model size, measured throughput, and time reserved for post-training. The later hero scaling ladder used 791 tokens per active parameter to match an 18T-token run of the 22.76B-active-parameter model. For more details, see the <a href="https://github.com/marin-community/marin/issues/6074">scaling experiments</a>, <a href="https://github.com/marin-community/marin/issues/7673">Floppy Phoenix planning discussion</a>, and <a href="https://github.com/marin-community/marin/pull/8388">hero scaling ladder</a>.<a class="footnote" href="#fnref-14">↩</a></p></li>
+<li id="fn-15"><p>The intuition is that loss falls nearly linearly at first, flattens as the data’s benefit saturates, then rises once repetition causes overfitting.<a class="footnote" href="#fnref-15">↩</a></p></li>
+</ol>
+</section>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{held2026_marin_data_pipeline_overview,
+  author = {Held, Will},
+  title = {Curating 25 Trillion Tokens for LLM Pretraining},
+  year = {2026},
+  month = {sep},
+  howpublished = {\url{https://www.openathena.ai/blog/marin-data-pipeline-overview/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<script>
+(function() {
+  const content = document.querySelector('.blog-post-content');
+  const lists = document.querySelectorAll('.blog-toc-list');
+  if (!content || !lists.length) return;
+
+  const headings = Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+    .filter(function(h) { return !h.closest('.blog-post-citation'); });
+
+  // Find the minimum heading level used so it becomes the top-level TOC entry
+  var minLevel = 6;
+  headings.forEach(function(h) {
+    var level = parseInt(h.tagName[1]);
+    if (level < minLevel) minLevel = level;
+  });
+
+  function buildToc(list) {
+    headings.forEach(function(h) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+      var level = parseInt(h.tagName[1]);
+
+      if (level === minLevel) {
+        li.className = 'toc-h2';
+        li.dataset.sublist = '';
+        list.appendChild(li);
+      } else {
+        var parent = list.querySelector('li.toc-h2:last-child > ol');
+        if (!parent) {
+          parent = document.createElement('ol');
+          var lastTop = list.querySelector('li.toc-h2:last-child');
+          if (lastTop) lastTop.appendChild(parent);
+          else { li.className = 'toc-h3'; list.appendChild(li); return; }
+        }
+        li.className = 'toc-h3';
+        parent.appendChild(li);
+      }
+    });
+  }
+
+  lists.forEach(function(list) { buildToc(list); });
+
+  // Highlight active TOC entry on scroll
+  var tocLinks = document.querySelectorAll('.blog-toc-nav .blog-toc-list a');
+  if (tocLinks.length && headings.length) {
+    function updateActive() {
+      var current = null;
+      var threshold = window.innerHeight * 0.3;
+      for (var i = 0; i < headings.length; i++) {
+        if (headings[i].getBoundingClientRect().top <= threshold) current = headings[i];
+      }
+      // Find the parent top-level heading for the current heading
+      var parentH2 = null;
+      if (current) {
+        var currentLevel = parseInt(current.tagName[1]);
+        if (currentLevel === minLevel) {
+          parentH2 = current;
+        } else {
+          for (var j = Array.prototype.indexOf.call(headings, current) - 1; j >= 0; j--) {
+            if (parseInt(headings[j].tagName[1]) === minLevel) { parentH2 = headings[j]; break; }
+          }
+        }
+      }
+      var activeLink = null;
+      tocLinks.forEach(function(link) {
+        var isActive = current && link.getAttribute('href') === '#' + current.id;
+        var isParent = parentH2 && parentH2 !== current && link.getAttribute('href') === '#' + parentH2.id;
+        link.classList.toggle('active', isActive || isParent);
+        if (isActive) activeLink = link;
+      });
+
+      // Auto-scroll TOC to keep active link visible.
+      // IMPORTANT: do not use scrollIntoView — it scrolls every scrollable ancestor
+      // (including the window), which fights the user's page scroll. Adjust only
+      // the TOC's own scrollTop so the page position stays put.
+      if (activeLink && !userScrolledToc) {
+        var tocNav = document.querySelector('.blog-toc');
+        var linkRect = activeLink.getBoundingClientRect();
+        var tocRect = tocNav.getBoundingClientRect();
+        if (linkRect.bottom > tocRect.bottom || linkRect.top < tocRect.top) {
+          var target = (linkRect.top - tocRect.top) + tocNav.scrollTop
+                     - (tocRect.height - linkRect.height) / 2;
+          tocNav.scrollTop = Math.max(0, target);
+        }
+      }
+    }
+
+    // Track manual TOC scrolling
+    var userScrolledToc = false;
+    var tocEl = document.querySelector('.blog-toc');
+    var tocScrollTimer;
+    tocEl.addEventListener('scroll', function() {
+      userScrolledToc = true;
+      clearTimeout(tocScrollTimer);
+      tocScrollTimer = setTimeout(function() { userScrolledToc = false; }, 1000);
+    }, { passive: true });
+
+    window.addEventListener('scroll', updateActive, { passive: true });
+    updateActive();
+  }
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="/assets/openathena/js/datakit-figures.js"></script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

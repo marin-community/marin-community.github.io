@@ -17,3 +17,8 @@ sass:
 exclude:
   - blog_style.py
   - make_figures.py
+  - scripts
+  - docs
+  - vendor
+  - Gemfile
+  - Gemfile.lock

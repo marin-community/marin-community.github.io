@@ -8,6 +8,10 @@ authors:
 - Percy Liang
 date: 2025-05-19
 categories: blog
+post_kind: original
+featured: true
+featured_order: 1
+archive_label: Introducing Marin
 ---
 
 Open-source *software* is a success story:

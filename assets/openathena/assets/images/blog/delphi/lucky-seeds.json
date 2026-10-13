@@ -1,0 +1,237 @@
+{
+  "data": [
+    {
+      "hovertemplate": "C=1e+21<br>seed=%{text}<br>deviation=%{x:.2f}%<extra></extra>",
+      "marker": {
+        "color": "#385C8F",
+        "line": {
+          "color": "#385C8F",
+          "width": 1.5
+        },
+        "size": 7,
+        "symbol": "circle-open"
+      },
+      "mode": "markers",
+      "showlegend": false,
+      "text": [
+        "42",
+        "62746",
+        "default"
+      ],
+      "x": [
+        0.5000329498454554,
+        0.46172039338883847,
+        0.4118810868247643
+      ],
+      "y": [
+        0,
+        0,
+        0
+      ],
+      "type": "scatter"
+    },
+    {
+      "hovertemplate": "C=1e+22<br>seed=%{text}<br>deviation=%{x:.2f}%<extra></extra>",
+      "marker": {
+        "color": "#385C8F",
+        "line": {
+          "color": "#385C8F",
+          "width": 1.5
+        },
+        "size": 7,
+        "symbol": "circle-open"
+      },
+      "mode": "markers",
+      "showlegend": false,
+      "text": [
+        "42",
+        "62746",
+        "default"
+      ],
+      "x": [
+        0.3324314644672784,
+        0.20937331648369475,
+        0.19551664997760435
+      ],
+      "y": [
+        1,
+        1,
+        1
+      ],
+      "type": "scatter"
+    },
+    {
+      "hovertemplate": "C=1e+23<br>seed=%{text}<br>deviation=%{x:.2f}%<extra></extra>",
+      "marker": {
+        "color": "#385C8F",
+        "line": {
+          "color": "#385C8F",
+          "width": 1.5
+        },
+        "size": 7,
+        "symbol": "circle-open"
+      },
+      "mode": "markers",
+      "showlegend": false,
+      "text": [
+        "default"
+      ],
+      "x": [
+        0.22628639130239897
+      ],
+      "y": [
+        2
+      ],
+      "type": "scatter"
+    },
+    {
+      "marker": {
+        "color": "rgba(143,107,56,0.55)",
+        "size": 14,
+        "symbol": "square"
+      },
+      "mode": "markers",
+      "name": "Forecast 2.5\u201397.5% CI (bootstrap over bucket optima)",
+      "showlegend": true,
+      "x": [
+        null
+      ],
+      "y": [
+        null
+      ],
+      "type": "scatter"
+    },
+    {
+      "marker": {
+        "color": "#385C8F",
+        "line": {
+          "color": "#385C8F",
+          "width": 1.5
+        },
+        "size": 7,
+        "symbol": "circle-open"
+      },
+      "mode": "markers",
+      "name": "Independent Training Runs",
+      "showlegend": true,
+      "x": [
+        null
+      ],
+      "y": [
+        null
+      ],
+      "type": "scatter"
+    }
+  ],
+  "layout": {
+    "shapes": [
+      {
+        "layer": "below",
+        "line": {
+          "color": "#1F1E1B",
+          "dash": "dash",
+          "width": 1.5
+        },
+        "type": "line",
+        "x0": 0,
+        "x1": 0,
+        "y0": -0.5,
+        "y1": 2.5
+      },
+      {
+        "fillcolor": "rgba(143,107,56,0.35)",
+        "layer": "below",
+        "line": {
+          "width": 0
+        },
+        "type": "rect",
+        "x0": -0.6409750289754701,
+        "x1": 0.8932779901341481,
+        "y0": -0.3,
+        "y1": 0.3
+      },
+      {
+        "fillcolor": "rgba(143,107,56,0.35)",
+        "layer": "below",
+        "line": {
+          "width": 0
+        },
+        "type": "rect",
+        "x0": -2.5623152454726648,
+        "x1": 2.0685712602781523,
+        "y0": 0.7,
+        "y1": 1.3
+      },
+      {
+        "fillcolor": "rgba(143,107,56,0.35)",
+        "layer": "below",
+        "line": {
+          "width": 0
+        },
+        "type": "rect",
+        "x0": -5.521288262540057,
+        "x1": 3.5342906321803054,
+        "y0": 1.7,
+        "y1": 2.3
+      }
+    ],
+    "annotations": [
+      {
+        "font": {
+          "color": "#1f1e1b",
+          "size": 11
+        },
+        "showarrow": false,
+        "text": "point forecast",
+        "x": 0,
+        "xanchor": "center",
+        "y": 2.5,
+        "yanchor": "bottom",
+        "yshift": 4
+      }
+    ],
+    "yaxis": {
+      "tickmode": "array",
+      "tickvals": [
+        0,
+        1,
+        2
+      ],
+      "ticktext": [
+        "C = 1e+21 FLOPs",
+        "C = 1e+22 FLOPs",
+        "C = 1e+23 FLOPs"
+      ],
+      "range": [
+        -0.5,
+        2.5
+      ],
+      "showgrid": false
+    },
+    "xaxis": {
+      "title": {
+        "text": "Loss \u2212 point forecast  (% of point forecast)"
+      },
+      "ticksuffix": "%",
+      "zeroline": false
+    },
+    "margin": {
+      "t": 40,
+      "r": 30,
+      "b": 90,
+      "l": 90
+    },
+    "legend": {
+      "orientation": "h",
+      "yanchor": "top",
+      "y": -0.35,
+      "xanchor": "center",
+      "x": 0.5,
+      "bgcolor": "rgba(0,0,0,0)",
+      "borderwidth": 0,
+      "tracegroupgap": 10
+    },
+    "plot_bgcolor": "rgba(0,0,0,0)",
+    "paper_bgcolor": "rgba(0,0,0,0)"
+  }
+}

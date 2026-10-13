@@ -1,0 +1,358 @@
+---
+layout: mirror
+post_kind: mirror
+title: Cluster Scheduling with Iris
+authors:
+- Russell Power
+date: '2026-06-25'
+categories: blog
+description: Training a frontier-level LLM requires significant resources across a
+  variety of providers and accelerator types. Our Iris scheduling system has allowed
+  us to effectively make use of these precious resources using a custom global scheduler;
+  in the months since rollout, our sustained concurrent TPU usage has roughly doubled.
+source_url: https://openathena.ai/blog/cluster-scheduling-with-iris/
+canonical_url: https://www.openathena.ai/blog/cluster-scheduling-with-iris/
+source_content_sha256: 0ac56c47471b58ed04b4faceadc69ebfa66ebed6a9da6c22df726315174cc095
+excerpt: Training a frontier-level LLM requires significant resources across a variety
+  of providers and accelerator types. Our Iris scheduling system has allowed us to
+  effectively make use of these precious resources using a custom global scheduler;
+  in the months since rollout, our sustained concurrent TPU usage has roughly doubled.
+---
+{% raw %}
+<div class="blog-post-body">
+<aside class="blog-toc">
+<nav class="blog-toc-nav">
+<div class="blog-toc-title">Contents</div>
+<ol class="blog-toc-list"></ol>
+</nav>
+<details class="blog-toc-mobile">
+<summary class="blog-toc-title">Contents</summary>
+<ol class="blog-toc-list"></ol>
+</details>
+</aside>
+<div class="blog-post-content project-detail-body">
+<p>The Marin team's goal is to train a frontier large language model. This requires significant resources across a variety of providers and accelerator types. Our Iris scheduling system has allowed us to effectively make use of these precious resources using a custom global scheduler; in the months since rollout, our sustained concurrent TPU usage has roughly doubled.</p>
+<p>We're aiming to train a completely open (data and methodology) frontier-level LLM by the end of 2026. This requires enormous amounts of compute: our current estimate is that our final pre-training run will require millions of GPU hours of compute, with a similar amount of compute beyond that for post-training and reinforcement learning (RL). Thanks to our generous sponsors, we've been fortunate to receive enough accelerators to do this. Even to get this far has required significant resources, for which we're grateful: access to Google’s TPU Research Cloud has let us refine and improve our model recipes, improve our data mixtures, and dial in our targets for our larger runs.</p>
+<p>Given the cost and scarce availability of ML (machine learning) accelerators, it's important to us to use them responsibly. For us, this means ensuring that accelerators are always doing useful work, and also that the work they're doing is efficient. An idle accelerator is a waste, but so is an accelerator that's operating at 1% efficiency.</p>
+<p>One quirk of our operating environment is that our compute budget has been dominated by preemptible compute: large amounts of accelerator quota, but no guarantees on whether or how long we could make use of the machines. Furthermore, the availability of resources depends heavily on time-of-day and region: for example inference friendly accelerators will disappear during peak periods and recover overnight.</p>
+<figure><img alt="Stacked area chart of fleet chip share by GCP region across hours of a UTC day, showing the regional mix shifting through the day." src="/assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image1.png"/><figcaption><strong>Figure 1:</strong> Intraday region mix on a representative day — the share of fleet chips by region shifts substantially with time of day.</figcaption></figure>
+<p>Leveraging these preemptible and region varying accelerators effectively is challenging, and a large part of why we developed our own system for scheduling, which we call Iris.</p>
+<h2 id="initial-steps">Initial Steps<a aria-label="Link to section: Initial Steps" class="heading-anchor" href="#initial-steps"></a></h2>
+<p>Marin's initial approach to cluster scheduling built on the popular Ray distributed computing framework. Ray was brought in to solve a much simpler problem: gang-scheduling for TPU slices for single training runs. TPUs before v7 are allocated in "slices." In larger slices (&gt; 4 or 8 TPUs), the TPUs are partitioned across multiple VMs (virtual machines). A user model needs to be assigned to exactly the set of VMs for a particular TPU slice, and the user program needs to coordinate work so it takes the same actions across all TPUs in a slice.</p>
+<p>For the handful of users and single region work we were doing at the time, Ray served adequately. Once Ray was used in one place, it became natural to try to use it elsewhere. Ad-hoc Ray usage cropped up for data-processing pipelines, training sweeps, and coordination. As we started onboarding more researchers, we needed a way to share TPUs across them. It thus became natural to use a shared Ray cluster across users: this let jobs scavenge idle CPU from a running TPU job, or jump onto an idle TPU easily. This was easy to deploy and seemed to work well—initially.</p>
+<p>Unfortunately, over time, the limitations of our Ray deployment became more and more pressing. Our usage diverged from that of most Ray users, and we were suffering for it. A few of our challenges included:</p>
+<ul>
+<li>The Ray autoscaler operates per region. Because our compute is scattered across different regions, we needed a Ray cluster for every region we had TPUs. This forced users to make an up-front choice about where to put a job. It led to "camping" on a region where they had found resources in the past, leaving other regions idle.</li>
+<li>Ray jobs ran without isolation on our VMs. Crashed jobs could lead to TPUs being in a "stuck" state: the VM appeared healthy but the TPU was unusable, breaking any future jobs assigned to that VM. We had to invest in our own complex machinery to try to automatically recover VMs.</li>
+<li>By default, Ray relies on workers remaining available to provide access to logs data. Job logs would be lost after worker preemption, making it hard to do post-mortem analysis or debugging.</li>
+</ul>
+<p>Finally, Ray's built-in autoscaler and scheduling system was struggling to handle the number of users and jobs we were throwing at it. At our peak, we needed to reset busy clusters almost daily, and we developed workflows to try to restore cluster state between restarts.</p>
+<h2 id="debating-alternatives">Debating alternatives<a aria-label="Link to section: Debating alternatives" class="heading-anchor" href="#debating-alternatives"></a></h2>
+<p>As time went on, we found ourselves spending more and more time managing and working around Ray and not enough time actually training models. We needed to figure out a sustainable solution.</p>
+<p>To the Ray team's credit, they were responsive to many of our requests for support, but understandably, our rather odd use case was not a priority. The primary recommendation for deployments like ours was to start using Ray on top of Kubernetes, with Kubernetes as the scheduler and Ray as the communication layer.</p>
+<p>We considered this, but while Kubernetes would solve some of our stability and isolation issues with Ray, it wouldn't address many of our other long-term challenges around global scheduling and autoscaling. In particular, we had the following reservations.</p>
+<ul>
+<li>At the time, Google's Kubernetes engine didn't support reserved instances, meaning we would have needed a separate scheme for our reserved and preemptible compute.</li>
+<li>Kubernetes scheduling would still be per-region, meaning we'd need to manage separate clusters or cobble together a meta-scheduler on top.</li>
+<li>Kubernetes' built-in scheduling engine doesn't support gang-scheduling; it requires extensions like Kueue to handle this scheduling correctly. In theory, systems like Multikueue would give us multi-region support, but these are still in early development.</li>
+</ul>
+<p>Also, while we started this work operating on one platform, we knew that we wanted to leverage accelerators from other platforms in the near future. The potential environments available to us varied dramatically, from bare-metal platforms with our own SSH to <a href="https://slurm.schedmd.com/documentation.html">Slurm-managed clusters</a>.</p>
+<p>After debating our options, we realized that what we wanted was a consistent cluster-scheduling interface that satisfied our unique constraints, regardless of the underlying implementation. We could then evolve our implementation or backend as needed, without disrupting users.</p>
+<h2 id="design-and-development">Design and development<a aria-label="Link to section: Design and development" class="heading-anchor" href="#design-and-development"></a></h2>
+<p>Recall that our system needed to satisfy a number of unique requirements.</p>
+<ul>
+<li>Easy, Ray-like job submission: Python scripts with simple resource specifications</li>
+<li>Cross-region scheduling</li>
+<li>Gang-scheduling for multi-VM workloads</li>
+<li>User job prioritization and preemption</li>
+<li>Including TPU-topology aware scheduling: the scheduler needed to know that evicting smaller TPUs will free up larger slices</li>
+<li>Multi-platform and accelerator support</li>
+</ul>
+<p>With this in mind, and taking lessons from previous experiences with Ray, K8s, and Google's Borg and XManager systems, we began developing the design for our Iris scheduling system. Given our common pattern of replicated jobs for data processing, we decided to adopt Borg's "replica" system, where a top-level job can specify that it should be replicated into one or more individual "tasks," making a "task attempt" the real unit of scheduling.</p>
+<p>For users, we wanted to preserve the simple feel of Ray scheduling. We landed on using a resource specification for jobs, with helpers for common accelerator types:</p>
+<pre><code class="language-python">ResourceConfig.with_tpu(
+    "v5litepod-16",
+    slice_count=1,
+    cpu=32,
+    ram="128g",
+    disk="50g",
+)
+</code></pre>
+<p>A job request then consists of the resources, along with a specification for what to run on those resources. Like Ray, Iris supports providing a callable function or a top-level script to run on the cluster:</p>
+<pre><code class="language-python">job_request = JobRequest(
+    name=name,
+    entrypoint=Entrypoint.from_callable(entrypoint_callable, args=list(args)),
+    resources=resource_config,
+    environment=create_environment(env_vars=env, extras=extras_for_resources(resources)),
+)
+
+handle = client.submit(job_request)
+</code></pre>
+<p>Unlike Ray, Iris tasks do not communicate via a distributed object store. Instead, Iris provides a basic actor system for tasks to directly communicate with each other. Tasks locate each other's active servers via the Iris endpoint registry, which is used to map names to active server addresses.</p>
+<p>Job requests are submitted to the Iris controller, which is responsible for launching and dispatching jobs. Job replicas are first expanded into their constituent tasks, and then the job resource specification is converted to a uniform set of constraint expressions. When using its native GCP (Google Compute Platform) scheduler, Iris uses constraints to determine where a task can be scheduled, and when to autoscale and request more compute to satisfy job requests. When working with its Kubernetes backend, Iris constraints are converted into the appropriate K8s and Kueue scheduling requirements, with Iris simply providing a convenient view on top of the K8s cluster status.</p>
+<p>The Iris scheduler is global and searches across all regions where we have compute available. This, combined with a set of abstractions we developed to automatically mirror data across regions when needed, allows jobs to be scheduled anywhere we find compute, moving as necessary to where we have resources.</p>
+<p>Since we are primarily concerned with training models, and not serving user-facing endpoints, Iris purposefully lacks many of the features expected from more "high-availability" environments, like gradual rollouts and health checking.</p>
+<h2 id="migrating-from-ray">Migrating from Ray<a aria-label="Link to section: Migrating from Ray" class="heading-anchor" href="#migrating-from-ray"></a></h2>
+<p>To make migration from Ray seamless, we rebuilt our software on top of an abstraction we call "Fray." By building both Iris and Ray implementations for Fray, we could migrate all of our internal code to support both systems without disrupting existing work. This required building out a small actor system on top of Iris to support the small number of distributed RPC workflows we had with Ray as well.</p>
+<h2 id="rollout-and-user-feedback">Rollout and user feedback<a aria-label="Link to section: Rollout and user feedback" class="heading-anchor" href="#rollout-and-user-feedback"></a></h2>
+<p>After the initial design process, our development of Iris was rapid, thanks in part to the dawn of the agentic coding era. However, like for many projects, it took us some time to leverage the tools effectively, and we had to do some rewrites to address "code slop" concerns. We began active development in early January, and our initial rollout began only six weeks later. We turned off our last Ray cluster approximately one month after that.</p>
+<p>Switching to Iris changed our community's ability to leverage preemptible resources. The experience has been largely positive, though not without some expected early-adoption pains. Our largest issue was underestimating the load as users gained experience with the system.</p>
+<p>Some of the feedback we received from users:</p>
+<ul>
+<li>On the Ray cleanup-reliability gap: "ray doesn't really give us a reliable way to clean up after ourselves when the driver fails"</li>
+<li>On compute availability: "iris giving us a lot of compute right now wow"</li>
+<li>On pulling stats for long-running jobs: "(again very cool we can do that so easily w/ iris)"</li>
+<li>On dashboard performance: "The Iris dashboard feels slow at the moment. It's hard to queue and kill jobs or even check the status of jobs."</li>
+</ul>
+<p>Iris provides the expected dashboards for user jobs (Figure 2) and worker status (Figure 3), giving users a quick way to check the status of the cluster.</p>
+<figure><img alt="Iris controller dashboard listing submitted jobs with status, resources, and region." src="/assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image3.png"/><figcaption><strong>Figure 2:</strong> The Iris job dashboard.</figcaption></figure>
+<figure><img alt="Iris dashboard showing pools and capacity routing: workers grouped by accelerator generation and region with health status." src="/assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image4.png"/><figcaption><strong>Figure 3:</strong> The Iris worker dashboard.</figcaption></figure>
+<p>Almost immediately after rolling out Iris, we've seen sustained usage of TPUs climb across both regions and accelerator generations. Before the migration, concurrent TPU slices typically sat around ~150–200, dropping toward ~80–100 during scarce periods. In the weeks after the March rollout, they roughly doubled, reaching a ~350–450 plateau through April and May (Figure 4). New regions came online as well, and europe-west4, us-west4, and us-east1 moved from occasional to regular use.</p>
+<figure><img alt="Two stacked area charts; total concurrency roughly doubles after the March Iris rollout and the regional and generational mix widens." src="/assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image2.png"/><figcaption><strong>Figure 4:</strong> Concurrent TPU slices, January–June 2026, by accelerator generation (top) and region (bottom). Iris rolled out in March.</figcaption></figure>
+<h2 id="next-steps">Next steps<a aria-label="Link to section: Next steps" class="heading-anchor" href="#next-steps"></a></h2>
+<p>We continue to develop Iris to add new functionality and refine the experience, in response to user feedback. After our initial deployment on GCP, we added a Kubernetes backend to allow Iris jobs to run against Kueue + Kubernetes clusters. We've also rolled out a priority and preemption system to allow long-running batch jobs to make use of TPU resources without blocking higher priority work.</p>
+<p>More recently, we've started work to allow a single Iris cluster to manage multiple providers (GCP and Kubernetes), which would give our users a uniform interface for both job specification and dispatch. Again, this is important to us as we want to ensure that we aren't leaving accelerators on the table. We've also started investigating the feasibility of a Slurm backend which would let us dispatch Iris jobs against academic Slurm clusters.</p>
+<p>Our end goal with Iris is to ensure that Marin can take advantage of any compute we're given access to, while asking as little of our hardware partners as possible. This ensures that we are responsible stewards of the compute we're given, as well as making Marin a more attractive choice to share compute with.</p>
+<p>Although Iris has been a success for Marin, we acknowledge it has many limitations and that it might not be the right fit for many or most other organizations. It's made to help Marin leverage compute effectively for our job types, not to be a generic cluster management service. In particular, we haven't invested in many of the refinements around setup and documentation that would make it easy to use for external users.</p>
+<p>If you are curious about Iris or Marin, you can explore the <a href="https://github.com/marin-community/marin">codebase</a>, or join our <a href="https://discord.gg/J9CTk7pqcM">Discord</a>.</p>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{power2026_cluster_scheduling_with_iris,
+  author = {Power, Russell},
+  title = {Cluster Scheduling with Iris},
+  year = {2026},
+  month = {jun},
+  howpublished = {\url{https://www.openathena.ai/blog/cluster-scheduling-with-iris/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<script>
+(function() {
+  const content = document.querySelector('.blog-post-content');
+  const lists = document.querySelectorAll('.blog-toc-list');
+  if (!content || !lists.length) return;
+
+  const headings = Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+    .filter(function(h) { return !h.closest('.blog-post-citation'); });
+
+  // Find the minimum heading level used so it becomes the top-level TOC entry
+  var minLevel = 6;
+  headings.forEach(function(h) {
+    var level = parseInt(h.tagName[1]);
+    if (level < minLevel) minLevel = level;
+  });
+
+  function buildToc(list) {
+    headings.forEach(function(h) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+      var level = parseInt(h.tagName[1]);
+
+      if (level === minLevel) {
+        li.className = 'toc-h2';
+        li.dataset.sublist = '';
+        list.appendChild(li);
+      } else {
+        var parent = list.querySelector('li.toc-h2:last-child > ol');
+        if (!parent) {
+          parent = document.createElement('ol');
+          var lastTop = list.querySelector('li.toc-h2:last-child');
+          if (lastTop) lastTop.appendChild(parent);
+          else { li.className = 'toc-h3'; list.appendChild(li); return; }
+        }
+        li.className = 'toc-h3';
+        parent.appendChild(li);
+      }
+    });
+  }
+
+  lists.forEach(function(list) { buildToc(list); });
+
+  // Highlight active TOC entry on scroll
+  var tocLinks = document.querySelectorAll('.blog-toc-nav .blog-toc-list a');
+  if (tocLinks.length && headings.length) {
+    function updateActive() {
+      var current = null;
+      var threshold = window.innerHeight * 0.3;
+      for (var i = 0; i < headings.length; i++) {
+        if (headings[i].getBoundingClientRect().top <= threshold) current = headings[i];
+      }
+      // Find the parent top-level heading for the current heading
+      var parentH2 = null;
+      if (current) {
+        var currentLevel = parseInt(current.tagName[1]);
+        if (currentLevel === minLevel) {
+          parentH2 = current;
+        } else {
+          for (var j = Array.prototype.indexOf.call(headings, current) - 1; j >= 0; j--) {
+            if (parseInt(headings[j].tagName[1]) === minLevel) { parentH2 = headings[j]; break; }
+          }
+        }
+      }
+      var activeLink = null;
+      tocLinks.forEach(function(link) {
+        var isActive = current && link.getAttribute('href') === '#' + current.id;
+        var isParent = parentH2 && parentH2 !== current && link.getAttribute('href') === '#' + parentH2.id;
+        link.classList.toggle('active', isActive || isParent);
+        if (isActive) activeLink = link;
+      });
+
+      // Auto-scroll TOC to keep active link visible.
+      // IMPORTANT: do not use scrollIntoView — it scrolls every scrollable ancestor
+      // (including the window), which fights the user's page scroll. Adjust only
+      // the TOC's own scrollTop so the page position stays put.
+      if (activeLink && !userScrolledToc) {
+        var tocNav = document.querySelector('.blog-toc');
+        var linkRect = activeLink.getBoundingClientRect();
+        var tocRect = tocNav.getBoundingClientRect();
+        if (linkRect.bottom > tocRect.bottom || linkRect.top < tocRect.top) {
+          var target = (linkRect.top - tocRect.top) + tocNav.scrollTop
+                     - (tocRect.height - linkRect.height) / 2;
+          tocNav.scrollTop = Math.max(0, target);
+        }
+      }
+    }
+
+    // Track manual TOC scrolling
+    var userScrolledToc = false;
+    var tocEl = document.querySelector('.blog-toc');
+    var tocScrollTimer;
+    tocEl.addEventListener('scroll', function() {
+      userScrolledToc = true;
+      clearTimeout(tocScrollTimer);
+      tocScrollTimer = setTimeout(function() { userScrolledToc = false; }, 1000);
+    }, { passive: true });
+
+    window.addEventListener('scroll', updateActive, { passive: true });
+    updateActive();
+  }
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

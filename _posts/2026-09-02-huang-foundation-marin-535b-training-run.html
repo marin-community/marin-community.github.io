@@ -1,0 +1,186 @@
+---
+layout: mirror
+post_kind: mirror
+title: Marin's 535 billion parameter model training run launched with support of The
+  Jen-Hsun and Lori Huang Foundation GPU gift
+authors:
+- Open Athena
+date: '2026-09-02'
+categories: blog
+description: Open Athena announces the launch of Marin's largest training run yet—a
+  535B parameter large language model—with a generous gift of compute from The Jen-Hsun
+  and Lori Huang Foundation.
+source_url: https://openathena.ai/blog/huang-foundation-marin-535b-training-run/
+canonical_url: https://www.openathena.ai/blog/huang-foundation-marin-535b-training-run/
+source_content_sha256: ea1cc3b3b9dbf324caa3c9d69c506629501dffcec43e346cd11504673f9f1204
+excerpt: Open Athena announces the launch of Marin's largest training run yet—a 535B
+  parameter large language model—with a generous gift of compute from The Jen-Hsun
+  and Lori Huang Foundation.
+---
+{% raw %}
+<div class="blog-post-content project-detail-body">
+<style>
+.blog-post-content .pull-quote {
+  margin: 2rem 0;
+  padding: 0.5rem 0 0.5rem 1.5rem;
+  border-left: 1px solid #8e9779;
+  border-radius: 0;
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #2a2a2a;
+  background: none;
+}
+.blog-post-content .pull-quote p {
+  font-size: inherit;
+  color: inherit;
+}
+</style>
+<p>Open Athena is thrilled to announce that, with a generous gift of compute from The Jen-Hsun and Lori Huang Foundation, we have kicked off Marin's largest training run yet—a 535 billion total parameter large language model (LLM)—and the largest open and <a href="https://mtracker.oa.dev/hero-run-535b">live</a> training run in history.</p>
+<p>Science progresses through exploration and observation, hypothesis and experiment, debate and consensus. It is <a href="https://openathena.ai/blog/open-development-of-frontier-ai/">the development of science in the open</a> that enables the brightest minds everywhere to participate in this dialogue and by doing so improve it. The science of artificial intelligence is no different, and Marin exists so that this science can both benefit from the public and benefit the public.</p>
+<p>Some scientific discoveries—the microscope, the transistor, genome sequencing—have themselves become tools in better answering scientific questions. Without AI that can be understood, inspected, and perturbed, both the science of artificial intelligence and AI for science will take a back seat to private research and development. Marin exists to ensure this vital tool can be used by the public for academic research, and that academia can participate in and contribute to the effort.</p>
+<blockquote class="pull-quote">
+"The frontier of AI shouldn't be built inside a black box. Marin's 'open lab' approach, opening up every code pipeline, experiment, and training log, is crucial for the AI ecosystem," said David Siegel, Founder and Chairman of Open Athena. "We are deeply grateful for the Huang Foundation's partnership in advancing a more transparent and accessible future for scientific research."
+</blockquote>
+<p>Our model in training is a 535B total parameter, 23B active parameter mixture of experts model, with 18 trillion tokens of data, including agentic, coding, and scientific data. We have publicly predicted what the performance of our model will be after its pretraining completes on December 1st, as measured by a specific score on a standard benchmark (Paloma). The <a href="https://github.com/marin-community/marin/issues/8435#issuecomment-5344533796">prediction</a> is based on runs 300x smaller than this one: we will continue to improve the model as it runs, so this will serve as a lower bound on performance.</p>
+<p>Scaling is crucial: It is only by building and studying state-of-the-art large language models that scientists can fully understand the technology and best benefit from its use. However, reaching this AI frontier requires significant computational power, which puts it out of reach of most academic labs, nonprofit groups, and even most commercial labs. Thanks to the generous grant from the Huang Foundation, the Marin project will be able to study and train models at a scale that approaches the frontier, empowering researchers to transparently study the hardest and most interesting problems in AI.</p>
+<blockquote class="pull-quote">
+"AI is becoming one of the most important instruments of scientific discovery. For researchers to advance the science of AI – and use AI to advance every field of science – they need access to frontier-scale models they can build, study, and understand. The compute the Foundation is providing to Marin puts that capability into the open, giving researchers everywhere the opportunity to participate in shaping the next generation of AI," said Jensen Huang.
+</blockquote>
+<p>Beyond language modeling, we have two non-language research projects taking place in the open, on the Marin platform: <a href="https://openathena.ai/blog/marin-dna/">MarinDNA</a> (<a href="https://github.com/open-athena/marin-dna/">GitHub</a>) and MarinFold (<a href="https://github.com/Open-Athena/MarinFold/">GitHub</a>). MarinDNA, for example, produced a 1B genomic language model competitive with Evo 2 40B, while using ~1,980× fewer training FLOPs and scoring variants ~2,330× faster. We are exploring collaborations in other areas including climate, plant genomics, and materials science that will also be developed on the Marin platform.</p>
+<p><em>Marin began in 2024 at Stanford University, created by David Hall and Percy Liang. Beyond the explicit and process knowledge generated through discovery and practice in the open, Marin provides model weights, training checkpoints, data recipe, and code for infrastructure, data pipelines, training, and inference, and convenes the discussion and community. Marin scaled  dense LLMs from <a href="https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/">8B</a> parameters to <a href="https://marin.readthedocs.io/en/latest/reports/marin-32b-retro/">32B</a> parameters, running on donated compute from Google's TPU Research Cloud, <a href="https://openathena.ai/blog/delphi/">a scaling suite "Delphi"</a>, and most recently released a 67B-A2B MoE model on 10T tokens, trained on v4 TPUs. Open Athena is a non-profit founded in 2024 by David Siegel, Jeff Hammerbacher, Mike Abbott, and Jared Crooks to bring the capabilities of the AI frontier to academia. Today, all engineers working full-time on Marin are employed by Open Athena. If you would like to work on Marin at Open Athena, send a note to <a href="mailto:info@openathena.ai">info@openathena.ai</a>. To learn more about how Marin works, we suggest that you start with <a href="https://github.com/open-athena/mumwelt">mumwelt</a>, a CLI and set of skills to ask questions of the Marin corpus.</em></p>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{athena2026_huang_foundation_marin_535b_training_run,
+  author = {Athena, Open},
+  title = {Marin's 535 billion parameter model training run launched with support of The Jen-Hsun and Lori Huang Foundation GPU gift},
+  year = {2026},
+  month = {sep},
+  howpublished = {\url{https://www.openathena.ai/blog/huang-foundation-marin-535b-training-run/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

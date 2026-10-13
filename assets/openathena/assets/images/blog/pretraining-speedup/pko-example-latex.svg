@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 94" width="820" height="94">
+<rect width="100%" height="100%" fill="#F2E7DF" rx="8"/>
+<circle cx="31" cy="15" r="10" fill="#5E7A2A"/><text x="31" y="20" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="15" font-weight="bold" fill="#F2E7DF" text-anchor="middle">+</text>
+<text x="50" y="20" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#6b6157" font-style="italic">LaTeX paper — predicting `{` after `\textit`</text>
+<rect x="331.3" y="33.0" width="62.9" height="16.0" fill="rgba(56,92,143,0.28)" rx="3"/>
+<rect x="533.3" y="33.0" width="62.9" height="16.0" fill="rgba(56,92,143,0.28)" rx="3"/>
+<rect x="592.2" y="33.0" width="12.4" height="16.0" fill="rgba(143,107,56,0.50)" rx="3"/>
+<text x="22" y="44" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="14" fill="#1F1E1B" xml:space="preserve"><tspan>…stable input rates, has the default </tspan><tspan>\textit</tspan><tspan>{batch size} and </tspan><tspan>\textit</tspan><tspan font-weight="bold">{</tspan><tspan>acks} set to…</tspan></text>
+<text x="22" y="72" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#6b6157">PKO confidence: 19%<tspan dx="14">·</tspan><tspan dx="14">baseline: &lt;0.001%</tspan></text>
+</svg>
