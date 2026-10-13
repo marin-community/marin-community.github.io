@@ -1,0 +1,1450 @@
+---
+layout: post
+post_kind: original
+title_id: marin-8b-retrospective
+title: Marin 8B Retrospective
+date: '2025-05-19'
+authors:
+- David Hall
+categories: blog
+description: 'The first Marin 8B run: its changing data mix, training phases, mistakes,
+  and lessons learned.'
+excerpt: 'The first Marin 8B run: its changing data mix, training phases, mistakes,
+  and lessons learned.'
+permalink: /blog/2025/05/19/marin-8b-retro/
+documentation_url: https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/
+featured: true
+featured_order: 2
+archive_label: Marin 8B Retrospective
+contents:
+- id: introduction
+  title: Introduction
+- id: the-tootsie-roll-process
+  title: The "Tootsie Roll" Process
+- id: model-basics
+  title: Model Basics
+- id: training-phases
+  title: Training Phases
+- id: phase-1-kestrel-wsd-s-phase
+  title: 'Phase 1: Kestrel (WSD-S Phase)'
+- id: phase-2-ocelot-ema-phase
+  title: 'Phase 2: Ocelot (EMA Phase)'
+- id: phase-3-jellyfish-first-cooldown
+  title: 'Phase 3: Jellyfish (First Cooldown)'
+- id: interlude-dessert-runs
+  title: 'Interlude: "Dessert" Runs'
+- id: phase-4-phoenix-reheated
+  title: 'Phase 4: Phoenix (Reheated)'
+- id: interlude-deeper-cooldowns
+  title: 'Interlude: Deeper Cooldowns'
+- id: phase-5-starling-second-cooldown
+  title: 'Phase 5: Starling (Second Cooldown)'
+- id: base-model-results
+  title: Base Model Results
+- id: supervised-fine-tuning
+  title: Supervised Fine-Tuning
+- id: main-takeaways
+  title: Main Takeaways
+- id: future-work
+  title: Future Work
+- id: glossary
+  title: Glossary
+author_notes:
+- With contributions credited to Percy Liang, Will Held, and chiheem.
+---
+{% raw %}
+<div class="retrospective-content">
+
+
+
+<!--
+
+Turns out mkdocs does a ToC
+
+- [Introduction](#introduction)
+- [The "Tootsie Roll" process](#the-tootsie-roll-process)
+- [Model Basics](#model-basics)
+- [Training Phases](#training-phases)
+  - [Phase 1: Kestrel (DCLM WSD-S Phase)](#phase-1-kestrel-dclm-wsd-s-phase)
+  - [Phase 2: Ocelot (DCLM EMA Phase)](#phase-2-ocelot-dclm-ema-phase)
+  - [Interlude: microannealing](#interlude-micro-annealing)
+  - [Phase 3: Jellyfish (First Cooldown)](#phase-3-jellyfish-first-cooldown)
+  - [Interlude: "Dessert" Runs](#interlude-dessert-runs)
+  - [Phase 4: Phoenix (Reheated)](#phase-4-phoenix-reheated)
+  - [Interlude: Deeper Cooldowns](#interlude-deeper-cooldowns)
+  - [Phase 5: Starling (Second Cooldown)](#phase-5-starling-second-cooldown)
+  - [Bonus: Deeper Starling (Dessert)](#bonus-deeper-starling-dessert)
+- [Base Model Results](#base-model-results)
+- [Supervised Fine-Tuning](#supervised-fine-tuning)
+- [Conclusion](#conclusion) -->
+
+
+<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">¶</a></h2>
+
+
+<p>This is a retrospective on the first-generation Marin 8B run.</p>
+
+
+<p>We cover the data mix, hyperparameters, and other training details, along with observations from the run itself—mistakes included. Our goal is to document what worked, what didn’t, and what we learned along the way.</p>
+
+
+<p>Reproducibility is a core principle of Marin. While this write-up was created post-run and may contain minor inaccuracies, we’ve done our best to be accurate. If you’re looking for more detail, you can also find supporting material here:</p>
+
+
+<ul>
+<li><a href="https://github.com/marin-community/marin/blob/ee163702c5bc71c9bbba3238db84b6ee86e826a7/experiments/tootsie/exp600_tootsie.py">Experiment Pipeline Script</a></li>
+<li><a href="https://github.com/marin-community/marin/issues/600">GitHub issue thread</a></li>
+<li><a href="https://wandb.ai/stanford-mercury/marin/reports/Tootsie-8B---VmlldzoxMTY3MzU3OA">WandB report</a></li>
+</ul>
+
+
+<p>If you’re not already reading this on <a href="https://marin.readthedocs.io/en/latest/reports/marin-8b-retro.html">ReadTheDocs</a>, we recommend viewing it there—there’s a table of contents on the right to help you navigate.</p>
+
+
+<h2 id="the-tootsie-roll-process">The "Tootsie Roll" Process<a class="headerlink" href="#the-tootsie-roll-process" title="Permanent link">¶</a></h2>
+
+
+<p>A core premise of the Marin 8B run was that we didn't fully know the best recipe—
+so we just started training with what we had, and planned to adapt along the way.
+Internally, we referred to this as the "Tootsie" process, a reference to
+<a href="https://en.wikipedia.org/wiki/Tootsie_Roll">Tootsie Rolls, which use a "graining" process</a> where each day's batch
+contains a bit of the previous day's, seeding crystallization or something. (We are not food scientists.)
+This is admittedly a bit of a strained metaphor, but the idea was that we'd keep folding in new data, training techniques, and whatever else as the training process went on.
+(As it would turn out, dear reader, we would often change more than the data...)</p>
+
+
+<h2 id="model-basics">Model Basics<a class="headerlink" href="#model-basics" title="Permanent link">¶</a></h2>
+
+
+<h3 id="model-size">Model Size<a class="headerlink" href="#model-size" title="Permanent link">¶</a></h3>
+
+
+<p>We decided to build a roughly 7-8 billion parameter model mostly out of pragmatism: we initially only had reserved capacity
+to train a model of that size for long enough.</p>
+
+
+<h3 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">¶</a></h3>
+
+
+<p>We settled on the <a href="https://arxiv.org/abs/2302.13971">Llama architecture</a> for the usual reasons: it has been shown to work well,
+easier to plug into existing inference stacks, no one ever got fired for buying IBM, etc.</p>
+
+
+<p>We used the same settings as Llama 3.1 8B. More specifically:</p>
+
+
+<table>
+<thead>
+<tr>
+<th><strong>Parameter</strong></th>
+<th><strong>Value</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hidden_dim</code></td>
+<td>4096</td>
+</tr>
+<tr>
+<td><code>intermediate_dim</code></td>
+<td>14336</td>
+</tr>
+<tr>
+<td><code>num_heads</code></td>
+<td>32</td>
+</tr>
+<tr>
+<td><code>num_kv_heads</code></td>
+<td>8</td>
+</tr>
+<tr>
+<td><code>num_layers</code></td>
+<td>32</td>
+</tr>
+<tr>
+<td><code>activation_function</code></td>
+<td><code>silu</code></td>
+</tr>
+</tbody>
+</table>
+
+
+<p>We used <a href="https://github.com/stanford-crfm/levanter">Levanter</a>'s implementation of the Llama architecture.
+We trained with a sequence length of 4096 tokens per sample.
+We used JAX's TPU Splash Attention kernel.</p>
+
+
+<p>We used mixed float32/bfloat16 precision, with parameters and optimizer states in float32 and compute in bfloat16
+(except for the final softmax over the vocabulary.)
+We used the <a href="https://arxiv.org/abs/1711.05101">AdamW</a> optimizer. We do not weight decay input embeddings or layer norm parameters.</p>
+
+
+<h3 id="tokenizer">Tokenizer<a class="headerlink" href="#tokenizer" title="Permanent link">¶</a></h3>
+
+
+<p>In Marin, we also standardized on the Llama 3 tokenizer, after <a href="https://github.com/marin-community/marin/issues/524">an experiment</a> showing it outperformed both Llama 2 and NeoX in terms of bits-per-byte (bpb).</p>
+
+
+<h3 id="batch-schedule">Batch Schedule<a class="headerlink" href="#batch-schedule" title="Permanent link">¶</a></h3>
+
+
+<p>We used a varying batch schedule, ranging from 1024 × 4096 = 4Mi tokens, to 3072 × 4096 = 12Mi <sup id="fnref:Mi"><a class="footnote-ref" href="#fn:Mi">1</a></sup> tokens, and up to 4096 × 4096 = 16Mi tokens per step.</p>
+
+
+<p>As with many aspects of the run, this schedule wasn't part of our original plan. We adapted it opportunistically as the run progressed.</p>
+
+
+<h3 id="checkpointing-policy">Checkpointing Policy<a class="headerlink" href="#checkpointing-policy" title="Permanent link">¶</a></h3>
+
+
+<p>We saved permanent full checkpoints every 20,000 steps (which, due to the varying batch schedule, could be a varying number of tokens). "Temporary" checkpoints were saved much more frequently, but were deleted as new checkpoints were saved.</p>
+
+
+<h3 id="hardware">Hardware<a class="headerlink" href="#hardware" title="Permanent link">¶</a></h3>
+
+
+<p>The TPU hardware varied between two different TPU clusters, generously provided by Google's <a href="https://sites.research.google/trc/about/">TPU Research Cloud</a>:</p>
+
+
+<ul>
+<li>2x v5e-256, configured using <a href="https://cloud.google.com/tpu/docs/multislice-introduction">multislice</a></li>
+<li>1x v4-2048</li>
+</ul>
+
+
+<p>The first phase was run on the 2x v5e-256, while subsequent phases were run on the v4-2048.</p>
+
+
+<h2 id="training-phases">Training Phases<a class="headerlink" href="#training-phases" title="Permanent link">¶</a></h2>
+
+
+<p><img alt="Training phases. See text for details." src="/assets/images/posts/marin-8b-retro/marin-timeline.png"/></p>
+
+
+<p>Retrospectively, we can partition the 8B run into several distinct phases—each nicknamed after an animal:</p>
+
+
+<ul>
+<li><em>Kestrel (DCLM WSD-S Phase)</em>: In the first phase, we used the "DCLM mix" and <a href="https://arxiv.org/abs/2410.05192">WSD-S</a> for about 2.7T tokens. We used 2x TPU v5e-256 coordinated with multislice for this. (0→2.7T tokens)</li>
+<li><em>Ocelot (DCLM WSD Phase)</em>: We were given access to a v4-2048 slice and moved to that. To better utilize the hardware, we increased our batch size 50%. We also switched from WSD-S to WSD. We kept the learning rate high through 3.78T tokens.</li>
+<li><em>Jellyfish (First Cooldown)</em>: It was time to cooldown as we were starting to run low on DCLM. Following recent work on midtraining (e.g. <a href="https://arxiv.org/abs/2501.00656">Olmo 2</a>), we decided to fold in higher quality data during cooldown. (3.78T→4.78T tokens)</li>
+<li><em>Phoenix (Reheated)</em>: We had more time for training, so we rapidly rewarmed the model and transitioned our mixture to <a href="https://arxiv.org/abs/2412.02595">Nemotron-CC</a> (plus <a href="https://huggingface.co/datasets/bigcode/starcoderdata">StarCoder Data</a>). (4.78T→11.1T tokens)</li>
+<li><em>Starling (Second Cooldown)</em>: Now we were running low on time, so we started another cooldown. We followed a similar process to the first cooldown, but added a few new datasets that we had created and also some that had dropped since our previous attempt. (11.1T→12.75T tokens)</li>
+</ul>
+
+
+<p>These phases were not planned in advance. Decisions were made reactively based on changing timelines and data availability.</p>
+
+
+<p>While the final Marin 8B model came from a single linear run, we also explored a number of side paths. Some of these were by design—for example, short microannealing experiments
+(inspired by <a href="https://arxiv.org/abs/2501.00656">Olmo 2</a>, <a href="https://arxiv.org/html/2403.04652v1">Yi</a>, <a href="https://www.databricks.com/blog/introducing-dbrx-new-state-art-open-llm">DBRX</a>) that informed our cooldown mix.
+Others tested "deeper cooldown" strategies or addressed issues like "SFT-ability." We summarize these later, but you can find more detail in:</p>
+
+
+<p><strong>Annealing Experiments:</strong>
+* <a href="https://github.com/marin-community/marin/issues/784">GH#784</a>: High Quality Data Annealing Experiments on Dolma/Dolmino
+* <a href="https://github.com/marin-community/marin/issues/820">GH#820</a>: Evaluate High Quality Datasets for Cooldown Mix
+* <a href="https://github.com/marin-community/marin/issues/934">GH#934</a>: Comparing Cooldowns on Pretraining Data v.s. HQ Data</p>
+
+
+<p><strong>SFT-ability:</strong>
+* <a href="https://github.com/marin-community/marin/issues/898">GH#898</a>: Raccoon: Try deepening the cooldown of "jellyfish" to see if it improves SFT
+* <a href="https://github.com/marin-community/marin/issues/916">GH#916</a>: Spoonbill: not-quite-so-deep cooldown</p>
+
+
+<h2 id="phase-1-kestrel-wsd-s-phase">Phase 1: Kestrel (WSD-S Phase)<a class="headerlink" href="#phase-1-kestrel-wsd-s-phase" title="Permanent link">¶</a></h2>
+
+
+<p>In the first phase, we trained from scratch using what was, at the time, the best publicly available dataset (according
+to standard benchmarks like MMLU):
+<a href="https://huggingface.co/datasets/mlfoundations/dclm-baseline-1.0">DCLM Baseline</a>, from the <a href="https://arxiv.org/abs/2406.11794">DCLM paper</a>.
+We adopted their “best mixture”: DCLM Baseline, <a href="https://huggingface.co/datasets/bigcode/starcoderdata">StarCoder Data</a>, and <a href="https://huggingface.co/datasets/EleutherAI/proof-pile-2">Proofpile 2</a>.</p>
+
+
+<p>The DCLM paper used a curriculum, mixing in StarCoder and Proofpile only near the end of training.
+We did <strong>not</strong> start with a curriculum—though we ended up adding quite a bit of one later.
+(We intended to add new datasets as we trained, but they were still being produced.)</p>
+
+
+<h3 id="hardware_1">Hardware<a class="headerlink" href="#hardware_1" title="Permanent link">¶</a></h3>
+
+
+<p>We started with a reserved 2x TPU v5e-256 slice, which was the largest TPU slice available to us at the time. We used <a href="https://cloud.google.com/tpu/docs/multislice-introduction">multislice</a> to coordinate the two slices.</p>
+
+
+<h3 id="data-mix">Data Mix<a class="headerlink" href="#data-mix" title="Permanent link">¶</a></h3>
+
+
+<p>At the beginning, we decided to use the DCLM 7B mix in
+ratios roughly proportional to token count. (DCLM 7B was, at the time, the best open source model.)</p>
+
+
+<p>Specifically, this meant:</p>
+
+
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Percentage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://huggingface.co/datasets/mlfoundations/dclm-baseline-1.0">DCLM Baseline</a></td>
+<td>92.6%</td>
+</tr>
+<tr>
+<td><a href="https://huggingface.co/datasets/bigcode/starcoderdata">StarCoder Data</a></td>
+<td>6.1%</td>
+</tr>
+<tr>
+<td><a href="https://huggingface.co/datasets/EleutherAI/proof-pile-2">Proofpile 2</a></td>
+<td>1.3%</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>We planned on adding new datasets as we (and others!) developed them.
+For evaluation, we initially tracked a large subset of Paloma (with a particular focus on the <code>c4en</code> subset) during training.</p>
+
+
+<h3 id="wsd-s">WSD-S<a class="headerlink" href="#wsd-s" title="Permanent link">¶</a></h3>
+
+
+<p>Based on the success of <a href="https://arxiv.org/abs/2410.05192">our work understanding cyclic warmup-stable-decay schedules (WSD-S)</a>, we decided to use a
+WSD-S learning rate schedule.
+WSD-S is essentially a cyclic warmup–stable–decay schedule, where you warm up, hold a long plateau at peak learning rate, and then decay—repeating the stable and decay phases.
+The decay phases allow you to measure how the model is performing.</p>
+
+
+<p>WSD-S has a number of appealing properties:</p>
+
+
+<ul>
+<li>You can run at a very high learning rate for as long as you want, without needing to pre-register cooldowns.</li>
+<li>We could periodically do a rapid cooldown to get a sense of model performance without (completely) "wasting" FLOPs.</li>
+<li>WSD-S was shown to converge just as well as the more standard cosine schedule at any given point, meaning we could potentially use the checkpoints as fodder for scaling law analysis.</li>
+</ul>
+
+
+<p>For the first 200K steps, we did a decay cycle every 10k steps for 1k steps.
+However, I (@dlwh) got worried that we weren't seeing significant improvement in evaluation losses.
+We then moved to a decay cycle every 20k steps for 2k steps, which led to a significant improvement in some eval losses,
+but not all. (See below.)</p>
+
+
+<p>We ended up moving away from WSD-S after this phase, for reasons to be detailed later.</p>
+
+
+<h3 id="other-hyperparameters">Other hyperparameters<a class="headerlink" href="#other-hyperparameters" title="Permanent link">¶</a></h3>
+
+
+<p>We used a sequence length of 4096 and a batch size of 1024 * 4096 = 4Mi tokens.</p>
+
+
+<p>The <a href="https://arxiv.org/abs/2406.11794">DCLM paper</a> also showed that you could run fairly "hot", and we followed their example.
+At 1e-3, our LR was roughly 3x higher than <a href="https://arxiv.org/abs/2501.00656">Olmo 2 7B</a>'s 3e-4, and, with WSD-S, we were running at peak LR for 90% of steps.
+We used a weight decay of 0.05. These are roughly consistent with Table 12 of the <a href="https://arxiv.org/abs/2406.11794">DCLM paper</a>.
+(They recommend 2e-3, but we encountered instability at that rate.)</p>
+
+
+<p>We initially opted to not use Z-loss because we didn't have problems with LR=1e-3 and wanted to keep things as simple
+as possible. In retrospect, we should have used it and have since made it the default for future Marin runs.</p>
+
+
+<h3 id="specification">Specification<a class="headerlink" href="#specification" title="Permanent link">¶</a></h3>
+
+
+<p>The specification for the first phase is available on <a href="https://github.com/marin-community/marin/blob/1e713371b25b0d2a1fc90b917e954e460ebd6c2c/experiments/tootsie/exp600_tootsie.py#L55-L81">GitHub</a>.</p>
+
+
+<h3 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">¶</a></h3>
+
+
+<h4 id="stability">Stability<a class="headerlink" href="#stability" title="Permanent link">¶</a></h4>
+
+
+<p>Training was fairly stable with very few spikes.</p>
+
+
+<h4 id="wsd-cycle-change">WSD Cycle Change<a class="headerlink" href="#wsd-cycle-change" title="Permanent link">¶</a></h4>
+
+
+<p>At step 200k, we had a hypothesis that longer cooldowns would show more progress in terms of eval losses.
+We had been doing a decay every 10k steps for 1k steps, and we switched to a decay every 20k steps for 2k steps.
+That is, we still spent 10% of our steps in a decay phase, but each decay phase was twice as long, giving the model more
+time to consolidate its progress.</p>
+
+
+<p>Visually, the schedule now looked like this:</p>
+
+
+<p><img alt="graph depicting the new spacing of decay phases" src="/assets/images/posts/marin-8b-retro/tootsie-8b-retro-wsd-interval.png"/></p>
+
+
+<p>As expected, this led to a drop in eval losses that most looked like our training data. In the below, the orange line is
+eval loss (Paloma's c4en), while the blue line is training loss.
+There is a noticeable drop in both the eval loss and the training loss during the decay phase.</p>
+
+
+<p><img alt="graph depicting the drop in eval loss and training loss with the longer, less frequent decay phases" src="/assets/images/posts/marin-8b-retro/tootsie-8b-wsd-s-loss-transition.png"/></p>
+
+
+<p>Interestingly, not all eval losses dropped.  In fact, for some domains, the eval loss increased.
+We saw decreases in <code>mc4</code>, <code>c4en</code>, <code>m2d2 wikipedia</code>, <code>m2d2 s2orc</code>, and <code>refined web</code>, but marked increases in <code>100_subreddits</code>, <code>twitterAAE_HELM_fixed</code>, <code>manosphere</code>, <code>4chan</code>, among a few others.
+Interestingly, after the initial spike, most of those domains began trending downward as well.
+Subsequent analysis revealed that this was due to structural differences in preprocessing between the domains: some Paloma domains had texts that obligatorily ended with a space character (which we did not strip), which was not how our training data was formatted.
+The deeper cooldown allowed the model to "dislike" these final spaces more clearly.
+We investigated this behavior further in <a href="https://github.com/marin-community/marin/issues/826#issuecomment-2696496271">this analysis</a>.</p>
+
+
+<p><img alt="graph depicting many eval losses after the transition to longer decay phases" src="/assets/images/posts/marin-8b-retro/tootsie-8b-wsd-s-losses-post-transition.png"/></p>
+
+
+<h2 id="phase-2-ocelot-ema-phase">Phase 2: Ocelot (EMA Phase)<a class="headerlink" href="#phase-2-ocelot-ema-phase" title="Permanent link">¶</a></h2>
+
+
+<p>At around 2.7e12 tokens, we gained access to a v4-2048 reservation and immediately transitioned over.
+All subsequent phases were run on that hardware.</p>
+
+
+<h3 id="adjusted-hyperparameters">Adjusted Hyperparameters<a class="headerlink" href="#adjusted-hyperparameters" title="Permanent link">¶</a></h3>
+
+
+<p>To better utilize the hardware, we increased our batch size by 3x, to 12Mi tokens at around 2.77e12 tokens.
+Following <a href="https://www.cs.princeton.edu/~smalladi/blog/2024/01/22/SDEs-ScalingRules/">this blog post by Sadhika Malladi</a>, we increased the learning rate to 1.7e-3,
+which is approximately the old learning rate multiplied by $<code>\sqrt{3}</code>$ (the square root of the batch size increase).</p>
+
+
+<p>We also switched from WSD-S to WSD, using the exponential moving averaging (EMA) of weights for monitoring evaluation performance. We did this following the <a href="https://arxiv.org/pdf/2412.19437v1">Deepseek V3 paper</a>. We used a $<code>\beta</code>$ of 0.995.
+Initially, I inadvertently got the direction of the EMA wrong, so early evals were not substantially different from the "hot" model. Oh well.</p>
+
+
+<p>We did not reset the optimizer state or do a rewarmup in this or any transition.</p>
+
+
+<p>To my continued embarrassment, I also realized we were still using Llama 2’s rotary embedding settings. We switched to Llama 3-style at this point.</p>
+
+
+<h3 id="specification_1">Specification<a class="headerlink" href="#specification_1" title="Permanent link">¶</a></h3>
+
+
+<p>The specification for the second phase of training is <a href="https://github.com/marin-community/marin/blob/852c53f9741b233549daf9f1649fe88c9c5a170c/experiments/tootsie/exp600_tootsie.py#L81-L116">here</a>.</p>
+
+
+<h3 id="notes_1">Notes<a class="headerlink" href="#notes_1" title="Permanent link">¶</a></h3>
+
+
+<h4 id="stability_1">Stability<a class="headerlink" href="#stability_1" title="Permanent link">¶</a></h4>
+
+
+<p>Despite the changes, training was still fairly stable with very few spikes.
+We saw a brief spike near the beginning which we attribute to the change in rotary embeddings, though we did not investigate this further.</p>
+
+
+<h4 id="the-ema-gap">The EMA Gap<a class="headerlink" href="#the-ema-gap" title="Permanent link">¶</a></h4>
+
+
+<p>One of the most interesting things we saw during this phase was what we call the "EMA gap."
+The EMA gap is the difference between the eval loss of the EMA model and the eval loss of the hot model. As expected, the EMA loss was better.
+Surprisingly, the gap was fairly stable over time, changing only with changes to the learning rate (or different datasets). For c4en, with the hot learning rate, the gap was consistently around 0.015 bits-per-byte (bpb). A stable gap of 0.017 was observed in the subsequent Phoenix phase. The EMA gap would of course shrink as the learning rate was cooled down (since, in the limit, the model freezes).</p>
+
+
+<p>That’s not to say the gap never shifted, but it didn’t appear to trend upward or downward over time, which surprised us.</p>
+
+
+<p><img alt="embed" src="/assets/images/posts/marin-8b-retro/tootsie-8b-ema-gap.png"/></p>
+
+
+<h3 id="interlude-microannealing">Interlude: Microannealing<a class="headerlink" href="#interlude-microannealing" title="Permanent link">¶</a></h3>
+
+
+<p>Following recent work on midtraining (e.g. <a href="https://arxiv.org/abs/2501.00656">Olmo 2</a>, <a href="https://arxiv.org/html/2403.04652v1">Yi</a>, <a href="https://www.databricks.com/blog/introducing-dbrx-new-state-art-open-llm">DBRX</a>), we knew we would need to mix in higher quality data during our cooldowns. But what actually constitutes higher quality data?</p>
+
+
+<p>Llama 3 and Olmo 2 used small experiments (what Olmo calls "microannealing") to test the effect of different data sources. The basic idea is to take a model that has already been mostly trained, and then do a short cooldown with ~70% original data and ~30% a test high quality data source. (Olmo 2 uses 50/50.) We ran a series of microannealing runs to test the effect of different data sources.</p>
+
+
+<p>See <a href="https://github.com/marin-community/marin/issues/784">GH#784</a> and <a href="https://github.com/marin-community/marin/issues/820">GH#820</a> for the experiments and more details on our approach.</p>
+
+
+<p>The most important takeaway was that, in microannealing experiments, naively oversampling “High Quality” (HQ) data did not improve task performance.
+It did, however, consistently improve loss on HQ validation sets (e.g., Paloma’s various subsets)—which isn’t surprising, since those eval sets often came from the same or similar domains as the HQ training data.</p>
+
+
+<p>We believe this is because typical "high quality" data sources (e.g. ArXiv, Wikipedia) don't have as much fewshot-learning-inducing data (e.g. multiple choice questions) as the broader web does. When you replace such a large fraction of the Pretraining (PT) mix with a HQ source, you lose out on this data and task performance suffers.</p>
+
+
+<p>In fact, we found that nothing led to improved task performance in microannealing experiments compared to the control (of 100% PT mix)... until we mixed in FLAN into all microannealing runs. FLAN was designed to improve fewshot-learning performance, and so it was a perfect fit for our microannealing experiments. Instead of the 70% PT / 30% HQ recommended in the Llama 3 paper, we found that 70% PT/ 15% FLAN/15% HQ led to the best results for our experiment budget.</p>
+
+
+<p>By doing this, we were able to improve both the loss and the task performance of most microannealing runs. Ironically, notwithstanding the above, only 70% PT/30% FLAN underperformed the 100% PT control.</p>
+
+
+<p>We also found that a microannealing experiment with all HQ sources resulted in average performance compared to the other microannealing runs; in this setting, there was no advantage in having a variety of data.</p>
+
+
+<p>In summary:</p>
+
+
+<ul>
+<li>Naively oversampling "high-quality" (HQ) sources improved loss on HQ eval sets, but degraded general task performance.</li>
+<li>HQ data often lacks formats useful for few-shot learning (e.g., multiple-choice Q&amp;A).</li>
+<li>Mixing in FLAN counteracted this by reintroducing task-like structure, improving task performance.</li>
+<li>The best results came from 70% PT / 15% FLAN / 15% HQ — not from HQ alone.</li>
+<li>Mixing all HQ sources together performed about at the average of the specific HQ sources.</li>
+<li>Including FLAN alone (i.e. 70% PT / 30% FLAN) underperformed the PT baseline.</li>
+</ul>
+
+
+<p>So: FLAN helps in moderation. HQ alone didn't.</p>
+
+
+<h2 id="phase-3-jellyfish-first-cooldown">Phase 3: Jellyfish (First Cooldown)<a class="headerlink" href="#phase-3-jellyfish-first-cooldown" title="Permanent link">¶</a></h2>
+
+
+<p>At around 3.7T tokens, we were running low on DCLM tokens, which meant we needed to change something. We decided to try a cooldown.</p>
+
+
+<h3 id="data-mix_1">Data Mix<a class="headerlink" href="#data-mix_1" title="Permanent link">¶</a></h3>
+
+
+<p>Based on the above, we decided to mix in a mixture of 70% high quality "web" (i.e. Dolmino's DCLM HQ and <a href="https://huggingface.co/datasets/bigcode/starcoderdata">StarCoder</a>) and 30% of a combination of modified Dolmino and <a href="https://huggingface.co/datasets/HuggingFaceTB/finemath">FineMath-3+</a>.</p>
+
+
+<p>Specifically, we included all sources from our ablations that outperformed the 100% PT control, which is everything we tried at this phase except Dolmino FLAN.</p>
+
+
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Percentage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dolmino DCLM HQ</td>
+<td>67.8%</td>
+</tr>
+<tr>
+<td>Dolma peS2o</td>
+<td>10.8%</td>
+</tr>
+<tr>
+<td>FineMath 3+</td>
+<td>6.3%</td>
+</tr>
+<tr>
+<td>Dolma Arxiv</td>
+<td>5.2%</td>
+</tr>
+<tr>
+<td>Dolma StackExchange</td>
+<td>3.2%</td>
+</tr>
+<tr>
+<td>StarCoder</td>
+<td>2.2%</td>
+</tr>
+<tr>
+<td>Dolma Algebraic Stack</td>
+<td>2.1%</td>
+</tr>
+<tr>
+<td>Dolma Open Web Math</td>
+<td>0.9%</td>
+</tr>
+<tr>
+<td>Dolma Megawika</td>
+<td>0.8%</td>
+</tr>
+<tr>
+<td>Dolma Wikipedia</td>
+<td>0.7%</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>The HQ sources were weighted roughly proportional to token count and then upweighted to be 30% of the total.</p>
+
+
+<p>The main deviations from the Dolmino mixture were:</p>
+
+
+<ul>
+<li>We included datasets that <a href="https://arxiv.org/abs/2501.00656">Olmo 2</a> used in its Phase 1 (e.g. wikipedia) that we did not.</li>
+<li>We did not include <a href="https://arxiv.org/abs/2109.01652">FLAN</a>. (We were suspicious of its fairly repetitive templating.)</li>
+<li>We did not include the other synthetic math datasets in Dolmino. (Similarly, but this was a mistake.)</li>
+<li>We added <a href="https://huggingface.co/datasets/HuggingFaceTB/finemath">FineMath-3+</a>.</li>
+</ul>
+
+
+<h3 id="learning-rate-schedule">Learning rate schedule<a class="headerlink" href="#learning-rate-schedule" title="Permanent link">¶</a></h3>
+
+
+<p>We decayed the learning rate from 1.7e-3 to 1.7e-4 over 1e12 tokens (79500 steps at 12Mi tokens/step). We used a linear decay schedule.</p>
+
+
+<h3 id="results">Results<a class="headerlink" href="#results" title="Permanent link">¶</a></h3>
+
+
+<p>Results for this model are pretty good for "base model" tasks, though predictably not great for math and instruction following.</p>
+
+
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Score (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MMLU (5-shot)</td>
+<td>65.3</td>
+</tr>
+<tr>
+<td>MMLU (0-shot)</td>
+<td>62.5</td>
+</tr>
+<tr>
+<td>GSM8K (8-shot)</td>
+<td>50.9</td>
+</tr>
+<tr>
+<td>HumanEval (pass@1)</td>
+<td>24.4</td>
+</tr>
+<tr>
+<td>MATH (4-shot)</td>
+<td>18.5</td>
+</tr>
+<tr>
+<td>IFEval (prompt-level loose)</td>
+<td>9.2</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>A 5-shot MMLU of 65.3 was better than both Olmo 2 7B (63.9) and DCLM (64.4), and not too far behind Llama 3.1 8B (66.4).<sup id="fnref:MMLU scores"><a class="footnote-ref" href="#fn:MMLU scores">2</a></sup> But we can do better.</p>
+
+
+<h3 id="notes_2">Notes<a class="headerlink" href="#notes_2" title="Permanent link">¶</a></h3>
+
+
+<h4 id="c4-en-perplexity">C4 EN Perplexity<a class="headerlink" href="#c4-en-perplexity" title="Permanent link">¶</a></h4>
+
+
+<p>Interestingly, this mix led to a large increase in Paloma c4en loss:</p>
+
+
+<p><img alt="embed" src="/assets/images/posts/marin-8b-retro/tootsie-8b-ema-gap.png"/></p>
+
+
+<p>We haven't investigated this, but our hypothesis is that there are more structural differences in the formatting between DCLM HQ and c4en than there were between DCLM Baseline and c4en.</p>
+
+
+<p>It is worth noting that we did not observe this increase in our largely similar final cooldown (which used Nemotron CC instead of Dolmino's DCLM HQ).</p>
+
+
+<h2 id="interlude-dessert-runs">Interlude: "Dessert" Runs<a class="headerlink" href="#interlude-dessert-runs" title="Permanent link">¶</a></h2>
+
+
+<p>While our "mainline" run continued in the Phoenix phase, we ran a number of short ablations
+consisting of what we termed "dessert" runs.
+Dessert coasted at the same already-low, learning rate with the goal of patching a few gaps in capabilities: we added the synthetic math datasets from Dolmino that we had excluded from our main run and added FLAN. See <a href="https://github.com/marin-community/marin/issues/600#issuecomment-2704462502">this comment in GH#600</a> as well as <a href="https://github.com/marin-community/marin/issues/600#issuecomment-2704521062">this one</a> for more details.
+(Dessert runs are called "dessert" because they come at the end and originally, at least, added FLAN.)</p>
+
+
+<ul>
+<li>Adding the math datasets improved GSM8K and MATH somewhat. GSM8K went from 0.509 to 0.611, and MATH went from 0.184 to 0.211. Not enough to get excited about, but a positive sign for later.</li>
+<li>FLAN didn't help final MMLU 5-shot (.653-&gt;.651) or other tasks, at least not in this regime.</li>
+</ul>
+
+
+<p>So "Dessert" was seemingly a failure, though we revisit this in the final phase.</p>
+
+
+<h2 id="phase-4-phoenix-reheated">Phase 4: Phoenix (Reheated)<a class="headerlink" href="#phase-4-phoenix-reheated" title="Permanent link">¶</a></h2>
+
+
+<p>The specification for this phase is available <a href="https://github.com/marin-community/marin/blob/852c53f9741b233549daf9f1649fe88c9c5a170c/experiments/tootsie/exp600_tootsie.py#L465-L522">here</a>.</p>
+
+
+<p>After the cooldown, at around 4.7T tokens, we had more time for training, so we decided to keep going. We rapidly rewarmed the model and transitioned our mixture to <a href="https://arxiv.org/abs/2412.02595">Nemotron-CC</a> (plus some code and math).</p>
+
+
+<h3 id="data">Data<a class="headerlink" href="#data" title="Permanent link">¶</a></h3>
+
+
+<p>Because we were running out of DCLM, we transitioned the data from our phase 1 and 2 mixture (DCLM+StarCoder+ProofPile 2) to a new mixture that was <a href="https://arxiv.org/abs/2412.02595">Nemotron-CC</a> and <a href="https://huggingface.co/datasets/bigcode/starcoderdata">StarCoder</a>.
+(We didn't worry too much about epoching StarCoder.)</p>
+
+
+<p>The target mixture was Nemotron-CC (with each subset weighted approximately proportionally to token count) and StarCoder,
+also weighted by token count. As a transition, we weighted all components
+(DCLM, StarCoder, Proofpile, and Nemotron's subcomponents) approximately proportional to token count, which we used for 2,000 steps (about 25.2e9 tokens), after which we switched to the target mixture.</p>
+
+
+<h3 id="learning-rate-schedule_1">Learning Rate Schedule<a class="headerlink" href="#learning-rate-schedule_1" title="Permanent link">¶</a></h3>
+
+
+<p>We rewarmed the learning rate linearly from 1.7e-4 to 1.7e-3 over those same 2,000 steps and
+held the learning rate fixed at 1.7e-3 for the remainder of this phase.</p>
+
+
+<h3 id="notes_3">Notes<a class="headerlink" href="#notes_3" title="Permanent link">¶</a></h3>
+
+
+<p>The most interesting thing about this phase was that the transition went very smoothly. We expected a substantial loss spike, but didn't see one. The loss did jump, but returns to a slightly lower level than where the run was before the cooldown.</p>
+
+
+<p><img alt="graph depicting the loss during the transition to the new data mix. The loss very briefly spiked but then returned to lower levels than before the first cooldown." src="/assets/images/posts/marin-8b-retro/8b-phoenix-transition.png"/></p>
+
+
+<p>Another point of small interest is that the steady state c4en loss for Phoenix was considerably lower
+than DCLM. This need not mean anything other than structural similarities in the preprocessing.
+We have not investigated this further.</p>
+
+
+<h2 id="interlude-deeper-cooldowns">Interlude: Deeper Cooldowns<a class="headerlink" href="#interlude-deeper-cooldowns" title="Permanent link">¶</a></h2>
+
+
+<p>While Phoenix was running, we also ran a series of "deeper" cooldowns, trying to improve the model's amenability to supervised fine tuning ("SFT-ability"). This led to the <a href="https://github.com/marin-community/marin/issues/898">Raccoon</a> and <a href="https://github.com/marin-community/marin/issues/916">Spoonbill</a> series of runs.</p>
+
+
+<h3 id="raccoon-debugging-sft-ability">Raccoon: Debugging SFT-ability<a class="headerlink" href="#raccoon-debugging-sft-ability" title="Permanent link">¶</a></h3>
+
+
+<p>The genesis of Raccoon was that we were having trouble getting our model to perform well after supervised fine tuning (SFT). While our nascent SFT pipeline would exhibit an "epoch cliff" (i.e. loss would jump down on each repeated epoch) for Llama 3.1 8B and Olmo 2 7B, <a href="https://github.com/marin-community/marin/issues/897">it didn't do that for our model</a>, and indeed didn't perform that well. We hypothesized that this was because our "cooled down" LR was still quite high: 1.7e-4, which was closer to Olmo 2's peak LR than their final LR.
+We thought this might have something to do with our struggles with SFT-ability.</p>
+
+
+<p>Starting from the jellyfish cooldown, we further cooled down the model from 1.7e-4 to 1.7e-5 over about 100B tokens. (<a href="https://wandb.ai/stanford-mercury/marin/reports/898-Tootsie-Soft-Raccoon--VmlldzoxMTk3NjUwNg?accessToken=06f87pmmvhdulczenkg3349jxk7e1pwbd4pdci2i8wvyxg9289122gfnckr9ymwc">WandB report here</a>)
+Things looked good at first, but as the cool down deepened the training loss started slowly creeping up?!?
+We could understand if there was a divergence but we couldn't understand a slow increase in training loss.</p>
+
+
+<p><img alt="graph depicting the slow increase in training loss during the cooldown" src="/assets/images/posts/marin-8b-retro/8b-raccoon-loss-increase.png"/></p>
+
+
+<p>We tried a number of things to debug this:</p>
+
+
+<ul>
+<li>Resetting the optimizer state (maybe something was wonky?)</li>
+<li>Removing weight decay (maybe the gradient signal was too weak?)</li>
+</ul>
+
+
+<p>Nothing solved the problem.</p>
+
+
+<p>What?</p>
+
+
+<p>(That said, SFT performance did get better, so that was good!)</p>
+
+
+<h3 id="spoonbill-z-loss-to-the-rescue">Spoonbill: Z-loss to the rescue<a class="headerlink" href="#spoonbill-z-loss-to-the-rescue" title="Permanent link">¶</a></h3>
+
+
+<p><a href="https://wandb.ai/stanford-mercury/marin/reports/916-Tootsie-Hypnotic-Spoonbill--VmlldzoxMjA1NjU2Nw">WandB report here</a></p>
+
+
+<p>With <a href="https://github.com/marin-community/marin/issues/916">Spoonbill</a>, we tried decaying to 3e-5 rather than 1.7e-5. (3e-5 was Olmo 2's final LR, and in Raccoon we were still seeing decreases at 3e-5.) We also threw in some <a href="https://arxiv.org/abs/2411.15124">Tulu v3 data</a> (.3% of the data) and FLAN (1%) to adjust the data schedule and generally improve SFT-ability.</p>
+
+
+<p>Alas, the training loss still crept up.</p>
+
+
+<p>What?</p>
+
+
+<p><img alt="graph depicting the slow increase in training loss during the cooldown for spoonbill" src="/assets/images/posts/marin-8b-retro/marin-8b-spoonbill-loss.png"/></p>
+
+
+<p>We reran with extensive norm tracking and finally isolated the problem: the <code>lm_head</code> was exploding:</p>
+
+
+<p><img alt="graph depicting the norm of the lm_head during training compared to some other params" src="/assets/images/posts/marin-8b-retro/8b-spoonbill-norms.png"/></p>
+
+
+<p>We fixed this by adding a z-loss penalty of 1e-4 on the final logits.</p>
+
+
+<p>And it worked!</p>
+
+
+<p><img alt="graph depicting the loss during the cooldown for spoonbill" src="/assets/images/posts/marin-8b-retro/8b-spoonbill-zloss.png"/></p>
+
+
+<p>Interestingly, <a href="https://wandb.ai/marin-community/marin/reports/ZLoss-vs-Not-1-4B--VmlldzoxMjEzMzA1NA">subsequent experiments</a> showed that, when starting from scratch, z-loss <strong>increases</strong> the norm of the lm_head, while it decreases the scale on the final layer norm.
+(In retrospect, this makes sense, for two reasons. First, the final layer norm has a disproportionate impact on the scale of the logits compared
+to any one component in the lm_head. Second, layer norms are typically not weight decayed, so z-loss is the only regularization pressure on it.)</p>
+
+
+<p>So, z-loss, it's not just for avoiding explosions.</p>
+
+
+<h2 id="phase-5-starling-second-cooldown">Phase 5: Starling (Second Cooldown)<a class="headerlink" href="#phase-5-starling-second-cooldown" title="Permanent link">¶</a></h2>
+
+
+<p>At around 11.1e12 tokens, we decided to start another cooldown. Building on lessons from our previous cooldowns, we made the following changes:</p>
+
+
+<ul>
+<li>We deepened the cooldown to 1.7e-5, rather than 1.7e-4.</li>
+<li>We added a small z-loss penalty of 1e-4.</li>
+<li>We increased the batch size to 16Mi tokens rather than 12Mi.</li>
+</ul>
+
+
+<p>This cooldown ran for 1.34T tokens.</p>
+
+
+<h3 id="data_1">Data<a class="headerlink" href="#data_1" title="Permanent link">¶</a></h3>
+
+
+<p>We switched to a mix that was 70% <a href="https://arxiv.org/abs/2412.02595">Nemotron-CC</a> and 30% high-quality sources, including some new sources we created.
+Nemotron-CC's components were weighted according to compressed bytes (which is roughly proportional to token count).
+Within the high quality datasets, we weighted them roughly proportional to token counts multiplied by an oversampling ratio we set more or less arbitrarily.</p>
+
+
+<p>We included the following datasets:</p>
+
+
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Proportion</th>
+<th>Oversampling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NemoTron CC Medium</td>
+<td>22.1%</td>
+<td>1x</td>
+</tr>
+<tr>
+<td>NemoTron CC HQ Synth</td>
+<td>17.8%</td>
+<td>1x</td>
+</tr>
+<tr>
+<td>NemoTron CC Medium Low</td>
+<td>10.1%</td>
+<td>1x</td>
+</tr>
+<tr>
+<td>NemoTron CC HQ Actual</td>
+<td>6.0%</td>
+<td>1x</td>
+</tr>
+<tr>
+<td>NemoTron CC Medium High</td>
+<td>5.4%</td>
+<td>1x</td>
+</tr>
+<tr>
+<td>NemoTron CC Low Actual</td>
+<td>4.6%</td>
+<td>1x</td>
+</tr>
+<tr>
+<td>NemoTron CC Low Synth</td>
+<td>4.1%</td>
+<td>1x</td>
+</tr>
+<tr>
+<td>Marin Arxiv Markdown</td>
+<td>5.2%</td>
+<td>5x</td>
+</tr>
+<tr>
+<td>Dolmino peS2o</td>
+<td>5.2%</td>
+<td>5x</td>
+</tr>
+<tr>
+<td>StarCoder Data</td>
+<td>4.5%</td>
+<td>1x</td>
+</tr>
+<tr>
+<td>Proofpile 2</td>
+<td>4.5%</td>
+<td>1x</td>
+</tr>
+<tr>
+<td>Finemath (3+)</td>
+<td>3.0%</td>
+<td>5x</td>
+</tr>
+<tr>
+<td>Dolmino FLAN</td>
+<td>3.0%</td>
+<td>10x</td>
+</tr>
+<tr>
+<td>Dolmino StackExchange</td>
+<td>1.5%</td>
+<td>5x</td>
+</tr>
+<tr>
+<td>Marin StackExchange Markdown</td>
+<td>1.5%</td>
+<td>5x</td>
+</tr>
+<tr>
+<td>Dolmino Math</td>
+<td>0.8%</td>
+<td>10x</td>
+</tr>
+<tr>
+<td>Marin Wikipedia Markdown</td>
+<td>0.3%</td>
+<td>5x</td>
+</tr>
+<tr>
+<td>Dolmino Wiki</td>
+<td>0.3%</td>
+<td>5x</td>
+</tr>
+<tr>
+<td><a href="https://huggingface.co/datasets/marin-community/datashop-science-qa">Marin Datashop Science QA</a></td>
+<td>0.1%</td>
+<td>5x</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>Here "Dolmino Math" refers to most of the mathy components of Dolmino:</p>
+
+
+<ul>
+<li><a href="https://arxiv.org/abs/1909.09436">CodeSearchNet</a> (with OWM Filter)</li>
+<li><a href="https://arxiv.org/pdf/2110.14168v1">GSM8K</a></li>
+<li><a href="https://arxiv.org/abs/2309.12284">MetaMath</a></li>
+<li><a href="https://arxiv.org/abs/2501.00656">Dolmino SynthMath</a></li>
+<li><a href="https://arxiv.org/abs/2310.03731">MathCoder2 Synthetic</a></li>
+<li><a href="https://arxiv.org/abs/2501.00656">Dolmino TinyGSM-MIND</a></li>
+<li><a href="https://arxiv.org/abs/2501.00656">Dolmino Tulu Math</a></li>
+</ul>
+
+
+<p>About the new datasets:</p>
+
+
+<h4 id="marin-datashop-science-qa">Marin Datashop Science QA<a class="headerlink" href="#marin-datashop-science-qa" title="Permanent link">¶</a></h4>
+
+
+<p><a href="https://huggingface.co/datasets/marin-community/datashop-science-qa">Marin Datashop Science QA</a> is a new dataset of 12.6B mostly science questions generated by rephrasing science-related web content using Marin Datashop. The pipeline first annotates a small subset of data using an LLM, trains a quality filter model on those annotations, then applies the filter to score and select high-quality examples from the full corpus.</p>
+
+
+<h5 id="marin-markdown-corpora">Marin Markdown Corpora<a class="headerlink" href="#marin-markdown-corpora" title="Permanent link">¶</a></h5>
+
+
+<p>More details on the Markdown corpora are available in <a href="https://marin.readthedocs.io/en/latest/reports/markdownified-datasets/">our report on the datasets</a>.</p>
+
+
+<p>We create three new datasets by Markdownifying a few different "high-quality sources."  The motivation behind these datasets was two-fold. First, we wanted to create high-fidelity conversions of high-quality sources that preserve important structure and formatting (e.g., tables and LaTeX). Second, Markdown has increasingly become the default format for many LLM applications, so training on Markdown-style inputs may improve downstream usability. (Also, we noticed in <a href="https://github.com/marin-community/marin/issues/826">our visualization experiments</a> the prior checkpoint was qualitatively worse at Markdown than Llama 8B.)</p>
+
+
+<ul>
+<li>Marin Arxiv Markdown (available as two datasets: <a href="https://huggingface.co/datasets/marin-community/ar5iv-no-problem-markdown">ar5iv-no-warning-markdown</a> and <a href="https://huggingface.co/datasets/marin-community/ar5iv-warning-markdown">ar5iv-warning-markdown</a>) is a new dataset of <a href="https://arxiv.org/">Arxiv</a> papers that have been markdownified from their HTML5-formatted versions from the <a href="https://ar5iv.labs.arxiv.org/">Ar5iv</a> project. (The warning/no-problems distinction is from the conversion from LaTeX to Markdown.)</li>
+<li><a href="https://huggingface.co/datasets/marin-community/stackexchange-markdown">Marin StackExchange Markdown</a> similarly is a version of StackExchange markdownified from HTML5-formatted versions.</li>
+<li><a href="https://huggingface.co/datasets/marin-community/wikipedia-markdown">Marin Wikipedia Markdown</a> is a new dataset of <a href="https://wikipedia.org/">Wikipedia</a> articles that have been markdownified from their HTML5-formatted versions, which are available through the now deprecated <a href="https://dumps.wikimedia.org/other/enterprise_html/">Wikipedia Enterprise HTML Dumps</a>.</li>
+</ul>
+
+
+<p>These datasets are licensed under the original licenses of the individual documents.<sup id="fnref:license"><a class="footnote-ref" href="#fn:license">3</a></sup></p>
+
+
+<h3 id="learning-rate-schedule-and-other-hyperparameters">Learning Rate Schedule and Other Hyperparameters<a class="headerlink" href="#learning-rate-schedule-and-other-hyperparameters" title="Permanent link">¶</a></h3>
+
+
+<p>We linearly cooled down the learning rate schedule from 1.7e-3 to 1.7e-5 (sic) over approximately 1.34e12 tokens
+(80,000 steps).</p>
+
+
+<p>Based on our findings in the "Raccoon" and "Spoonbill" deep cooldowns (where we observed steady loss increases at low
+learning rate), we imposed a z-loss penalty of 1e-4 on the final logits.</p>
+
+
+<p>We also increased our batch size to 16Mi tokens. This change was to further reduce gradient variance and better utilize the hardware (i.e. slightly more MFU).</p>
+
+
+<h3 id="bonus-deeper-starling-dessert">Bonus: Deeper Starling (Dessert)<a class="headerlink" href="#bonus-deeper-starling-dessert" title="Permanent link">¶</a></h3>
+
+
+<p>Because we were still seeing steady log-linear loss decreases (in c4en and elsewhere) even at this very low LR, we decided to
+coast a little longer. We ran a dessert run from 12.4e12 to 12.7e12 tokens, with the learning rate fixed at 1.7e-5
+and otherwise using the same hyperparameters as Starling.</p>
+
+
+<h3 id="notes_4">Notes<a class="headerlink" href="#notes_4" title="Permanent link">¶</a></h3>
+
+
+<h4 id="c4-en-perplexity_1">C4 EN Perplexity<a class="headerlink" href="#c4-en-perplexity_1" title="Permanent link">¶</a></h4>
+
+
+<p><img alt="graph depicting the c4en perplexity during the starling cooldown phases" src="/assets/images/posts/marin-8b-retro/marin-8b-starling-c4en.png"/></p>
+
+
+<p>Interestingly, c4en perplexity decreased a lot during this cooldown, when in the previous cooldown it had increased.
+Again, we attribute this to structural differences in the preprocessing of Dolmino's DCLM HQ and Nemotron CC.</p>
+
+
+<h4 id="wsd-s-hill-river-decomposition">WSD-S Hill / River decomposition<a class="headerlink" href="#wsd-s-hill-river-decomposition" title="Permanent link">¶</a></h4>
+
+
+<p>Separately, the slope of the loss flattened dramatically during the dessert phase.
+This is consistent with the theory around <a href="https://arxiv.org/abs/2410.05192">WSD-S</a>, which decomposes the loss into a "river" and "hill" component, where the hill is the loss due to flucuations due to the learning rate (and stochasticity in SGD).</p>
+
+
+<p>As the learning rate is decayed, the hill component diminishes. Once we stop decaying the learning rate, there is no further decrease in the hill component, so progress slows down.</p>
+
+
+<p><img alt="graph depicting the slowdown in loss decrease during the cooldown" src="/assets/images/posts/marin-8b-retro/tootsie-8b-starling-loss-slowdown.png"/></p>
+
+
+<h2 id="base-model-results">Base Model Results<a class="headerlink" href="#base-model-results" title="Permanent link">¶</a></h2>
+
+
+<p>We ran a suite of standard benchmarks to compare our model with Llama 3.1 8B, Olmo 2, and a few other open source 7-8B models.
+For all benchmarks, we used <a href="https://github.com/EleutherAI/lm-evaluation-harness">LM Eval Harness</a> with the default setup for each task. These numbers differ from reported results in the literature due to differences in the setup. LM Eval Harness is usually considerably more strict than other harnesses.
+For other evaluations, you can see <a href="https://allenai.org/blog/olmo2">Olmo 2's technical report</a> which includes results using <a href="https://github.com/allenai/olmes">OLMES</a>.</p>
+
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Average</th>
+<th>AGI Eval LSAT-AR</th>
+<th>ARC Easy</th>
+<th>ARC Challenge</th>
+<th>BBH</th>
+<th>BoolQ</th>
+<th>CommonSense QA</th>
+<th>COPA</th>
+<th>GPQA</th>
+<th>HellaSwag 0-shot</th>
+<th>HellaSwag 10-shot</th>
+<th>lambada_openai</th>
+<th>MMLU 5-shot</th>
+<th>MMLU 0-shot</th>
+<th>MMLU Pro</th>
+<th>OpenBookQA</th>
+<th>PIQA</th>
+<th>WinoGrande</th>
+<th>WSC</th>
+<th>GSM8K</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Marin 8B Base <br/>(Deeper Starling)</td>
+<td><strong>66.6</strong></td>
+<td>20.9</td>
+<td><strong>86.5</strong></td>
+<td><strong>63.1</strong></td>
+<td><strong>50.6</strong></td>
+<td><strong>85.9</strong></td>
+<td>79.1</td>
+<td><strong>92.0</strong></td>
+<td>30.3</td>
+<td><strong>82.3</strong></td>
+<td><strong>83.6</strong></td>
+<td><strong>74.7</strong></td>
+<td><strong>67.6</strong></td>
+<td><strong>65.9</strong></td>
+<td><strong>36.5</strong></td>
+<td>44.2</td>
+<td><strong>84.4</strong></td>
+<td><strong>74.5</strong></td>
+<td>82.1</td>
+<td>61.3</td>
+</tr>
+<tr>
+<td>Llama 3.1 Base</td>
+<td>65.3</td>
+<td>20.4</td>
+<td>85.8</td>
+<td>58.9</td>
+<td>46.4</td>
+<td>84.2</td>
+<td>75.2</td>
+<td><strong>92.0</strong></td>
+<td><strong>32.3</strong></td>
+<td>79.4</td>
+<td>81.9</td>
+<td><strong>74.7</strong></td>
+<td>66.4</td>
+<td>65.5</td>
+<td>33.3</td>
+<td>45.8</td>
+<td>82.9</td>
+<td>74.4</td>
+<td>83.5</td>
+<td>56.8</td>
+</tr>
+<tr>
+<td>OLMo 2 Base</td>
+<td>64.9</td>
+<td>17.4</td>
+<td>85.0</td>
+<td>60.7</td>
+<td>44.4</td>
+<td>85.5</td>
+<td>75.4</td>
+<td>89.0</td>
+<td>26.8</td>
+<td>80.5</td>
+<td>81.7</td>
+<td>73.1</td>
+<td>63.9</td>
+<td>61.9</td>
+<td>30.6</td>
+<td><strong>46.2</strong></td>
+<td>82.5</td>
+<td>74.3</td>
+<td><strong>86.1</strong></td>
+<td>67.6</td>
+</tr>
+<tr>
+<td>MAP NEO 7B</td>
+<td>59.5</td>
+<td><strong>23.0</strong></td>
+<td>81.1</td>
+<td>52.0</td>
+<td>42.4</td>
+<td>84.7</td>
+<td><strong>81.7</strong></td>
+<td>82.0</td>
+<td>27.8</td>
+<td>72.5</td>
+<td>73.3</td>
+<td>64.6</td>
+<td>58.2</td>
+<td>56.4</td>
+<td>25.2</td>
+<td>39.4</td>
+<td>79.0</td>
+<td>66.1</td>
+<td>73.3</td>
+<td>48.0</td>
+</tr>
+<tr>
+<td>Amber 7B</td>
+<td>48.1</td>
+<td>19.1</td>
+<td>74.7</td>
+<td>41.6</td>
+<td>41.6</td>
+<td>68.8</td>
+<td>20.6</td>
+<td>87.0</td>
+<td>26.3</td>
+<td>72.4</td>
+<td>73.9</td>
+<td>66.8</td>
+<td>26.6</td>
+<td>26.7</td>
+<td>11.6</td>
+<td>39.2</td>
+<td>79.8</td>
+<td>65.3</td>
+<td>76.9</td>
+<td>4.4</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>Marin 8B Base (Deeper Starling) is the best performing 7-8B model on the majority of tasks. We can't claim any particular standout performance on any one task (though MMLU Pro is nice), just a general improvement.</p>
+
+
+<p>However, all these results come with an asterisk. It is well known that many of these tasks are highly contaminated, with
+questions found in the pretraining sets. They can be found in DCLM, Dolmino (created for and used by Olmo 2), Nemotron-CC,
+and others. We are tracking this in <a href="https://github.com/marin-community/marin/issues/1321">GH#1321</a> to get a full picture of the contamination.
+Llama 3 is likewise contaminated. See Section 5.1.4 in the <a href="https://arxiv.org/pdf/2407.21783">Llama 3.1 paper</a> for more details.</p>
+
+
+<h2 id="supervised-fine-tuning">Supervised Fine-Tuning<a class="headerlink" href="#supervised-fine-tuning" title="Permanent link">¶</a></h2>
+
+
+<p>We're still improving our instruction tuning pipeline, but we are also releasing our current best checkpoint.</p>
+
+
+<h3 id="sft-data">SFT Data<a class="headerlink" href="#sft-data" title="Permanent link">¶</a></h3>
+
+
+<ul>
+<li><a href="https://huggingface.co/datasets/TIGER-Lab/AceCode-89K">TIGER-Lab/AceCode-89K</a></li>
+<li><a href="https://huggingface.co/datasets/bespokelabs/Bespoke-Stratos-17k">bespokelabs/Bespoke-Stratos-17k</a></li>
+<li><a href="https://huggingface.co/datasets/cognitivecomputations/dolphin-r1">cognitivecomputations/dolphin-r1</a> (includes both nonreasoning and reasoning subsets)</li>
+<li><a href="https://huggingface.co/datasets/tuenguyen/dolphin_r1_reasoning">tuenguyen/dolphin_r1_reasoning</a></li>
+<li><a href="https://huggingface.co/datasets/facebook/natural_reasoning">facebook/natural_reasoning</a></li>
+<li><a href="https://huggingface.co/datasets/open-r1/OpenThoughts-114k-math">open-r1/OpenThoughts-114k-math</a></li>
+<li><a href="https://huggingface.co/datasets/HuggingFaceTB/smoltalk">HuggingFaceTB/smoltalk</a></li>
+<li><a href="https://huggingface.co/datasets/allenai/tulu-3-sft-mixture">allenai/tulu-3-sft-mixture</a></li>
+<li><a href="https://huggingface.co/datasets/PrimeIntellect/verifiable-math-problems">PrimeIntellect/verifiable-math-problems</a></li>
+</ul>
+
+
+<h3 id="sft-details">SFT Details<a class="headerlink" href="#sft-details" title="Permanent link">¶</a></h3>
+
+
+<p>We used a batch size of 512Ki tokens and a learning rate of 1.7e-4. We started from the final checkpoint of the Deeper Starling run.
+We train for about 5Gi tokens, 10,227 steps.</p>
+
+
+<h3 id="sft-evals">SFT Evals<a class="headerlink" href="#sft-evals" title="Permanent link">¶</a></h3>
+
+
+<p>In order to avoid bias in our benchmark selection, we follow established evaluation suites to ensure unbiased assessment of model capabilities.</p>
+
+
+<p>Our benchmarks come primarily from the Open LLM Leaderboard's hard evaluation set, which includes <a href="https://huggingface.co/datasets/google/IFEval">IFEval</a>, <a href="https://arxiv.org/abs/2210.09261">BigBenchHard (BBH)</a>, <a href="https://huggingface.co/datasets/hendrycks/math">MATH</a> (the Hard subset that LM Eval Harness uses), <a href="https://arxiv.org/abs/2311.12022">GPQA</a>, <a href="https://arxiv.org/abs/2310.16049">MuSR</a>, and <a href="https://huggingface.co/datasets/TIGER-Lab/MMLU-Pro">MMLU-Pro</a> - tasks specifically designed to avoid data contamination while measuring reasoning and instruction.</p>
+
+
+<p>We also incorporate key benchmarks from the OLMo 2 technical report for instruction tuned models, which includes <a href="https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/tasks/gsm8k/gsm8k-cot.yaml">GSM8K-CoT</a>, <a href="https://huggingface.co/datasets/cais/mmlu">MMLU</a>, and <a href="https://github.com/tatsu-lab/alpaca_eval">AlpacaEval</a>. We exclude <a href="https://huggingface.co/datasets/ucinlp/drop">DROP</a> from our evaluations due to <a href="https://huggingface.co/blog/open-llm-leaderboard-drop">recently identified issues in the benchmark by HuggingFace</a>.</p>
+
+
+<p>For code generation, we use <a href="https://github.com/openai/human-eval">HumanEval</a> - which continues to be the standard benchmark for simpler non-agentic coding validation.</p>
+
+
+<p>For all tasks aside from AlpacaEval, we utilize the <a href="https://github.com/EleutherAI/lm-evaluation-harness">EleutherAI LM Evaluation Harness</a> with chat templates turned -- a standardized evaluation harness from an independent party from all models evaluated.
+For AlpacaEval, we use the <a href="https://github.com/tatsu-lab/alpaca_eval">AlpacaEval</a> harness.</p>
+
+
+<p>As we noted earlier, LM Eval Harness can be quite strict, leading to extremely low performance due to systematic failures to follow the strict templates.
+In this case, Olmo 2 SFT suffered on MATH, and Llama 3.1 Instruct suffered on HumanEval.
+Therefore, we report both the average score and the average score excluding those two tasks.</p>
+
+
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Average</th>
+<th>Average w/o <br/> outliers</th>
+<th>AlpacaEval</th>
+<th>IFEval</th>
+<th>Gsm8k_cot</th>
+<th>BigBenchHard</th>
+<th>MMLU</th>
+<th>GPQA</th>
+<th>MMLU-Pro</th>
+<th>MuSR</th>
+<th>MATH Hard</th>
+<th>HumanEval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OLMo 2 SFT</td>
+<td>37.7</td>
+<td>41.4</td>
+<td>10.2</td>
+<td>63.6</td>
+<td>69.4</td>
+<td>42.0</td>
+<td>59.6</td>
+<td>25.8</td>
+<td>22.7</td>
+<td>37.7</td>
+<td>7.2</td>
+<td>38.4</td>
+</tr>
+<tr>
+<td>OLMo 2 Instruct</td>
+<td>38.7</td>
+<td>44.6</td>
+<td>29.1</td>
+<td>69.5</td>
+<td>79.0</td>
+<td>42.6</td>
+<td>59.7</td>
+<td>24.2</td>
+<td>17.6</td>
+<td>34.7</td>
+<td>14.0</td>
+<td>17.1</td>
+</tr>
+<tr>
+<td>Llama 3.1 Instruct</td>
+<td>39.8</td>
+<td>46.8</td>
+<td>23.6</td>
+<td>84.5</td>
+<td>82.6</td>
+<td>36.9</td>
+<td><strong>63.2</strong></td>
+<td>29.2</td>
+<td>15.9</td>
+<td>38.1</td>
+<td>23.1</td>
+<td>0.6</td>
+</tr>
+<tr>
+<td>Llama 3.1 Tulu</td>
+<td><strong>50.0</strong></td>
+<td><strong>51.9</strong></td>
+<td><strong>34.9</strong></td>
+<td><strong>87.5</strong></td>
+<td><strong>88.1</strong></td>
+<td>43.9</td>
+<td>60.7</td>
+<td>28.7</td>
+<td>29.4</td>
+<td><strong>42.2</strong></td>
+<td><strong>24.7</strong></td>
+<td><strong>60.4</strong></td>
+</tr>
+<tr>
+<td>Marin 8B SFT</td>
+<td>43.8</td>
+<td>46.2</td>
+<td>18.3</td>
+<td>78.3</td>
+<td>68.9</td>
+<td><strong>46.0</strong></td>
+<td>61.6</td>
+<td><strong>29.5</strong></td>
+<td><strong>31.2</strong></td>
+<td>35.9</td>
+<td>21.2</td>
+<td>47.0</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>We see an unfortunate degradation in "base model" tasks like MMLU, not dissimilar to <a href="https://arxiv.org/abs/2501.00656">what Olmo 2 reported in their own results</a>.
+We are working to mitigate this (e.g. by mixing in pretraining data and FLAN into SFT). Please see <a href="https://github.com/marin-community/marin/issues/702">this detailed report</a>
+on how mixing in pretraining data into later stages is important for retaining performance.</p>
+
+
+<p>If we look at ranks:</p>
+
+
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Average Rank</th>
+<th>Average Rank<br/>w/o outliers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OLMo 2 SFT</td>
+<td>4.1</td>
+<td>4.125</td>
+</tr>
+<tr>
+<td>OLMo 2 Instruct</td>
+<td>3.8</td>
+<td>3.75</td>
+</tr>
+<tr>
+<td>Llama 3.1 Instruct</td>
+<td>2.9</td>
+<td>2.75</td>
+</tr>
+<tr>
+<td>Llama 3.1 Tulu</td>
+<td>1.6</td>
+<td>1.75</td>
+</tr>
+<tr>
+<td>Marin 8B SFT</td>
+<td>2.6</td>
+<td>2.625</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>So we still haven't surpassed Llama 3.1 Tulu, but performance is not bad.
+We will continue to improve our SFT pipeline and will release a new checkpoint when we have one.</p>
+
+
+<h1 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">¶</a></h1>
+
+
+<h2 id="main-takeaways">Main Takeaways<a class="headerlink" href="#main-takeaways" title="Permanent link">¶</a></h2>
+
+
+<ul>
+<li><strong>Tootsie means never having to say you're sorry.</strong> We made several dramatic changes to the data mix, optimizer, and other hyperparameters during the run. We cooled down, rewarmed up, changed the mixture, etc. without any major issues. Highly recommend.</li>
+<li><strong>Z-loss isn't just for avoiding explosions.</strong> While we didn't need z-loss to stabilize the training, we found it actually pretty necessary during very deep cooldowns.</li>
+<li><strong>So-called "high quality" data doesn't have everything.</strong> High quality data seems to often lack data that leads to good few-shot performance. Mixing in FLAN or other datasets seems to help.</li>
+<li><strong>Format diversity is useful.</strong>  While not necessarily showing up in non-loss evals, the high sensitivity of c4en perplexity (and that of other datasets) to the data mix suggests that formatting diversity is useful. We will pursue this further in future runs.</li>
+<li><strong>Exponential moving averages are nice, but maybe not all that useful with WSD.</strong> The stability of the EMA gap suggests that there isn't that much information in monitoring EMA model evals: we know from WSD that there is some easy performance to be had whenever we want it (by cooling down and removing the hill component). That said, even at very low LR there is still <em>some</em> gap, so that's a tiny bit of free performance. The harm is also small, since the EMA can be held in CPU memory rather than HBM.</li>
+<li><strong>Tootsie means having to say you're sorry kind of a lot.</strong> We made many, many mistakes during the run. Some of the changes were actually unintentional, or were fixes to initial mistakes (e.g. the rotary embedding hyperparameters). Nevertheless, the end result was a model that performed well on a wide variety of tasks.</li>
+</ul>
+
+
+<h2 id="future-work">Future Work<a class="headerlink" href="#future-work" title="Permanent link">¶</a></h2>
+
+
+<p>Future work will focus on:</p>
+
+
+<ul>
+<li><strong>Bigger models.</strong> We have a <a href="https://wandb.ai/marin-community/marin/runs/llama-32b-tootsie-2/workspace?nw=nwuserdlwh">32B model</a> that is performing quite well at 1.3T tokens.</li>
+<li><strong>SFT/RL.</strong> We're still improving our Instruct model. In addition to making the model generally better, we would like to reduce degradation on tasks like MMLU.</li>
+<li><strong>Format diversity.</strong> We will continue to pursue formatting diversity as a way to improve performance on tasks like MMLU.</li>
+<li><strong>Improved filtering and synthetic data.</strong> Marin Datashop was our project that aimed to find and create high-quality datasets for LLMs.</li>
+</ul>
+
+
+<h2 id="glossary">Glossary<a class="headerlink" href="#glossary" title="Permanent link">¶</a></h2>
+
+
+<ul>
+<li><strong>WSD</strong>: Warmup-Stable-Decay, a learning rate schedule that warms up, remains stable, and then decays at the end (typically ~10-20% of the total training budget).</li>
+<li><strong>WSD-S</strong>: A learning rate schedule that includes cyclic long flat phases and short cooldowns to probe model performance. Read more in <a href="https://arxiv.org/abs/2410.05192">our paper</a>.</li>
+<li><strong>Cooldown</strong>: A phase in training where the learning rate is gradually decreased, often accompanied by a shift to higher-quality or more structured data.</li>
+<li><strong>FLAN</strong>: A <a href="https://arxiv.org/abs/2109.01652">large instruction-tuned dataset from Google</a> designed to improve few-shot and instruction-following abilities.</li>
+<li><strong>EMA (Exponential Moving Average)</strong>: A moving average over model weights used to evaluate model performance without being affected by short-term parameter fluctuations.</li>
+<li><strong>Z-loss</strong>: A regularization term that penalizes the logit norm, helping to stabilize the <code>lm_head</code> by keeping its output distribution from getting too large.</li>
+<li><strong>PT Mix</strong>: Pretraining mixture — the standard data blend used during the initial training phases.</li>
+<li><strong>Mi tokens</strong>: Mebibyte-equivalent tokens, where 1 Mi = 1024², as opposed to a million (10⁶).</li>
+<li><strong>Microannealing</strong>: A mid-training experiment that mixes in new data to test effects on loss and task performance, typically in a short cooldown-like window.</li>
+<li><strong>SFT-ability</strong>: A model's amenability to supervised fine-tuning. Poor SFT-ability may manifest as unstable loss or poor generalization after SFT.</li>
+<li><strong>Dessert Run</strong>: A short continuation of training, typically at low learning rates, aimed at patching specific weaknesses (e.g., math, instruction following).</li>
+</ul>
+
+
+<div class="footnote">
+<hr/>
+<ol>
+<li id="fn:Mi">
+<p>Note: <code>Mi</code> refers to mebibytes, not megabytes—i.e., powers of 2. <a class="footnote-backref" href="#fnref:Mi" title="Jump back to footnote 1 in the text">↩</a></p>
+</li>
+<li id="fn:MMLU scores">
+<p>These scores are from <a href="#base-model-results">our evaluations</a>, except for DCLM, for which we use their published score. <a class="footnote-backref" href="#fnref:MMLU scores" title="Jump back to footnote 2 in the text">↩</a></p>
+</li>
+<li id="fn:license">
+<p>Please refer to <a href="https://stackoverflow.com/help/licensing">StackExchange</a>,
+<a href="https://en.wikipedia.org/wiki/Wikipedia:Database_download">Wikipedia</a>,
+and <a href="https://arxiv.org/help/license">arXiv</a> for more information. <a class="footnote-backref" href="#fnref:license" title="Jump back to footnote 3 in the text">↩</a></p>
+</li>
+</ol>
+</div>
+
+</div>
+{% endraw %}

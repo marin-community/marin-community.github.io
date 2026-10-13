@@ -1,18 +1,23 @@
 ---
 layout: blog
 title: Marin Blog
-description: Research, experiments, and notes from building foundation models together, openly.
+description: Original research, experiments, and updates from Marin, alongside selected writing from Open Athena.
 permalink: /blog/
 ---
 <header class="archive-header">
   <p class="eyebrow">From the open frontier</p>
-  <h1>Writing from Marin</h1>
-  <p>Research, experiments, and notes from building foundation models together, openly.</p>
+  <h1>Marin Blog</h1>
+  <p>Research, experiments, and updates from the Marin community. Read original Marin posts alongside selected writing from Open Athena.</p>
 </header>
+{% assign featured_posts = site.posts | where: 'featured', true | sort: 'featured_order' %}
+<nav class="featured-writing" aria-label="Featured original Marin writing">
+  <h2>Marin originals</h2>
+  <ul>{% for post in featured_posts %}<li><a href="{{ post.url | relative_url }}">{{ post.archive_label | default: post.title | escape }}</a></li>{% endfor %}</ul>
+</nav>
 <div class="post-list">
 {% for post in site.posts %}
   <article class="post-card">
-    <p class="post-meta"><time datetime="{{ post.date | date: '%Y-%m-%d' }}">{{ post.date | date: '%-d %B %Y' }}</time>{% if post.source_url %}<span class="post-label">Open Athena</span>{% endif %}</p>
+    <p class="post-meta"><time datetime="{{ post.date | date: '%Y-%m-%d' }}">{{ post.date | date: '%-d %B %Y' }}</time><span class="post-label">{% if post.post_kind == 'mirror' and post.source_url %}From Open Athena{% else %}Marin original{% endif %}</span></p>
     <h2><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h2>
     {% if post.description %}<p class="post-summary">{{ post.description | escape }}</p>{% endif %}
     <p class="card-authors">{{ post.authors | join: ', ' | replace: '&dagger;', '†' | escape }}</p>

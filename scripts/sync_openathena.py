@@ -47,13 +47,13 @@ def main():
     content_hashes = {}
     for path in (ROOT / '_posts').glob('*'):
         meta, body = metadata(path)
-        if meta.get('source_url'):
+        if meta.get('post_kind') == 'mirror' and meta.get('source_url'):
             key = normalize(meta['source_url'])
             if key in existing:
                 raise ValueError(f'Duplicate source URL: {key}')
             existing[key] = (path, meta)
         parsed_body = BeautifulSoup(body, 'html.parser')
-        published_body = parsed_body.select_one('.blog-post-content') or parsed_body
+        published_body = parsed_body.select_one('.blog-post-content, .retrospective-content') or parsed_body
         content_hashes[digest(published_body.get_text(' ', strip=True).encode())] = path
         if meta.get('source_content_sha256'):
             content_hashes[meta['source_content_sha256']] = path
@@ -174,7 +174,7 @@ def main():
             post_assets = {asset_data[a][0].as_posix(): digest(asset_data[a][1]) for a in sorted(active_assets)}
             if '{% endraw %}' in fragment_html:
                 raise ValueError('Source contains Liquid raw terminator; needs review')
-            front = dict(layout='mirror', title=title, authors=[author], date=date.isoformat(), categories='blog', description=summary, source_url=source_url, canonical_url=page.select_one('link[rel="canonical"]')['href'], source_content_sha256=text_hash)
+            front = dict(layout='mirror', post_kind='mirror', title=title, authors=[author], date=date.isoformat(), categories='blog', description=summary, source_url=source_url, canonical_url=page.select_one('link[rel="canonical"]')['href'], source_content_sha256=text_hash)
             front['excerpt'] = summary
             if old and old[1].get('permalink'):
                 front['permalink'] = old[1]['permalink']

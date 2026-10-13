@@ -1,0 +1,1334 @@
+---
+layout: post
+post_kind: original
+title_id: marin-32b-retrospective
+title: Marin 32B Retrospective
+date: '2025-10-28'
+authors:
+- Will Held
+- David Hall
+categories: blog
+description: 'Scaling the Marin recipe to 32B: loss spikes, recovery, QK-Norm, midtraining,
+  and lessons learned.'
+excerpt: 'Scaling the Marin recipe to 32B: loss spikes, recovery, QK-Norm, midtraining,
+  and lessons learned.'
+permalink: /blog/2025/10/28/marin-32b-retro/
+documentation_url: https://marin.readthedocs.io/en/latest/reports/marin-32b-retro/
+featured: true
+featured_order: 3
+archive_label: Marin 32B Retrospective
+contents:
+- id: introduction
+  title: Introduction
+- id: training-phase-overview
+  title: Training Phase Overview
+- id: baseline-configuration
+  title: Baseline Configuration
+- id: training-phases
+  title: Training Phases
+- id: base-model-results
+  title: Base Model Results
+- id: limitations
+  title: Limitations
+- id: lessons-learned
+  title: Lessons Learned
+- id: acknowledgments
+  title: Acknowledgments
+- id: glossary
+  title: Glossary
+---
+{% raw %}
+<div class="retrospective-content">
+
+
+
+<!--
+
+- [Introduction](#introduction)
+- [Baseline Configuration](#baseline-configuration)
+  - [Architecture](#architecture)
+  - [Optimizer & Schedule](#optimizer--schedule)
+  - [Data Mix & Batch Schedule](#data-mix--batch-schedule)
+- [Training Phases](#training-phases)
+  - [Phase 1: Loss Spikes in `exp1295_32b`](#phase-1-loss-spikes-in-exp1295_32b)
+  - [Phase 2: Recovery Without Architecture Changes](#phase-2-recovery-without-architecture-changes)
+    - ["Necromancy" Restart (`exp1390_32b_necro`)](#necromancy-restart-exp1390_32b_necro)
+    - [Alternative Optimizers (`exp1388`, `exp1380`)](#alternative-optimizers-exp1388-exp1380)
+  - [Phase 3: Switch to QK-Norm (`exp1395_qwen3_32b`)](#phase-3-switch-to-qk-norm-exp1395_qwen3_32b)
+  - [Phase 4: Midtraining Runs](#phase-4-midtraining-runs)
+    - [Attempt 1 — Bison Cooldown (`exp1529_32b_bison_cooldown`)](#attempt-1--bison-cooldown-exp1529_32b_bison_cooldown)
+    - [Attempt 2 — Mantis Cooldown (`exp1529_32b_mantis_cooldown`)](#attempt-2--mantis-cooldown-exp1529_32b_mantis_cooldown)
+- [Lessons Learned](#lessons-learned)
+- [Glossary](#glossary) -->
+
+
+<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">¶</a></h2>
+
+
+<p>This is a retrospective on Marin 32B, which is largely a scale-up of the <a href="/blog/2025/05/19/marin-8b-retro/">8B recipe</a>. As with the 8B,
+we followed the "Tootsie Roll" playbook: start training, instrument heavily, and make evidence-driven changes mid-flight.
+The intent here is to document what worked, what failed, and the mechanics of why and how we made changes so that others can learn from our process beyond the final result.
+You can download the base checkpoint on Hugging Face at <a href="https://huggingface.co/marin-community/marin-32b-base">marin-community/marin-32b-base</a>.</p>
+
+
+<p>We deliberately reused the <a href="https://arxiv.org/abs/2412.02595">Nemotron-CC</a>-centric pretraining mixture and the
+AdamW-based schedule that behaved well at 8B. That mostly transferred.
+The notable exception was a loss-instability episode around 70k–80k steps in <code>exp1295_32b</code> that we ultimately resolved by introducing QK-Norm via a switch to the Qwen3 32B backbone.
+Later, during cooldown, we uncovered GSM8k contamination (from a cached Dolmino bundle) and shuffling pathologies from a linear congruential-driven permutation. Both issues were addressed in the "Mantis" cooldown with a Feistel-based shuffle and a cleaner math mix.</p>
+
+
+<p>(If you’re not already reading this on ReadTheDocs, we recommend <a href="/blog/2025/10/28/marin-32b-retro/">viewing it there</a> for the right-hand ToC and better navigation.)</p>
+
+
+<h2 id="training-phase-overview">Training Phase Overview<a class="headerlink" href="#training-phase-overview" title="Permanent link">¶</a></h2>
+
+
+<p>We break the run into four phases:</p>
+
+
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Steps</th>
+<th>Tokens (T)</th>
+<th>Key Changes</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0 → 80,000</td>
+<td>2.679</td>
+<td>Baseline Llama 32B</td>
+<td>Very spiky loss; attempted mitigations failed</td>
+</tr>
+<tr>
+<td>2</td>
+<td>80,000 → ≈82,000†</td>
+<td>≈0.02†</td>
+<td>Recovery attempts (necromancy, alt optimizers)</td>
+<td>Diagnostic restarts; suspected structural instability</td>
+</tr>
+<tr>
+<td>3</td>
+<td>80,000 → 160,000</td>
+<td>2.684</td>
+<td>Switch to Qwen3 32B (QK-Norm)</td>
+<td>Loss stabilized; training recovered</td>
+</tr>
+<tr>
+<td>4</td>
+<td>160,000 → 192,000</td>
+<td>1.074</td>
+<td>Mantis cooldown (Feistel shuffle, better math mix)</td>
+<td>Strong results; resolved anomalies from Bison</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>† Approximate; Phase 2 comprised short diagnostic bursts that were later discarded, so they are excluded from cumulative token totals.</p>
+
+
+<p>This report covers the following experiments/phases:</p>
+
+
+<ul>
+<li>Phase 1 - Baseline: <a href="https://github.com/marin-community/marin/issues/1295">#1295</a> <a href="https://github.com/marin-community/marin/blob/5e88b5253975ffd13e63a5db0b946883c8660e1b/experiments/tootsie/exp1295_32b.py"><code>exp1295_32b</code></a></li>
+<li>Phase 2a - Necromancy Restart: <a href="https://github.com/marin-community/marin/issues/1390">#1390</a> <a href="https://github.com/marin-community/marin/blob/fe373c233ee7288cbf8e7600765c3fc6fb6fa3ac/experiments/tootsie/exp1390_32b_necro.py"><code>exp1390_32b_necro</code></a></li>
+<li>Phase 2b - Optimizer Swap (Muon): <a href="https://github.com/marin-community/marin/issues/1380">#1380</a> <a href="https://github.com/marin-community/marin/blob/fe373c233ee7288cbf8e7600765c3fc6fb6fa3ac/experiments/tootsie/exp1380_muon32b.py"><code>exp1380_muon32b</code></a></li>
+<li>Phase 3 - QK-Norm Switch: <a href="https://github.com/marin-community/marin/issues/1395">#1395</a> <a href="https://github.com/marin-community/marin/blob/fe373c233ee7288cbf8e7600765c3fc6fb6fa3ac/experiments/tootsie/exp1395_qwen3_32b.py"><code>exp1395_qwen3_32b</code></a></li>
+<li>Phase 4a - Bison Cooldown: <a href="https://github.com/marin-community/marin/issues/1529">#1529</a> <a href="https://github.com/marin-community/marin/blob/ee163702c5bc71c9bbba3238db84b6ee86e826a7/experiments/tootsie/exp1529_32b_bison_cooldown.py"><code>exp1529_32b_bison_cooldown</code></a></li>
+<li>Phase 4b - Mantis Cooldown: <a href="https://github.com/marin-community/marin/issues/1681">#1681</a> <a href="https://github.com/marin-community/marin/blob/ee163702c5bc71c9bbba3238db84b6ee86e826a7/experiments/tootsie/exp1529_32b_mantis_cooldown.py"><code>exp1529_32b_mantis_cooldown</code></a></li>
+</ul>
+
+
+<p>Total tokens trained in final artifact: ≈6.437T</p>
+
+
+<ul>
+<li>Phase 1: 2.679T</li>
+<li>Phase 3/QK‑Norm: 2.684T</li>
+<li>Phase 4b/Mantis cooldown: 1.074T; excludes diagnostic restarts and the abandoned Bison cooldown attempt.</li>
+</ul>
+
+
+<h2 id="baseline-configuration">Baseline Configuration<a class="headerlink" href="#baseline-configuration" title="Permanent link">¶</a></h2>
+
+
+<h3 id="hardware">Hardware<a class="headerlink" href="#hardware" title="Permanent link">¶</a></h3>
+
+
+<p>We initially started the 32B run on 4 preemptible TPU v5p-512 slices coordinated with multislice, moving to 3 slices
+at 18,500 steps as spare capacity dried up, and eventually moving to a reserved v4-2048 once the preemptible v5p were no longer
+reliably available (21,010 steps). It remained on the v4-2048 slice for the rest of the run.</p>
+
+
+<h3 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">¶</a></h3>
+
+
+<ul>
+<li>Initial backbone: Llama 32B (Llama‑3–style settings)</li>
+<li>Gradient checkpointing: offload carries to fit large global batches on a v4‑2048 slice</li>
+</ul>
+
+
+<h4 id="llama-3-style-32b-phase-12-parameters">Llama-3-style 32B (Phase 1–2) parameters<a class="headerlink" href="#llama-3-style-32b-phase-12-parameters" title="Permanent link">¶</a></h4>
+
+
+<table>
+<thead>
+<tr>
+<th><strong>Parameter</strong></th>
+<th><strong>Value</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>seq_len</code></td>
+<td>4096</td>
+</tr>
+<tr>
+<td><code>hidden_dim</code></td>
+<td>5120</td>
+</tr>
+<tr>
+<td><code>intermediate_dim</code></td>
+<td>27648</td>
+</tr>
+<tr>
+<td><code>num_heads</code></td>
+<td>40</td>
+</tr>
+<tr>
+<td><code>num_kv_heads</code></td>
+<td>8</td>
+</tr>
+<tr>
+<td><code>num_layers</code></td>
+<td>64</td>
+</tr>
+<tr>
+<td><code>activation_function</code></td>
+<td><code>silu</code></td>
+</tr>
+</tbody>
+</table>
+
+
+<p>These dimensions were selected to be the same as those used in OLMo 2 32B.</p>
+
+
+<h4 id="qwen3-style-32b-phase-3-parameters">Qwen3-style 32B (Phase 3+) parameters<a class="headerlink" href="#qwen3-style-32b-phase-3-parameters" title="Permanent link">¶</a></h4>
+
+
+<p>(These are the same except for the addition of QK-Norm in attention.)</p>
+
+
+<table>
+<thead>
+<tr>
+<th><strong>Parameter</strong></th>
+<th><strong>Value</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>seq_len</code></td>
+<td>4096</td>
+</tr>
+<tr>
+<td><code>hidden_dim</code></td>
+<td>5120</td>
+</tr>
+<tr>
+<td><code>intermediate_dim</code></td>
+<td>27648</td>
+</tr>
+<tr>
+<td><code>num_heads</code></td>
+<td>40</td>
+</tr>
+<tr>
+<td><code>num_kv_heads</code></td>
+<td>8</td>
+</tr>
+<tr>
+<td><code>num_layers</code></td>
+<td>64</td>
+</tr>
+<tr>
+<td><code>attention</code></td>
+<td>QK‑Norm</td>
+</tr>
+<tr>
+<td><code>activation_function</code></td>
+<td><code>silu</code></td>
+</tr>
+</tbody>
+</table>
+
+
+<h3 id="optimizer-schedule">Optimizer &amp; Schedule<a class="headerlink" href="#optimizer-schedule" title="Permanent link">¶</a></h3>
+
+
+<p>Baseline (exp1295_32b) hyperparameters:</p>
+
+
+<table>
+<thead>
+<tr>
+<th><strong>Hyperparameter</strong></th>
+<th><strong>Value</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Optimizer</td>
+<td>AdamW</td>
+</tr>
+<tr>
+<td>Peak LR</td>
+<td>7e‑4</td>
+</tr>
+<tr>
+<td>LR schedule</td>
+<td>linear warmup → hold → decay (WSD‑style)</td>
+</tr>
+<tr>
+<td>Warmup</td>
+<td>1% of steps</td>
+</tr>
+<tr>
+<td>Decay</td>
+<td>40% of steps</td>
+</tr>
+<tr>
+<td>Weight decay</td>
+<td>0.05</td>
+</tr>
+<tr>
+<td>Max grad norm</td>
+<td>initially 1.0, then 0.2 from 56.4K steps</td>
+</tr>
+<tr>
+<td>Clip update norm</td>
+<td>on (σ=2.0, rolling=128); added at 72233, briefly off ~74k–80k</td>
+</tr>
+<tr>
+<td>EMA beta</td>
+<td>0.995</td>
+</tr>
+<tr>
+<td>z-loss</td>
+<td>1e-4</td>
+</tr>
+<tr>
+<td>Skip bad steps</td>
+<td>true (σ=2.0, rolling=128)</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>Some of these were activated mid-run due to loss spikes. These include the tightened max grad norm,
+the "clip update norm" and the "skip bad steps" flag. We discuss these below when we discuss the loss spikes.</p>
+
+
+<p>Overall this is the same optimizer and schedule as used in the 8B run, with a scaled LR peak.</p>
+
+
+<h3 id="data-mix-batch-schedule">Data Mix &amp; Batch Schedule<a class="headerlink" href="#data-mix-batch-schedule" title="Permanent link">¶</a></h3>
+
+
+<p>For pretraining, we followed the same recipe as our <a href="/blog/2025/05/19/marin-8b-retro/#phase-4-phoenix-reheated">8B Phoenix phase</a>:
+<a href="https://arxiv.org/abs/2412.02595">Nemotron-CC</a>, <a href="https://huggingface.co/datasets/bigcode/starcoderdata">StarCoder Data</a>,
+and <a href="https://huggingface.co/datasets/EleutherAI/proof-pile-2">Proofpile 2</a>.</p>
+
+
+<p>Pretraining mixture (normalized share):</p>
+
+
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Percentage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nemotron_cc/medium</td>
+<td>30.69%</td>
+</tr>
+<tr>
+<td>nemotron_cc/hq_synth</td>
+<td>24.70%</td>
+</tr>
+<tr>
+<td>nemotron_cc/medium_low</td>
+<td>13.98%</td>
+</tr>
+<tr>
+<td>nemotron_cc/hq_actual</td>
+<td>8.30%</td>
+</tr>
+<tr>
+<td>nemotron_cc/medium_high</td>
+<td>7.49%</td>
+</tr>
+<tr>
+<td>nemotron_cc/low_actual</td>
+<td>6.37%</td>
+</tr>
+<tr>
+<td>nemotron_cc/low_synth</td>
+<td>5.70%</td>
+</tr>
+<tr>
+<td>starcoderdata</td>
+<td>2.27%</td>
+</tr>
+<tr>
+<td>proofpile_2</td>
+<td>0.50%</td>
+</tr>
+</tbody>
+</table>
+
+
+<h4 id="batch-schedule">Batch schedule<a class="headerlink" href="#batch-schedule" title="Permanent link">¶</a></h4>
+
+
+<table>
+<thead>
+<tr>
+<th>Start step</th>
+<th>Global batch size</th>
+<th>Tokens per batch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>8192</td>
+<td>32Mi</td>
+</tr>
+<tr>
+<td>18,500</td>
+<td>7680</td>
+<td>30Mi</td>
+</tr>
+<tr>
+<td>21,010</td>
+<td>8192</td>
+<td>32Mi</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>The change in global batch size was driven by changing hardware: when we had the 4 v5p-512s we used 8192,
+shifting down to 7680 for divisibility by 3 when we had 3 v5p-512s, and finally changing back to 8192
+when we moved to the v4 slice.</p>
+
+
+<p>As with the 8b run, we used a sequence length of 4096 tokens.</p>
+
+
+<h2 id="training-phases">Training Phases<a class="headerlink" href="#training-phases" title="Permanent link">¶</a></h2>
+
+
+<h3 id="phase-1-scaling-up-our-existing-recipe">Phase 1: Scaling up our existing recipe<a class="headerlink" href="#phase-1-scaling-up-our-existing-recipe" title="Permanent link">¶</a></h3>
+
+
+<ul>
+<li>Issue: <a href="https://github.com/marin-community/marin/issues/1295">#1295</a></li>
+<li>Experiment: <a href="https://github.com/marin-community/marin/blob/5e88b5253975ffd13e63a5db0b946883c8660e1b/experiments/tootsie/exp1295_32b.py"><code>exp1295_32b</code></a></li>
+</ul>
+
+
+<p>For ~70k steps training behaved as expected though we had many more loss spikes than we had seen at 8b (and in 70b trials).
+We got a lot of feedback from the community on these spikes, with some folks telling us we were doomed,
+others a bit more hedgey, and some folks telling us they looked acceptable. (Yay for open development!)</p>
+
+
+<p><img alt="Training loss curve with frequent spikes during the Phase 1 baseline run" src="/assets/images/posts/marin-32b-retro/32b-spiky-loss.png"/></p>
+
+
+<p>Ideally, there wouldn't be spikes of course. But many of the people we talked to (and our own experience) suggested that if the model recovered quickly and it didn't really change the trajectory, it was fine.</p>
+
+
+<p><img alt="Evaluation loss comparison between Marin 32B and peer runs during Phase 1" src="/assets/images/posts/marin-32b-retro/32b-loss-comparisons.png"/></p>
+
+
+<p>Nevertheless, we were a bit worried, so we added a bunch of instrumentation and a few interventions.</p>
+
+
+<p>Specifically, we looked at the following mitigations (documented in <a href="https://github.com/marin-community/marin/issues/1368">#1368</a>)</p>
+
+
+<h4 id="1-tightened-max-grad-norm-clipping">1. Tightened max grad norm clipping<a class="headerlink" href="#1-tightened-max-grad-norm-clipping" title="Permanent link">¶</a></h4>
+
+
+<p>Following standard practice, by default we have clipped our grad norm to a maximum of 1.0.
+We observed that loss spikes typically occurred after steps with a large grad norm, but that typically our grad norms were in the range of about 0.2, and norms significantly higher than that often foretold a loss spike.
+Therefore, at around 56.4K steps, we tightened the max grad norm to 0.2 to prevent large gradient steps from destabilizing training.</p>
+
+
+<h4 id="2-clip-update-norm">2. Clip Update Norm<a class="headerlink" href="#2-clip-update-norm" title="Permanent link">¶</a></h4>
+
+
+<p>When that didn't work, we added a "clip update norm" filter at around 72.2K steps. Like grad norm spikes, update norm spikes always preceded grad norm spikes, and we thought these would be a more direct way of preventing the model from taking too large of a step. This filter computes a rolling average and standard deviation of the optimizer update norms (i.e. after Adam's scaling is applied), and clips updates that exceed the average by a certain threshold (2 stddevs in our case). We hoped that this would reduce the impact of outlier updates that could lead to loss spikes. Ultimately, it also didn't seem to prevent loss spikes, but it may have reduced their severity. We inadvertently turned this off for a few thousand steps around 74K–80K, which may have contributed to the more significant instability we saw then.</p>
+
+
+<p><img alt="Update-norm spikes preceding loss spikes in Phase 1 diagnostics" src="/assets/images/posts/marin-32b-retro/32b-update-spike-precede-loss-spike.png"/></p>
+
+
+<h4 id="3-skipping-bad-steps">3. Skipping Bad Steps<a class="headerlink" href="#3-skipping-bad-steps" title="Permanent link">¶</a></h4>
+
+
+<p>Based on a tip from Luca Soldaini, we <a href="https://github.com/stanford-crfm/levanter/blob/9fde0781a1737e088535c392cf239aba5e1143e2/src/levanter/optim/skipstep.py#L65">added a "skip bad steps" flag</a> (modeled on <a href="https://github.com/allenai/OLMo-core/blob/main/src/olmo_core/optim/skip_step_optimizer.py">the version in OLMo</a>) that skips parameter updates when the update norm exceeds a rolling average by a threshold (2 stddevs in our case).</p>
+
+
+<blockquote>
+<p>Tokens trained: ≈2.679T tokens (80,000 steps; 4096 seq len; batch schedule 0–18,499: 8192, 18,500–21,009: 7680, 21,010–79,999: 8192).</p>
+</blockquote>
+
+
+<p><strong>What we learned:</strong> Gradient clipping and step-skipping heuristics softened the spikes but never removed them; instrumentation alone could not replace an architectural fix at this scale.</p>
+
+
+<h3 id="phase-2-recovery-without-architecture-changes">Phase 2: Recovery Without Architecture Changes<a class="headerlink" href="#phase-2-recovery-without-architecture-changes" title="Permanent link">¶</a></h3>
+
+
+<ul>
+<li>Issues: <a href="https://github.com/marin-community/marin/issues/1390">#1390</a>, <a href="https://github.com/marin-community/marin/issues/1380">#1380</a></li>
+<li>Experiments: <a href="https://github.com/marin-community/marin/blob/fe373c233ee7288cbf8e7600765c3fc6fb6fa3ac/experiments/tootsie/exp1390_32b_necro.py"><code>exp1390_32b_necro</code></a>, <a href="https://github.com/marin-community/marin/blob/fe373c233ee7288cbf8e7600765c3fc6fb6fa3ac/experiments/tootsie/exp1380_muon32b.py"><code>exp1380_muon32b</code></a></li>
+</ul>
+
+
+<p>Unfortunately, at 80k steps we began to see spikes that were unavoidable even with all the update clipping that we had added. This launched a bit of a fire-drill to see how and whether we could salvage this run!</p>
+
+
+<p><img alt="Phase 2 restart still exhibiting a severe loss spike despite mitigation attempts" src="/assets/images/posts/marin-32b-retro/32b-bad-spike.png"/></p>
+
+
+<p>We treated the 80k checkpoint as salvageable and attempted to coax the run back while keeping the Llama backbone.</p>
+
+
+<h4 id="necromancy-restart-exp1390_32b_necro">"Necromancy" Restart (<code>exp1390_32b_necro</code>)<a class="headerlink" href="#necromancy-restart-exp1390_32b_necro" title="Permanent link">¶</a></h4>
+
+
+<p>Github Issue: <a href="https://github.com/marin-community/marin/issues/1390">#1390</a></p>
+
+
+<p>We rebuilt optimizer state offline, seeding the warm‑start with update‑history tensors from the last good checkpoint so the clip‑update‑norm filter would have valid rolling statistics. This stabilized gradients for a few thousand steps, but the run relapsed into spikes—a sign the causes of spikes was more core to the model state.</p>
+
+
+<h4 id="alternative-optimizers-exp1388-exp1380">Alternative Optimizers (<code>exp1388</code>, <code>exp1380</code>)<a class="headerlink" href="#alternative-optimizers-exp1388-exp1380" title="Permanent link">¶</a></h4>
+
+
+<p>We next swapped optimizers without touching weights! There's been lots of recent work on better conditioned optimizers, including our own empirical validations in our <a href="https://arxiv.org/abs/2509.02046">"Fantastic Optimizers"</a> paper.
+We specifically tried <a href="https://kellerjordan.github.io/posts/muon/">Muon</a>, which is and was all the rage at the time.</p>
+
+
+<p>In <a href="https://github.com/marin-community/marin/issues/1380"><code>exp1380_muon32b</code></a>, we used Muon with a higher effective LR = 2e‑3, but we retained the Adam‑style LR schedule to avoid a full retune.</p>
+
+
+<p><img alt="Muon optimizer versus baseline Adam around 80k steps, showing temporary loss relief" src="/assets/images/posts/marin-32b-retro/32b-muon-vs-adam.png"/></p>
+
+
+<p>Aside: The Muon run was still warming up its Adam params here so the loss was lower. The Muon run technically spiked a little later, which might be worth investigating.</p>
+
+
+<p>We actually let it keep going a little longer, but it decided to turn into gradient ascents after a while. So we abandoned it.
+We probably need more time to properly tune Muon for this setting.</p>
+
+
+<p><img alt="Muon optimizer run eventually diverging with repeated spikes and loss blow-up" src="/assets/images/posts/marin-32b-retro/32b-muon-can-into-space.png"/></p>
+
+
+<p><strong>Tokens trained:</strong> Diagnostic restarts only (short runs of a few thousand steps); excluded from cumulative phase totals due to restart to 80k Llama checkpoint for Phase 3.</p>
+
+
+<p><strong>What we learned:</strong> Restart tricks and optimizer swaps stabilized gradients briefly but not sustainably, reinforcing that the instability was rooted in the model’s attention stack rather than in optimizer state.</p>
+
+
+<h3 id="phase-3-switch-to-qk-norm">Phase 3: Switch to QK-Norm<a class="headerlink" href="#phase-3-switch-to-qk-norm" title="Permanent link">¶</a></h3>
+
+
+<ul>
+<li>Issue: <a href="https://github.com/marin-community/marin/issues/1395">#1395</a></li>
+<li>Experiment: <a href="https://github.com/marin-community/marin/blob/fe373c233ee7288cbf8e7600765c3fc6fb6fa3ac/experiments/tootsie/exp1395_qwen3_32b.py"><code>exp1395_qwen3_32b</code></a></li>
+</ul>
+
+
+<p>Github Issue: <a href="https://github.com/marin-community/marin/issues/1395">#1395</a></p>
+
+
+<p>At this point we concluded that stabilizing a 32B Llama without architectural help wasn’t feasible under our constraints. We switched to Qwen3 32B, which adds QK‑Norm in attention, and warm‑started from the 80k Llama weights. This preserved useful signal in embeddings and MLPs while letting the normalized attention heads relearn.</p>
+
+
+<ul>
+<li>Prior reports—from <a href="https://arxiv.org/abs/2501.00656">the OLMo team</a> and <a href="https://arxiv.org/abs/2309.14322">Google DeepMind</a> among others—suggest QK‑Norm provides substantial headroom against loss spikes in large models.
+You might reasonably ask "Why not use QK-norm to begin with?" While we thought about it, we had some hubris from our 8B experience (stable without QK‑Norm) as well as an earlier trial 70B run (also stable without QK-norm).
+It is worth noting that the Llama 3 team seems to have trained much larger models without QK-Norm, so it seems possible it is not necessary given the right tuning of underlying hyperparameters, which we continue to explore.</li>
+</ul>
+
+
+<p>The switch to QK-norm imposed a one‑time loss penalty, but the training loss recovered in about 10B tokens. What's more, the loss spikes disappeared entirely.</p>
+
+
+<p><img alt="QK-Norm warm-start loss recovers to the pre-switch trajectory within roughly 10B tokens" src="/assets/images/posts/marin-32b-retro/qk-recovery.png"/></p>
+
+
+<p>Warm‑start + rewarm parameters (<code>exp1395_32b</code>):</p>
+
+
+<table>
+<thead>
+<tr>
+<th><strong>Setting</strong></th>
+<th><strong>Value</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Warm start checkpoint</td>
+<td>step‑80,000 (Llama 32B)</td>
+</tr>
+<tr>
+<td>Cycles</td>
+<td>[80k, 1,000,000,000]</td>
+</tr>
+<tr>
+<td>Re‑warmup</td>
+<td>1,000 steps</td>
+</tr>
+</tbody>
+</table>
+
+
+<p><strong>Tokens trained:</strong> ≈2.684T tokens (80,000 steps from 80k → 160k at 4096 seq len, global batch 8192).</p>
+
+
+<p><strong>What we learned:</strong> QK-Norm delivered the headroom we needed. Warm-starting preserved earlier progress while eliminating loss spikes after a short re-warmup.</p>
+
+
+<h3 id="phase-4-midtraining-runs">Phase 4: Midtraining Runs<a class="headerlink" href="#phase-4-midtraining-runs" title="Permanent link">¶</a></h3>
+
+
+<ul>
+<li>Issues: <a href="https://github.com/marin-community/marin/issues/1529">#1529</a>, <a href="https://github.com/marin-community/marin/issues/1681">#1681</a></li>
+<li>Experiments: <a href="https://github.com/marin-community/marin/blob/ee163702c5bc71c9bbba3238db84b6ee86e826a7/experiments/tootsie/exp1529_32b_bison_cooldown.py"><code>exp1529_32b_bison_cooldown</code></a>, <a href="https://github.com/marin-community/marin/blob/ee163702c5bc71c9bbba3238db84b6ee86e826a7/experiments/tootsie/exp1529_32b_mantis_cooldown.py"><code>exp1529_32b_mantis_cooldown</code></a></li>
+</ul>
+
+
+<p>With stability restored, we trained until we completed 1 epoch over the Nemotron data and then resumed the 8B playbook.
+The first attempt (<em>Bison</em>) mirrored our <a href="/blog/2025/05/19/marin-8b-retro/#phase-5-starling-second-cooldown">Starling</a>-style cooldown and exposed two issues; the second (<em>Mantis</em>) fixed them.</p>
+
+
+<h4 id="attempt-1-bison-cooldown">Attempt 1 — Bison Cooldown<a class="headerlink" href="#attempt-1-bison-cooldown" title="Permanent link">¶</a></h4>
+
+
+<ul>
+<li>Issue: <a href="https://github.com/marin-community/marin/issues/1529">#1529</a></li>
+<li>Experiment: <a href="https://github.com/marin-community/marin/blob/ee163702c5bc71c9bbba3238db84b6ee86e826a7/experiments/tootsie/exp1529_32b_bison_cooldown.py"><code>exp1529_32b_bison_cooldown</code></a></li>
+</ul>
+
+
+<p>Based on the success of our Starling cooldown at 8B, we attempted a similar cooldown at 32B.
+Starting from the 160k qk-norm-enabled checkpoint, we ran a 32k-step cooldown with a 70/30 Nemotron/Starling mixture.</p>
+
+
+<h5 id="cooldown-mixture-normalized-share">Cooldown mixture (normalized share):<a class="headerlink" href="#cooldown-mixture-normalized-share" title="Permanent link">¶</a></h5>
+
+
+<p>In detail, the cooldown used the same Nemotron-CC mixture as before, supplemented with a mix drawn from Dolmino, Finemath-3-Plus, Arxiv Markdownified, StackExchange Custom, and others.</p>
+
+
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Percentage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nemotron_cc/medium</td>
+<td>21.49%</td>
+</tr>
+<tr>
+<td>nemotron_cc/hq_synth</td>
+<td>17.29%</td>
+</tr>
+<tr>
+<td>nemotron_cc/medium_low</td>
+<td>9.79%</td>
+</tr>
+<tr>
+<td>nemotron_cc/hq_actual</td>
+<td>5.81%</td>
+</tr>
+<tr>
+<td>nemotron_cc/medium_high</td>
+<td>5.24%</td>
+</tr>
+<tr>
+<td>nemotron_cc/low_actual</td>
+<td>4.46%</td>
+</tr>
+<tr>
+<td>nemotron_cc/low_synth</td>
+<td>3.99%</td>
+</tr>
+<tr>
+<td>arxiv_markdownified</td>
+<td>7.41%</td>
+</tr>
+<tr>
+<td>dolmino/pes2o</td>
+<td>7.41%</td>
+</tr>
+<tr>
+<td>finemath-3-plus</td>
+<td>4.33%</td>
+</tr>
+<tr>
+<td>dolmino/flan</td>
+<td>4.33%</td>
+</tr>
+<tr>
+<td>stackexchange_custom</td>
+<td>2.18%</td>
+</tr>
+<tr>
+<td>dolmino/stackexchange</td>
+<td>2.18%</td>
+</tr>
+<tr>
+<td>starcoderdata</td>
+<td>1.59%</td>
+</tr>
+<tr>
+<td>all_math</td>
+<td>1.08%</td>
+</tr>
+<tr>
+<td>proofpile_2</td>
+<td>0.35%</td>
+</tr>
+<tr>
+<td>wikipedia_markdown</td>
+<td>0.47%</td>
+</tr>
+<tr>
+<td>dolmino/wiki</td>
+<td>0.47%</td>
+</tr>
+<tr>
+<td>medu_science_qa</td>
+<td>0.15%</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>Within the 70/30 split, each data source was weighted approximately equal to its token size, but we upsampled FLAN (10x)
+and the math from Dolmino (2x). Again, this is the same as the starling cooldown at 8B.</p>
+
+
+<h5 id="training-parameters">Training Parameters<a class="headerlink" href="#training-parameters" title="Permanent link">¶</a></h5>
+
+
+<p>We used the following optimizer schedule:</p>
+
+
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Warmup</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Decay window</td>
+<td>160k → 192k (≈16.7% of total)</td>
+</tr>
+<tr>
+<td>LR schedule</td>
+<td>linear</td>
+</tr>
+<tr>
+<td>AdamC</td>
+<td>enabled during decay</td>
+</tr>
+</tbody>
+</table>
+
+
+<p><strong>Cooldown specifics (changes vs 8B):</strong></p>
+
+
+<ol>
+<li>Z‑loss throughout. We previously observed late‑decay divergences at low LR in 8B; adding a small z‑loss stopped <code>lm_head</code> norm growth during cooldown.</li>
+<li><a href="https://arxiv.org/abs/2506.02285">AdamC</a> during decay. We opted to include this because in the 8b we observed the same gradient growth that it purpoted to fix.
+We used the adjusted weight‑decay formulation only in decay phases to reduce gradient growth without retuning the entire schedule.</li>
+</ol>
+
+
+<h4 id="outcome">Outcome<a class="headerlink" href="#outcome" title="Permanent link">¶</a></h4>
+
+
+<h5 id="contamination-anomaly-gsm8k">Contamination anomaly — GSM8k<a class="headerlink" href="#contamination-anomaly-gsm8k" title="Permanent link">¶</a></h5>
+
+
+<p>The run was broadly strong versus OLMo 2 32B, with one extreme exception: GSM8k.
+Under the standard LM Eval Harness prompt, the model was ~22 points worse than the weakest baseline.
+Under <a href="https://github.com/allenai/olmes">OLMes</a>‑style prompts, performance looked much more reasonable, but the extreme prompt fragility made us investigate further.</p>
+
+
+<p>We determined the root cause to be contamination. That is, we (accidentally) cheated but we cheated badly.
+Our <a href="https://huggingface.co/datasets/allenai/dolmino-mix-1124/tree/main/data/math">Dolmino</a> math bundle included GSM8k test items in a <code>test.json</code>.
+Although we later updated preprocessing to drop <code>test.json</code>, the dataset had already been cached on the cluster, introducing contamination for GSM8K on the Bison cooldown.</p>
+
+
+<p>Dolmino’s GSM8k uses OLMes formatting, not LM Eval’s default.
+Therefore, rather than the expected improvement in results from training on the test,
+contamination made our model have dramatically increased surprisal on the original prompts structured tags (e.g., <code>16-8=&lt;&lt;16-7=9&gt;&gt;9</code>) that don’t appear in the contaminated data.
+This high surprisal seemed to cause our model to perform much worse than it did on the same questions with those tags removed.</p>
+
+
+<p>That said, our MATH performance was also quite poor, and we have no reason to believe it was contaminated.
+So, our generally poor performance on math may have other causes.</p>
+
+
+<h5 id="shuffling-anomaly">Shuffling anomaly<a class="headerlink" href="#shuffling-anomaly" title="Permanent link">¶</a></h5>
+
+
+<p>Near 190k steps, training loss phase‑shifted while validation remained stable.
+This is normally observed when we change the underlying training data mix, but in this case we hadn't!
+We had separately begun to wonder whether our pseudo-random shuffle, which finds a co-prime step size across data indices, was leading to a somewhat unlucky shuffle where batches came from correlated data. This phase shift in cooldown increased our confidence this was happening!</p>
+
+
+<p><img alt="Training loss phase shift during Bison cooldown while evaluation losses remain flat" src="/assets/images/posts/marin-32b-retro/32b-shuffle-spike.png"/></p>
+
+
+<p>As you can see, this "spike" ended up being a phase shift in training loss that never recovered.
+But, eval losses were unaffected.
+This strongly indicated that the underlying data had shifted, rather than any model instability.</p>
+
+
+<p>Why did we use such a bad shuffle? Because it is cheap and stateless! We can compute the index of any data point on the fly without storing large permutation tables.
+In addition, our training stack Levanter samples from each mixture component directly, meaning that we always have a stable proportion of tokens from each dataset.
+This has historically mitigated the risk of poor shuffles, but in this case it seems to have failed us.</p>
+
+
+<p><strong>Tokens trained:</strong> ≈1.074T tokens (32,000 steps from 160k → 192k at 4096 seq len, global batch 8192).</p>
+
+
+<h4 id="attempt-2-mantis-cooldown">Attempt 2 — Mantis Cooldown<a class="headerlink" href="#attempt-2-mantis-cooldown" title="Permanent link">¶</a></h4>
+
+
+<ul>
+<li>Issue: <a href="https://github.com/marin-community/marin/issues/1681">#1681</a></li>
+<li>Experiment: <a href="https://github.com/marin-community/marin/blob/ee163702c5bc71c9bbba3238db84b6ee86e826a7/experiments/tootsie/exp1529_32b_mantis_cooldown.py"><code>exp1529_32b_mantis_cooldown</code></a></li>
+</ul>
+
+
+<p>We restarted from 160k with two major changes:</p>
+
+
+<ul>
+<li>Feistel shuffle. Switched from linear permutation to a more robust Feistel‑based shuffle.</li>
+<li>Cleaner math mix. Replaced Dolmino math with <a href="https://arxiv.org/abs/2504.02807">MegaMath</a> splits and later added <a href="https://arxiv.org/abs/2506.05209">Common Pile</a>'s <a href="https://huggingface.co/datasets/common-pile/stackv2_edu_filtered">Stack V2 EDU</a> Python (around 174k), redistributing the HQ budget accordingly.</li>
+</ul>
+
+
+<p>Cooldown mixture (normalized share):</p>
+
+
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Percentage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nemotron_cc/medium</td>
+<td>21.49%</td>
+</tr>
+<tr>
+<td>nemotron_cc/hq_synth</td>
+<td>17.29%</td>
+</tr>
+<tr>
+<td>nemotron_cc/medium_low</td>
+<td>9.79%</td>
+</tr>
+<tr>
+<td>nemotron_cc/hq_actual</td>
+<td>5.81%</td>
+</tr>
+<tr>
+<td>nemotron_cc/medium_high</td>
+<td>5.24%</td>
+</tr>
+<tr>
+<td>nemotron_cc/low_actual</td>
+<td>4.46%</td>
+</tr>
+<tr>
+<td>nemotron_cc/low_synth</td>
+<td>3.99%</td>
+</tr>
+<tr>
+<td>megamath/web</td>
+<td>5.57%</td>
+</tr>
+<tr>
+<td>arxiv_markdownified</td>
+<td>4.54%</td>
+</tr>
+<tr>
+<td>megamath/text_code_block</td>
+<td>4.24%</td>
+</tr>
+<tr>
+<td>dolmino/pes2o</td>
+<td>4.54%</td>
+</tr>
+<tr>
+<td>megamath/web_pro</td>
+<td>1.27%</td>
+</tr>
+<tr>
+<td>megamath/translated_code</td>
+<td>0.61%</td>
+</tr>
+<tr>
+<td>megamath/qa</td>
+<td>0.59%</td>
+</tr>
+<tr>
+<td>finemath-3-plus</td>
+<td>2.66%</td>
+</tr>
+<tr>
+<td>dolmino/flan</td>
+<td>2.66%</td>
+</tr>
+<tr>
+<td>stackexchange_custom</td>
+<td>1.34%</td>
+</tr>
+<tr>
+<td>dolmino/stackexchange</td>
+<td>1.34%</td>
+</tr>
+<tr>
+<td>starcoderdata</td>
+<td>1.59%</td>
+</tr>
+<tr>
+<td>proofpile_2</td>
+<td>0.35%</td>
+</tr>
+<tr>
+<td>wikipedia_markdown</td>
+<td>0.29%</td>
+</tr>
+<tr>
+<td>dolmino/wiki</td>
+<td>0.29%</td>
+</tr>
+<tr>
+<td>medu_science_qa</td>
+<td>0.09%</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>Notes:
+- At ~174k steps, we introduced <code>common_pile_stackv2_edu_filtered_python</code> and re‑normalized the HQ portion accordingly.
+- Sampling permutation switched to Feistel.</p>
+
+
+<p>We kept the optimizer schedule identical to Bison. With better shuffling and clean math, both failure modes disappeared.</p>
+
+
+<p><strong>Tokens trained:</strong> ≈1.074T tokens (32,000 steps from 160k → 192k at 4096 seq len, global batch 8192).</p>
+
+
+<h5 id="shuffling-linear-vs-feistel">Shuffling: Linear vs. Feistel<a class="headerlink" href="#shuffling-linear-vs-feistel" title="Permanent link">¶</a></h5>
+
+
+<p>Within each batch, we want examples that are as i.i.d. as possible from the full training distribution.
+This reduces within‑batch correlation and avoids long, correlated stretches that can bias updates or create non‑stationary “phases” in the loss curve. This also reduces gradient variance from batch to batch, which recent <a href="https://www.lesswrong.com/posts/j3gp8tebQiFJqzBgg/how-the-nanogpt-speedrun-wr-dropped-by-20-in-3-months">NanoGPT speedruns</a> have found beneficial.</p>
+
+
+<p>To achieve this in a reproducible way at runtime, we compute pseudo-random permutations over training data blocks inside of the data loader. We previously used an affine/LCG permutation, choosing integers <code>a</code> and <code>b</code> with <code>gcd(a, N) = 1</code> for dataset length <code>N</code>, and mapping indices by <code>p(x) = (a * x + b) % N</code>. This is a valid permutation (every index appears exactly once), cheap, and stateless.</p>
+
+
+<p>The issue is that if our step size is very small (or very large) and the data is not pre-shuffled, there can be clear phases in our training data!</p>
+
+
+<p>In Mantis, we switched to a Feistel‑network permutation, another pseudo‑random permutation (PRP) over the index domain. Conceptually, Feistel splits the bit representation into halves and applies several mixing rounds with per‑round keys, yielding a bijection with much better mixing properties than an affine map. Empirically, this resolved the phase shift effect we had seen earlier.</p>
+
+
+<p><img alt="Feistel shuffle removes the cooldown phase shift versus the prior linear permutation" src="/assets/images/posts/marin-32b-retro/32b-feistel-vs-lcg.png"/></p>
+
+
+<p>In addition, our validation losses looked better across the board (not just code!)</p>
+
+
+<p><img alt="Mantis cooldown yields lower Paloma c4_en loss curves compared with Bison cooldown" src="/assets/images/posts/marin-32b-retro/32b-paloma-c4-en-permutation.png"/></p>
+
+
+<p><img alt="Overall Paloma average losses improve under Mantis cooldown relative to Bison" src="/assets/images/posts/marin-32b-retro/32b-paloma-average-permutation.png"/></p>
+
+
+<p>Needless to say, we'll be using Feistel going forward!</p>
+
+
+<p><strong>What we learned:</strong> Shuffle quality matters even given perfect per-domain shuffling.</p>
+
+
+<h2 id="base-model-results">Base Model Results<a class="headerlink" href="#base-model-results" title="Permanent link">¶</a></h2>
+
+
+<p>We evaluate with Eleuther's <a href="https://github.com/EleutherAI/lm-evaluation-harness">LM Eval Harness</a> defaults across a standard suite. Numbers may differ from model cards or
+other evaluation harnesses (e.g. OLMES) due to prompt/format differences. “Average” is a simple mean over shown tasks.</p>
+
+
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Model</th>
+<th style="text-align: right;">Average</th>
+<th style="text-align: right;">AGI Eval LSAT-AR</th>
+<th style="text-align: right;">ARC Easy</th>
+<th style="text-align: right;">ARC Challenge</th>
+<th style="text-align: right;">BoolQ</th>
+<th style="text-align: right;">CommonSense QA</th>
+<th style="text-align: right;">COPA</th>
+<th style="text-align: right;">HellaSwag</th>
+<th style="text-align: right;">lambada_openai</th>
+<th style="text-align: right;">OpenBookQA</th>
+<th style="text-align: right;">PIQA</th>
+<th style="text-align: right;">WinoGrande</th>
+<th style="text-align: right;">WSC</th>
+<th style="text-align: right;">MMLU</th>
+<th style="text-align: right;">GPQA</th>
+<th style="text-align: right;">BBH</th>
+<th style="text-align: right;">MMLU Pro</th>
+<th style="text-align: right;">HumanEval</th>
+<th style="text-align: right;">GSM8K</th>
+<th style="text-align: right;">MATH</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Marin 32B (Bison)</strong></td>
+<td style="text-align: right;">63.0</td>
+<td style="text-align: right;">23.4</td>
+<td style="text-align: right;">87.8</td>
+<td style="text-align: right;"><strong>65.8</strong></td>
+<td style="text-align: right;">88.9</td>
+<td style="text-align: right;">82.3</td>
+<td style="text-align: right;"><strong>94.0</strong></td>
+<td style="text-align: right;">86.6</td>
+<td style="text-align: right;">77.4</td>
+<td style="text-align: right;">46.6</td>
+<td style="text-align: right;"><strong>86.1</strong></td>
+<td style="text-align: right;">78.61</td>
+<td style="text-align: right;">82.42</td>
+<td style="text-align: right;">72.9</td>
+<td style="text-align: right;">32.13</td>
+<td style="text-align: right;">55.2</td>
+<td style="text-align: right;">41.9</td>
+<td style="text-align: right;">29.27</td>
+<td style="text-align: right;">54.71</td>
+<td style="text-align: right;">10.35</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Marin 32B (Mantis)</strong></td>
+<td style="text-align: right;">65.2</td>
+<td style="text-align: right;">24.8</td>
+<td style="text-align: right;">88.0</td>
+<td style="text-align: right;">65.7</td>
+<td style="text-align: right;"><strong>89.4</strong></td>
+<td style="text-align: right;">82.8</td>
+<td style="text-align: right;">93.0</td>
+<td style="text-align: right;"><strong>86.9</strong></td>
+<td style="text-align: right;">77.2</td>
+<td style="text-align: right;">46.4</td>
+<td style="text-align: right;">85.9</td>
+<td style="text-align: right;"><strong>79.3</strong></td>
+<td style="text-align: right;">79.5</td>
+<td style="text-align: right;">74.7</td>
+<td style="text-align: right;">34.0</td>
+<td style="text-align: right;">59.6</td>
+<td style="text-align: right;">45.1</td>
+<td style="text-align: right;">42.7</td>
+<td style="text-align: right;">69.1</td>
+<td style="text-align: right;">15.3</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>OLMo 2 32B Base</strong></td>
+<td style="text-align: right;">63.2</td>
+<td style="text-align: right;">22.6</td>
+<td style="text-align: right;">85.9</td>
+<td style="text-align: right;">61.86</td>
+<td style="text-align: right;">83.0</td>
+<td style="text-align: right;">78.6</td>
+<td style="text-align: right;">93.0</td>
+<td style="text-align: right;">85.9</td>
+<td style="text-align: right;"><strong>78.3</strong></td>
+<td style="text-align: right;"><strong>47.2</strong></td>
+<td style="text-align: right;">83.08</td>
+<td style="text-align: right;">78.85</td>
+<td style="text-align: right;">86.81</td>
+<td style="text-align: right;">71.85</td>
+<td style="text-align: right;">32.21</td>
+<td style="text-align: right;">56.07</td>
+<td style="text-align: right;">42.0</td>
+<td style="text-align: right;">23.78</td>
+<td style="text-align: right;">76.35</td>
+<td style="text-align: right;">12.69</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Qwen 2.5 32B Base</strong></td>
+<td style="text-align: right;">68.1</td>
+<td style="text-align: right;"><strong>30.43</strong></td>
+<td style="text-align: right;">80.81</td>
+<td style="text-align: right;">55.89</td>
+<td style="text-align: right;">87.65</td>
+<td style="text-align: right;"><strong>88.45</strong></td>
+<td style="text-align: right;">87.0</td>
+<td style="text-align: right;">84.11</td>
+<td style="text-align: right;">77.62</td>
+<td style="text-align: right;">44.4</td>
+<td style="text-align: right;">82.4</td>
+<td style="text-align: right;">75.7</td>
+<td style="text-align: right;">80.95</td>
+<td style="text-align: right;"><strong>80.83</strong></td>
+<td style="text-align: right;"><strong>39.01</strong></td>
+<td style="text-align: right;"><strong>67.35</strong></td>
+<td style="text-align: right;"><strong>57.9</strong></td>
+<td style="text-align: right;"><strong>48.78</strong></td>
+<td style="text-align: right;"><strong>89.31</strong></td>
+<td style="text-align: right;">36.25</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Gemma 3 27B PT</strong></td>
+<td style="text-align: right;">65.1</td>
+<td style="text-align: right;">22.17</td>
+<td style="text-align: right;"><strong>88.17</strong></td>
+<td style="text-align: right;">65.44</td>
+<td style="text-align: right;">87.09</td>
+<td style="text-align: right;">73.38</td>
+<td style="text-align: right;">93.0</td>
+<td style="text-align: right;">83.02</td>
+<td style="text-align: right;">78.07</td>
+<td style="text-align: right;">45.0</td>
+<td style="text-align: right;">84.06</td>
+<td style="text-align: right;">79.01</td>
+<td style="text-align: right;"><strong>91.94</strong></td>
+<td style="text-align: right;">75.33</td>
+<td style="text-align: right;">35.74</td>
+<td style="text-align: right;">61.36</td>
+<td style="text-align: right;">49.44</td>
+<td style="text-align: right;">17.6</td>
+<td style="text-align: right;">82.03</td>
+<td style="text-align: right;">25.83</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>NVIDIA Nemotron Nano 12B v2 Base</strong></td>
+<td style="text-align: right;"><strong>68.6</strong></td>
+<td style="text-align: right;">28.7</td>
+<td style="text-align: right;">83.59</td>
+<td style="text-align: right;">60.58</td>
+<td style="text-align: right;">84.83</td>
+<td style="text-align: right;">76.09</td>
+<td style="text-align: right;">85.0</td>
+<td style="text-align: right;">81.42</td>
+<td style="text-align: right;">72.93</td>
+<td style="text-align: right;">45.8</td>
+<td style="text-align: right;">82.81</td>
+<td style="text-align: right;">74.35</td>
+<td style="text-align: right;">85.35</td>
+<td style="text-align: right;">77.9</td>
+<td style="text-align: right;">36.58</td>
+<td style="text-align: right;">62.02</td>
+<td style="text-align: right;">53.13</td>
+<td style="text-align: right;"><strong>59.15</strong></td>
+<td style="text-align: right;">84.08</td>
+<td style="text-align: right;"><strong>68.28</strong></td>
+</tr>
+</tbody>
+</table>
+
+
+<p>The newer Mantis cooldown is better in almost every respect compared to Bison. COPA, PIQA and WSC see slight degradations, but, as expected, the coding evaluation HumanEval and math evals GSM8K and MATH
+see marked improvements.</p>
+
+
+<p>In terms of mean rank, Marin fares quite well among other open weights base models:</p>
+
+
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Model</th>
+<th style="text-align: right;">Mean Rank</th>
+<th style="text-align: right;">Mean Reciprocal Rank</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Marin 32B (Bison)</strong></td>
+<td style="text-align: right;">3.68</td>
+<td style="text-align: right;">0.39</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Marin 32B (Mantis)</strong></td>
+<td style="text-align: right;"><strong>3.05</strong></td>
+<td style="text-align: right;">0.44</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>OLMo 2 32B Base</strong></td>
+<td style="text-align: right;">3.89</td>
+<td style="text-align: right;">0.34</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Qwen 2.5 32B Base</strong></td>
+<td style="text-align: right;">3.16</td>
+<td style="text-align: right;"><strong>0.54</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Gemma 3 27B PT</strong></td>
+<td style="text-align: right;">3.37</td>
+<td style="text-align: right;">0.39</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>NVIDIA Nemotron Nano 12B v2 Base</strong></td>
+<td style="text-align: right;">3.68</td>
+<td style="text-align: right;">0.38</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>Overall, the Mantis 32B model does quite well! In terms of mean rank, it is the best of these models (lower is better).
+That said, Qwen 2.5 32B Base has a higher mean reciprocal rank.</p>
+
+
+<p>In terms of average accuracy, it manages to surpass OLMo 32B (+2.0, better on 14 of 19), the previous best open source base model,
+and is more or less on par with Gemma 3 27B PT (+0.1, better on 9 of 19).
+It is a bit behind Qwen 2.5 32B Base (-2.8, better on 8/19) and NVIDIA Nemotron Nano 12B v2 Base (-3.4, better on 10/19).
+(Nemotron Nano has particularly strong math and code performance, likely due to its training mixture.)</p>
+
+
+<h3 id="an-aside-on-terminology">An Aside on Terminology<a class="headerlink" href="#an-aside-on-terminology" title="Permanent link">¶</a></h3>
+
+
+<p>When we say "open weights," we mean that the model weights are publicly available for download without restrictive licenses.
+These models do not necessarily have open training code or data. When we say "open source," we mean that the model weights,
+training code, and training data are all publicly available without restrictive licenses.
+All open source models are open weights, but not all open weights models are open source.
+Qwen, Gemma 3, and Nemotron Nano are open weight, but not open source. Marin and OLMo are open source.
+Note that this is a spectrum: to their credit, NVIDIA released significant details about <a href="https://huggingface.co/nvidia/NVIDIA-Nemotron-Nano-12B-v2#training-datasets">Nemotron Nano's training process and data</a>.</p>
+
+
+<p>"Base" here means that these models have not undergone instruction tuning or RLHF, though increasingly
+the line is blurred as Marin, OLMo, and Nemotron Nano include instruction, reasoning, or task data in their pretraining mixtures.
+(We don't know the details of Qwen or Gemma's pretraining mixtures!)
+We have not yet produced or evaluated instruction tuned or RLHF versions of Marin 32B. This is planned.</p>
+
+
+<h3 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">¶</a></h3>
+
+
+<p>As ever, several caveats are in order:</p>
+
+
+<ul>
+<li>These results are from Eleuther's LM Eval Harness with default prompts; other prompt styles (e.g. OLMes) may yield different results.
+  Eleuther tends to be a bit stricter than other frameworks, and it doesn't allow any prompt engineering. Your mileage may vary!</li>
+<li>These results are for base models without any instruction tuning or RLHF.</li>
+<li>Gemma 3 supports images, and the open weights models support more natural languages than English; these results are only for English text tasks.</li>
+<li>These are 19 tasks out of many possible tasks; other tasks may yield different relative results.</li>
+</ul>
+
+
+<h2 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">¶</a></h2>
+
+
+<p>While we believe Marin 32B is a strong open source base model, it has some limitations:</p>
+
+
+<ul>
+<li>It is only a base model! While we believe it is a good base model, it lacks instruction tuning or RLHF that would make it more useful for end users.</li>
+<li>It is still relatively large at 32B parameters, which may make it difficult to deploy for some users.</li>
+<li>It has not undergone long context extension training, which may limit its performance on long context tasks.</li>
+<li>As stated, our model is only trained on English text (as well as programming languages), limiting its performance on other languages.</li>
+</ul>
+
+
+<p>We welcome community contributions (<a href="https://github.com/marin-community/marin/issues">Github</a>, <a href="https://discord.gg/J9CTk7pqcM">Discord</a>) to address these and other limitations!</p>
+
+
+<h2 id="lessons-learned">Lessons Learned<a class="headerlink" href="#lessons-learned" title="Permanent link">¶</a></h2>
+
+
+<ul>
+<li><strong>Pride goeth before a fall.</strong> Our initial hubris in thinking we could scale our recipe to 32B without QK‑Norm cost us time and compute. We should have tested QK‑Norm earlier.</li>
+<li><strong>Midflight changes can work.</strong> The Tootsie Roll process of starting training early and making evidence‑driven changes mid‑flight worked well here, as it did in 8B. While we aspire to a clean run, we anticipate that our first release at each scale will often involve changes mid-run.</li>
+<li><strong>Data shuffling quality matters more than we thought.</strong> The phase shift we observed during Bison cooldown highlighted the importance of good shuffling, as others (including OLMo) have noted. The Feistel shuffle we adopted in Mantis seems to have resolved this.</li>
+<li><strong>Double check your configs.</strong> We should have caught the GSM8k contamination earlier. While we did eventually identify and fix it, this underscores the importance of verifying dataset contents and preprocessing steps, especially when using cached data. We now have checks in place to prevent similar issues in future runs.</li>
+<li><strong>Instrument heavily.</strong> Our ability to diagnose and address issues mid-flight was greatly aided by extensive logging and monitoring. We recommend others invest in good instrumentation from the start.</li>
+</ul>
+
+
+<h2 id="acknowledgments">Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permanent link">¶</a></h2>
+
+
+<p>We would like to acknowledge:</p>
+
+
+<ul>
+<li>Google, especially Google TPU Research Cloud for providing the compute;</li>
+<li>The datasets and evals produced by AI2, Eleuther, Hugging Face, LLM360, NVIDIA, among others;</li>
+<li>Advice from Elie Bakouch, Lucas Nestler, Omead Pooladzandi, Alec Radford, Luca Soldaini, and Evan Walters on loss spikes (as well as many people privately);</li>
+<li>and our Discord community!</li>
+</ul>
+
+
+<h2 id="glossary">Glossary<a class="headerlink" href="#glossary" title="Permanent link">¶</a></h2>
+
+
+<ul>
+<li><strong>AdamC</strong> — An adjusted weight‑decay computation used during LR decay to reduce gradient growth.</li>
+<li><strong>Cooldown</strong> — A training phase with gradually decreased LR, often paired with a higher‑quality, more structured data mix.</li>
+<li><strong>EMA (Exponential Moving Average)</strong> — Weight averaging used for evaluation to reduce variance from hot parameters.</li>
+<li><strong>Feistel shuffle</strong> — A deterministic, epoch‑wise re‑randomization scheme that avoids the autocorrelation of simple linear permutations.</li>
+<li><strong>QK‑Norm</strong> — Normalization of query/key vectors in attention; improves headroom against spikes at large scales.</li>
+<li><strong>Tootsie Roll process</strong> — Marin’s pragmatic strategy: start quickly, keep training, fold in changes mid‑flight as evidence accumulates.</li>
+<li><strong>Z-loss</strong> — A small penalty on the logit norm to prevent <code>lm_head</code> explosions during deep cooldowns.</li>
+</ul>
+
+</div>
+{% endraw %}

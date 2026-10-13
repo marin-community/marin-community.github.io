@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;500;600&family=Noto+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-  {% if page.source_url %}<link rel="stylesheet" href="{{ '/assets/css/openathena-mirror.css' | relative_url }}">{% endif %}
+  {% if page.post_kind == 'mirror' and page.source_url %}<link rel="stylesheet" href="{{ '/assets/css/openathena-mirror.css' | relative_url }}">{% endif %}
   <link rel="stylesheet" href="{{ '/assets/css/blog.css' | relative_url }}">
 </head>
 <body>
@@ -17,13 +17,13 @@
     <a class="brand" href="{{ '/' | relative_url }}"><img src="{{ '/marin-logo.svg' | relative_url }}" alt="" width="52" height="52"><span>Marin</span></a>
     <nav aria-label="Main navigation">
       <a href="{{ '/' | relative_url }}">Home</a>
-      <a href="{{ '/blog/' | relative_url }}" {% unless page.layout == 'post' or page.layout == 'mirror' %}aria-current="page"{% endunless %}>Blog</a>
+      <a href="{{ '/blog/' | relative_url }}" aria-current="{% if page.url == '/blog/' %}page{% else %}location{% endif %}">Blog</a>
       <a href="https://github.com/marin-community/marin">GitHub</a>
       <a href="https://marin.readthedocs.io/en/latest/">Docs</a>
       <a href="https://discord.gg/J9CTk7pqcM">Discord</a>
     </nav>
   </header>
   <main id="content" class="blog-main">{{ content }}</main>
-  <footer class="site-footer">Developing models together, openly.<br><a href="https://openathena.ai/">Open Athena</a> &amp; the Marin community · <a href="https://groups.google.com/u/0/g/marin-community/">Mailing list</a> · <a href="https://huggingface.co/marin-community">Hugging Face</a></footer>
+  <footer class="site-footer">Developing models together, openly.<br>The Marin community · <a href="https://groups.google.com/u/0/g/marin-community/">Mailing list</a> · <a href="https://huggingface.co/marin-community">Hugging Face</a></footer>
 </body>
 </html>

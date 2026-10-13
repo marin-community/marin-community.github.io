@@ -1,0 +1,93 @@
+[
+  {
+    "post": "_posts/2025-05-19-announcement.md",
+    "title": "Introducing Marin: An Open Lab for Building Foundation Models",
+    "date": "2025-05-19",
+    "authors": [
+      "David Hall",
+      "Ahmed Ahmed, Christopher Chou, Abhinav Garg, Rohith Kuditipudi, Will Held, Nikil Ravi, Herumb Shandilya, Jason Wang",
+      "Jason Bolton, Siddharth Karamcheti, Suhas Kotha, Tony Lee, Nelson Liu, Joel Niklaus, Ashwin Ramaswami, Kamyar Salahi, Kaiyue Wen, Chi Heem Wong, Sherry Yang, Ivan Zhou",
+      "Percy Liang"
+    ],
+    "route": "/blog/2025/05/19/announcement/",
+    "body_sha256": "3510fec6cf30167332730b84a62d2e50039e3d9d6034101c3a395133bfaa1040",
+    "featured": true,
+    "provenance": "Existing original Marin website post; full body unchanged"
+  },
+  {
+    "post": "_posts/2026-05-21-async-rl-from-scratch.md",
+    "title": "Async RL from Scratch on TPUs",
+    "date": "2026-05-21",
+    "authors": [
+      "Ahmed Ahmed*, Kevin Li*, Christopher Chou&dagger;, Russell Power, Romain Yon, David Hall, Percy Liang"
+    ],
+    "route": "/blog/2026/05/21/async-rl-from-scratch/",
+    "body_sha256": "e38be18557e265476938c365e60bb5c33c9bf0eef20f930a0b2465a10bd27602",
+    "featured": false,
+    "provenance": "Existing original Marin website post; full body unchanged"
+  },
+  {
+    "post": "_posts/2025-05-19-marin-8b-retro.html",
+    "title": "Marin 8B Retrospective",
+    "date": "2025-05-19",
+    "authors": [
+      "David Hall"
+    ],
+    "route": "/blog/2025/05/19/marin-8b-retro/",
+    "body_sha256": "ca778d8a013f57f41c3349f2cdcdafeca12b36bc1f44a7d66a03fea3fabe97e0",
+    "content_text_sha256": "ac2e44f063744fbea6840e26503329a21df91c55fd8548e4a854be33b2cc0960",
+    "assets": {
+      "assets/images/posts/marin-8b-retro/marin-timeline.png": "f9afdfb9e710b6bdc6548a5182040e0f58a281b0400e3fb01a80f3c6b4181eac",
+      "assets/images/posts/marin-8b-retro/tootsie-8b-retro-wsd-interval.png": "f336d4017c8575de271996e0946500b74f18487b235887555d21128cbda13c3f",
+      "assets/images/posts/marin-8b-retro/tootsie-8b-wsd-s-loss-transition.png": "041592f68d83bdaf9e1332733bf1688a4fede5d3d095b51bbed2a58f9cb896c1",
+      "assets/images/posts/marin-8b-retro/tootsie-8b-wsd-s-losses-post-transition.png": "14a4bdbe2578963441495abc74f5a31aa595d81b45610ff3a190b7d0bfe1737f",
+      "assets/images/posts/marin-8b-retro/tootsie-8b-ema-gap.png": "6f6bbeba532e7c7d556ec4d977a6864fa06256d88916f902d44f96583e73a9b6",
+      "assets/images/posts/marin-8b-retro/8b-phoenix-transition.png": "5be071c26ff1527ef52b437f238e861914cf9fea6a0702a7254a262a83eb69e4",
+      "assets/images/posts/marin-8b-retro/8b-raccoon-loss-increase.png": "41dcee23108ed75749d1bc870f6ef06a198248c96f29cc1f296b21dfdc52c60b",
+      "assets/images/posts/marin-8b-retro/marin-8b-spoonbill-loss.png": "1c66559ec1d35a352fbf3fd9e66a296a5f8b1de665c390613b08da1772dea095",
+      "assets/images/posts/marin-8b-retro/8b-spoonbill-norms.png": "0ecc0202da5ac0a8245f88220390a051dda089fc04633161bac832a1d06a2b22",
+      "assets/images/posts/marin-8b-retro/8b-spoonbill-zloss.png": "dc775ec4301f69b926cd551b6a1ecb4ec7f13bf376714c72940b08c7191109e3",
+      "assets/images/posts/marin-8b-retro/marin-8b-starling-c4en.png": "d2d38c55a1a1ed65543fbbb8c809622d48faf9ffa41952ef45c1a615b8eeeec2",
+      "assets/images/posts/marin-8b-retro/tootsie-8b-starling-loss-slowdown.png": "b3025e43af7376c88df7063fa2b70e905acb49648ac7e7547e0f55b8138a3611"
+    },
+    "featured": true,
+    "documentation_url": "https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/",
+    "publication_commit": "https://github.com/marin-community/marin/commit/a0c56eb3a9f1fcec610b414446782869a21a04fc",
+    "publication_pr": "https://github.com/marin-community/marin/pull/1236",
+    "source_revision": "5d3df9fb6e6df524ee3dc58db4981ce46b8c5491",
+    "source_markdown_sha256": "14e916af4af420306bd4ac637e584fe084fc5b45f319ded506ec88b4e871468a",
+    "provenance": "Original Marin report. Source pages provide no printed byline/date: credits follow the initial publication PR and date is its first merge to main. Published report text, images, tables, code, heading ids, and footnotes preserved; relative links resolved and local report links restored."
+  },
+  {
+    "post": "_posts/2025-10-28-marin-32b-retro.html",
+    "title": "Marin 32B Retrospective",
+    "date": "2025-10-28",
+    "authors": [
+      "Will Held",
+      "David Hall"
+    ],
+    "route": "/blog/2025/10/28/marin-32b-retro/",
+    "body_sha256": "baa2ef823e06e1badf4cd4fc3ca297aadade2fc6439bb927c15a7e2e936d95bc",
+    "content_text_sha256": "fddc5aa6b8b9241833c626bc54e059c10f777791275d4d8702fa729e6b43f5d2",
+    "assets": {
+      "assets/images/posts/marin-32b-retro/32b-spiky-loss.png": "a402071eefc6c4ccfcea1626bd5297cba1beafb200874fee95814a7e81256eec",
+      "assets/images/posts/marin-32b-retro/32b-loss-comparisons.png": "0e06cf5a422c68d476816c63ae40a9a88bdca01a0790fc79c75ebb3df94de77c",
+      "assets/images/posts/marin-32b-retro/32b-update-spike-precede-loss-spike.png": "b27eec4d8f5db244902a430530c31d4ef07b017ced70746c9bff8e9d3509f70e",
+      "assets/images/posts/marin-32b-retro/32b-bad-spike.png": "dbb0dffdd01f6397789ecb7da1126f8a5e52c1a45cdf8ffef1b7040eb353dc27",
+      "assets/images/posts/marin-32b-retro/32b-muon-vs-adam.png": "79b9e02c5fc40e6c38eca4392af91b47a03297737068e7725bda3c1362972ba4",
+      "assets/images/posts/marin-32b-retro/32b-muon-can-into-space.png": "c33380979ed0024cb91934e7f783e778c7dd343626d7e865f49a49ab97f6401d",
+      "assets/images/posts/marin-32b-retro/qk-recovery.png": "02c9243f8685ef9a61d8f4e79fba13f2534345ec5b3aadb3717b12e5ab6838a5",
+      "assets/images/posts/marin-32b-retro/32b-shuffle-spike.png": "96688b2dbafbe077b161347ae6b4e1e557b17dbf3c4c9647831f70c19b08dbb3",
+      "assets/images/posts/marin-32b-retro/32b-feistel-vs-lcg.png": "4806fe010d9000cd932f87d522686d46ca9c2b4775e5818924d5946fc28e0bcd",
+      "assets/images/posts/marin-32b-retro/32b-paloma-c4-en-permutation.png": "aa2e8717e570d043734008b556796ea92d8c8913629cf479d4fc088ce2dc8a02",
+      "assets/images/posts/marin-32b-retro/32b-paloma-average-permutation.png": "b91d45818feeef0c537c57d85cd9fbc5212544bed4921b01cf102a71863cd45f"
+    },
+    "featured": true,
+    "documentation_url": "https://marin.readthedocs.io/en/latest/reports/marin-32b-retro/",
+    "publication_commit": "https://github.com/marin-community/marin/commit/d6b072d870f9d7ee43a91d4621b7610a280d68a1",
+    "publication_pr": "https://github.com/marin-community/marin/pull/1813",
+    "source_revision": "5d3df9fb6e6df524ee3dc58db4981ce46b8c5491",
+    "source_markdown_sha256": "57f8cf9c897d45b81ef59851e97709f8784a54cfa69dfe6ec3bff23e785bc88f",
+    "provenance": "Original Marin report. Source pages provide no printed byline/date: credits follow the initial publication PR and date is its first merge to main. Published report text, images, tables, code, heading ids, and footnotes preserved; relative links resolved and local report links restored."
+  }
+]

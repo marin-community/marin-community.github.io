@@ -1,6 +1,13 @@
 # Open Athena → Marin blog sync
 
-The mirror imports **published posts explicitly labeled MARIN** in the public
+Marin's blog includes original community posts and selected Open Athena writing.
+Originals use `layout: post`, retain their local canonical URLs, and have no OA
+source attribution. Only posts with `post_kind: mirror` and `source_url` receive
+mirror attribution, source canonicals, or first-party OA figure styling. The
+original launch post and the restored 8B/32B retrospectives are featured in the
+main archive; publication/content provenance is in `docs/marin-originals.json`.
+
+The OA import workflow imports **published posts explicitly labeled MARIN** in the public
 <https://openathena.ai/blog/> listing, including MARIN + DNA. It preserves full
 article HTML, authorship, dates, original citations and canonical URLs. Figures,
 animation manifests/videos, plot data and first-party JavaScript are copied under
@@ -49,7 +56,8 @@ bundle exec jekyll build
 ```
 
 The second check should report `0 changed files` (idempotence). No files are
-removed automatically. Existing mirrors are identified by normalized `source_url`
+removed automatically. Existing mirrors are explicitly marked `post_kind: mirror`
+and identified by normalized `source_url`
 (www/non-www/trailing-slash equivalents), then by full published content SHA-256.
 Existing mirror filenames/URLs are retained on update. Source date corrections
 require an explicit preserved permalink. Existing original Marin posts remain in
@@ -69,7 +77,13 @@ excluded and ambiguous posts plus checks. Verify the pushed head SHA and the
 `check_blog.py` runs offline against `_site`. It verifies every mirror's full
 published text checksum after Jekyll rendering, authors/dates, visible source
 attribution, SEO canonical, local assets/checksums, figure JSON dependencies,
-blog links/anchors and archive membership. It does not validate arbitrary remote
+blog links/anchors and archive membership. It also verifies original Marin
+content, local canonical URLs, absence of false mirror attribution, and archive
+and featured links for the original launch post plus the 8B/32B retrospectives.
+The reports' source pages have no printed byline/date; their credits and dates
+are grounded in their initial public publication PRs, recorded in the original
+content inventory. The OA sync never updates these original posts.
+It does not validate arbitrary remote
 links or execute figures; browser inspection supplements it. Source CSS and
 scripts are reviewed snapshot copies, not remotely loaded first-party code.
 The PR workflow has read-only repository permissions and no deployment job.

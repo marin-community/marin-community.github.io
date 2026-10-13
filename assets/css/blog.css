@@ -108,6 +108,52 @@ button,input,select {
 .post-list {
   max-width:850px
 }
+.featured-writing {
+  max-width:850px;
+  margin:0 0 2.5rem;
+  padding:1.25rem 1.5rem;
+  background:var(--paper);
+  border:1px solid var(--rule);
+  border-radius:4px
+}
+.featured-writing h2 {
+  margin:0 0 .75rem;
+  font-size:1.1rem
+}
+.featured-writing ul {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.6rem 1.75rem;
+  margin:0;
+  padding:0;
+  list-style:none;
+  font-size:.85rem
+}
+.documentation-note {
+  font-size:.85rem;
+  color:var(--text-secondary)
+}
+.original-toc {
+  margin-top:1.5rem;
+  padding:.75rem 1rem;
+  border:1px solid var(--rule);
+  border-radius:4px;
+  font-size:.85rem
+}
+.original-toc summary {
+  cursor:pointer
+}
+.original-toc ul {
+  padding-left:1.25rem
+}
+.original-content .headerlink {
+  font-size:.7em;
+  opacity:.6;
+  margin-left:.5em
+}
+.original-content h2,.original-content h3,.original-content h4 {
+  scroll-margin-top:1.5rem
+}
 .post-card {
   padding:1.9rem 0;
   border-top:1px solid var(--rule)

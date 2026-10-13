@@ -25,6 +25,7 @@ def main():
     included = [r for r in inventory if r['status'] == 'included']
     built_posts = list((SITE / 'blog').glob('*/*/*/*/index.html'))
     archive = BeautifulSoup((SITE / 'blog/index.html').read_text(), 'html.parser')
+    archive_links = {a['href'] for a in archive.select('.post-card h2 a')}
     if len(archive.select('.post-card')) != len(built_posts):
         errors.append('Archive does not contain every built post')
     for r in included:
@@ -33,6 +34,8 @@ def main():
         sources.add(r['source_url'])
         raw = (ROOT / r['post']).read_text()
         meta = yaml.safe_load(raw.split('---', 2)[1])
+        if meta.get('post_kind') != 'mirror' or not meta.get('source_url'):
+            errors.append(f'OA sync inventory contains a non-mirror: {r["post"]}')
         fragment = raw.split('{% raw %}\n', 1)[1].rsplit('\n{% endraw %}', 1)[0]
         if sha(fragment.encode()) != r['mirrored_html_sha256']:
             errors.append(f'Mirror snapshot modified without inventory update: {r["post"]}')
@@ -56,12 +59,60 @@ def main():
             errors.append(f'Incorrect authors/date: {route}')
         if not page.select_one('.source-note a[href="' + r['source_url'] + '"]'):
             errors.append(f'Missing visible source attribution: {route}')
+        if not page.select_one('.mirror-post'):
+            errors.append(f'Mirror not rendered as a mirror: {route}')
         for path, expected in r['assets'].items():
             assets.add(path)
             if not (ROOT / path).exists() or sha((ROOT / path).read_bytes()) != expected:
                 errors.append(f'Missing/changed asset: {path}')
             if not (SITE / path).exists():
                 errors.append(f'Asset missing from build: {path}')
+    originals = json.loads((ROOT / 'docs/marin-originals.json').read_text())
+    featured_links = {a['href'] for a in archive.select('.featured-writing a')}
+    for r in originals:
+        raw = (ROOT / r['post']).read_text()
+        meta = yaml.safe_load(raw.split('---', 2)[1])
+        if sha(raw.split('---', 2)[2].encode()) != r['body_sha256']:
+            errors.append(f'Original content changed: {r["post"]}')
+        if meta.get('post_kind') == 'mirror' or meta.get('source_url'):
+            errors.append(f'Original wrongly assigned OA mirror metadata: {r["post"]}')
+        if meta['title'] != r['title'] or meta['authors'] != r['authors'] or str(meta['date']) != r['date']:
+            errors.append(f'Original title/authors/date changed: {r["post"]}')
+        target = SITE / r['route'].strip('/') / 'index.html'
+        if not target.exists():
+            errors.append(f'Missing original URL: {r["route"]}')
+            continue
+        page = BeautifulSoup(target.read_text(), 'html.parser')
+        canonical = page.select_one('link[rel="canonical"]')
+        if canonical is None or canonical['href'] != 'https://marin.community' + r['route']:
+            errors.append(f'Original must retain local canonical: {r["route"]}')
+        if not page.select_one('.original-post') or page.select_one('.source-note, .oa-mirror, link[href*="openathena-mirror.css"]'):
+            errors.append(f'Original has false mirror presentation: {r["route"]}')
+        if meta.get('title_id') and not page.select_one('h1[id="' + meta['title_id'] + '"]'):
+            errors.append(f'Original title anchor changed: {r["route"]}')
+        card = archive.select_one('.post-card h2 a[href="' + r['route'] + '"]')
+        if card is None or card.find_parent('article').select_one('.post-label').get_text(strip=True) != 'Marin original':
+            errors.append(f'Original absent/mislabeled in archive: {r["route"]}')
+        if r.get('featured') and r['route'] not in featured_links:
+            errors.append(f'Required older original missing from featured navigation: {r["route"]}')
+        if r.get('content_text_sha256'):
+            content = page.select_one('.retrospective-content')
+            if content is None or sha(content.get_text(' ', strip=True).encode()) != r['content_text_sha256']:
+                errors.append(f'Full retrospective text differs after rendering: {r["route"]}')
+        for path, expected in r.get('assets', {}).items():
+            assets.add(path)
+            if not (ROOT / path).exists() or sha((ROOT / path).read_bytes()) != expected or not (SITE / path).exists():
+                errors.append(f'Missing/changed original figure: {path}')
+    # Canonical/source assumptions must remain correct for future original posts too.
+    for path in built_posts:
+        page = BeautifulSoup(path.read_text(), 'html.parser')
+        route = '/' + path.parent.relative_to(SITE).as_posix() + '/'
+        if route not in archive_links:
+            errors.append(f'Post absent from archive navigation: {route}')
+        if page.select_one('.original-post'):
+            canonical = page.select_one('link[rel="canonical"]')
+            if canonical is None or canonical['href'] != 'https://marin.community' + route or page.select_one('.source-note, .oa-mirror'):
+                errors.append(f'Original attribution/canonical regression: {route}')
     # Check only the blog and its navigation; unrelated analysis sites are preserved.
     for path in built_posts + [SITE / 'blog/index.html']:
         page = BeautifulSoup(path.read_text(), 'html.parser')
@@ -91,7 +142,7 @@ def main():
     if errors:
         print('\n'.join(sorted(set(errors))), file=sys.stderr)
         return 1
-    print(f'PASS: {len(included)} mirrors, {len(built_posts)} posts in archive, {len(assets)} asset checksums; full source text, authors, dates, canonicals, local links/anchors and figure dependencies verified')
+    print(f'PASS: {len(included)} OA mirrors, {len(originals)} Marin originals, {len(built_posts)} archive posts, {len(assets)} asset checksums; original content and local canonicals, mirror attribution/source canonicals, full text, authors/dates, featured navigation, links/anchors and figure dependencies verified')
     return 0
 
 
