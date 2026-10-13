@@ -108,27 +108,6 @@ button,input,select {
 .post-list {
   max-width:850px
 }
-.featured-writing {
-  max-width:850px;
-  margin:0 0 2.5rem;
-  padding:1.25rem 1.5rem;
-  background:var(--paper);
-  border:1px solid var(--rule);
-  border-radius:4px
-}
-.featured-writing h2 {
-  margin:0 0 .75rem;
-  font-size:1.1rem
-}
-.featured-writing ul {
-  display:flex;
-  flex-wrap:wrap;
-  gap:.6rem 1.75rem;
-  margin:0;
-  padding:0;
-  list-style:none;
-  font-size:.85rem
-}
 .documentation-note {
   font-size:.85rem;
   color:var(--text-secondary)

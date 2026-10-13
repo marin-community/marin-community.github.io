@@ -6,7 +6,7 @@ layout: blog
 <article class="post {% if is_mirror %}mirror-post{% else %}original-post{% endif %}">
   <header class="post-header">
     <a class="back-link" href="{{ '/blog/' | relative_url }}">← All writing</a>
-    <p class="eyebrow">{% if is_mirror %}Marin · From Open Athena{% else %}Marin original{% endif %}</p>
+    <p class="eyebrow">Marin{% if is_mirror %} · From Open Athena{% endif %}</p>
     <h1{% if page.title_id %} id="{{ page.title_id | escape }}"{% endif %}>{{ page.title | escape }}</h1>
     <p class="post-meta"><time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: '%-d %B %Y' }}</time></p>
     <div class="post-authors">{% for author in page.authors %}<p>{{ author }}</p>{% endfor %}</div>

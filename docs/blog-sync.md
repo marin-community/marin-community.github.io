@@ -6,8 +6,8 @@ source attribution. Only posts with `post_kind: mirror` and `source_url` receive
 mirror attribution and source canonicals. All posts share the same article
 typography, contents menu, tables, code, and figure frames; scoped OA styles only
 supply specialized interactive figure internals. See [native authoring](blog-authoring.md). The
-original launch post and the restored 8B/32B retrospectives are featured in the
-main archive; publication/content provenance is in `docs/marin-originals.json`.
+original launch post and the restored 8B/32B retrospectives remain in the
+single chronological archive; publication/content provenance is in `docs/marin-originals.json`.
 
 The OA import workflow imports **published posts explicitly labeled MARIN** in the public
 <https://openathena.ai/blog/> listing, including MARIN + DNA. It preserves full
@@ -81,7 +81,8 @@ published text checksum after Jekyll rendering, authors/dates, visible source
 attribution, SEO canonical, local assets/checksums, figure JSON dependencies,
 blog links/anchors and archive membership. It also verifies original Marin
 content, local canonical URLs, absence of false mirror attribution, and archive
-and featured links for the original launch post plus the 8B/32B retrospectives.
+links for the original launch post plus the 8B/32B retrospectives, without
+separate original-post badges or a featured originals group.
 The reports' source pages have no printed byline/date; their credits and dates
 are grounded in their initial public publication PRs, recorded in the original
 content inventory. The OA sync never updates these original posts.
