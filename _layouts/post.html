@@ -13,8 +13,8 @@ layout: blog
     {% for note in page.author_notes %}<p class="author-note">{{ note }}</p>{% endfor %}
     {% if is_mirror %}<p class="source-note">Originally published by <a href="{{ page.source_url | escape }}">Open Athena</a>. Mirrored here with the original authorship and publication date. <a href="{{ page.canonical_url | escape }}">Read the source →</a></p>{% endif %}
     {% if page.documentation_url %}<p class="documentation-note">Also available in <a href="{{ page.documentation_url | escape }}">Marin documentation</a>.</p>{% endif %}
-    {% if page.contents %}<details class="original-toc"><summary>Contents</summary><ul>{% for heading in page.contents %}<li><a href="#{{ heading.id | escape }}">{{ heading.title | escape }}</a></li>{% endfor %}</ul></details>{% endif %}
+    <details class="post-toc"{% unless page.contents %} hidden{% endunless %}><summary>Contents</summary><ul>{% for heading in page.contents %}<li><a href="#{{ heading.id | escape }}">{{ heading.title | escape }}</a></li>{% endfor %}</ul></details>
   </header>
-  <div class="{% if is_mirror %}oa-mirror has-toc{% else %}original-content{% endif %}">{{ content }}</div>
+  <div class="post-content {% if is_mirror %}oa-mirror has-toc{% else %}original-content{% endif %}">{{ content }}</div>
   <p class="post-end"><a href="{{ '/blog/' | relative_url }}">← More from Marin</a>{% if is_mirror %} · <a href="{{ page.source_url | escape }}">Original article</a>{% endif %}</p>
 </article>

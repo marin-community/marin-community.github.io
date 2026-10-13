@@ -133,27 +133,6 @@ button,input,select {
   font-size:.85rem;
   color:var(--text-secondary)
 }
-.original-toc {
-  margin-top:1.5rem;
-  padding:.75rem 1rem;
-  border:1px solid var(--rule);
-  border-radius:4px;
-  font-size:.85rem
-}
-.original-toc summary {
-  cursor:pointer
-}
-.original-toc ul {
-  padding-left:1.25rem
-}
-.original-content .headerlink {
-  font-size:.7em;
-  opacity:.6;
-  margin-left:.5em
-}
-.original-content h2,.original-content h3,.original-content h4 {
-  scroll-margin-top:1.5rem
-}
 .post-card {
   padding:1.9rem 0;
   border-top:1px solid var(--rule)
@@ -237,37 +216,6 @@ button,input,select {
   margin:.4rem 0;
   font-size:.9rem
 }
-.original-content {
-  overflow-wrap:anywhere
-}
-.original-content img {
-  display:block;
-  margin:1.5rem auto
-}
-.original-content pre {
-  overflow:auto;
-  background:var(--paper);
-  padding:1rem
-}
-.original-content code {
-  font-family:ui-monospace,monospace;
-  font-size:.85em
-}
-.original-content table {
-  display:block;
-  overflow:auto;
-  border-collapse:collapse
-}
-.original-content td,.original-content th {
-  padding:.5rem;
-  border:1px solid var(--rule)
-}
-.original-content blockquote {
-  border-left:2px solid var(--accent);
-  margin:1rem 0;
-  padding-left:1.5rem;
-  color:var(--text-secondary)
-}
 /* Keep public OA figure styles inside the article and use Marin typography/paper. */
 .oa-mirror {
   --bg-paper:var(--paper);
@@ -287,79 +235,69 @@ button,input,select {
 .oa-mirror .blog-post-body {
   display:block!important
 }
-.oa-mirror .blog-post-content {
-  max-width:none;
-  padding:0;
+/* Both native Markdown and preserved source HTML use the same article design.
+   The scoped OA stylesheet remains only for specialized interactive figures. */
+.post .post-content {
+  font-family:'Noto Serif',Georgia,serif;
   font-size:1rem;
-  line-height:1.8
+  line-height:1.8;
+  color:var(--text);
+  overflow-wrap:anywhere
 }
-.oa-mirror .blog-toc {
-  position:static;
-  width:auto;
-  max-height:none;
+.post .post-content :is(.blog-post-content,.retrospective-content,.project-detail-body) {
+  max-width:none;
+  margin:0;
   padding:0;
-  margin:0 0 2rem
+  font-size:inherit;
+  line-height:inherit
 }
-.oa-mirror .blog-toc-nav {
-  display:none
+.post .post-content :is(h1,h2,h3,h4,h5,h6) {
+  font-family:'Shippori Mincho B1',Georgia,serif;
+  font-weight:400;
+  line-height:1.35;
+  letter-spacing:-.01em;
+  scroll-margin-top:1.5rem
 }
-.oa-mirror .blog-toc-mobile {
-  display:block
+.post .post-content :is(h1,h2) { font-size:1.7rem; margin:2.7rem 0 1rem }
+.post .post-content h3 { font-size:1.3rem; margin:2rem 0 1rem }
+.post .post-content :is(h4,h5,h6) { font-size:1.1rem; margin:1.5rem 0 .75rem }
+.post .post-content p { margin:0 0 1.25rem }
+.post .post-content a { color:var(--link); text-decoration:underline; text-underline-offset:.15em }
+.post .post-content :is(ul,ol) { margin:0 0 1.25rem; padding-left:1.5rem }
+.post .post-content li { margin-bottom:.35rem }
+.post .post-content ul { list-style:disc }
+.post .post-content ol { list-style:decimal }
+.post .post-content blockquote {
+  background:var(--paper); border-left:2px solid var(--accent);
+  border-radius:0; margin:1.5rem 0; padding:1rem 1.5rem; color:var(--text-secondary)
 }
-.oa-mirror .blog-toc-mobile summary {
-  cursor:pointer;
-  padding:.75rem 0;
-  color:var(--olive)
-}
-.oa-mirror .blog-toc-list {
-  padding:0 0 1rem
-}
-.oa-mirror .blog-post-content p {
-  margin:0 0 1.25rem
-}
-.oa-mirror .blog-post-content a {
-  color:var(--link);
-  text-decoration:underline;
-  text-underline-offset:.15em
-}
-.oa-mirror .blog-post-content h2 {
-  margin:2.7rem 0 1rem
-}
-.oa-mirror .blog-post-content h3 {
-  margin:2rem 0 1rem
-}
-.oa-mirror .blog-post-content figure {
-  margin:2rem 0;
-  background:var(--paper);
-  border:1px solid var(--rule);
-  padding:1rem;
-  border-radius:4px
-}
-.oa-mirror .blog-post-content figure img {
-  max-width:100%;
-  height:auto
-}
-.oa-mirror .blog-post-content figcaption {
-  font-size:.8rem;
-  color:var(--text-secondary)
-}
-.oa-mirror .blog-post-content pre {
-  overflow:auto;
-  font-size:.8rem
-}
-.oa-mirror .blog-post-content iframe {
-  max-width:100%
-}
-.oa-mirror .blog-post-content table {
-  max-width:100%
-}
-.oa-mirror .blog-post-content .table-scroll {
-  max-width:100%;
-  overflow:auto
-}
-.oa-mirror .blog-post-content .plotly-frame-title {
-  font-family:var(--font-heading)
-}
+.post .post-content blockquote p { font-size:inherit; color:inherit }
+.post .post-content blockquote p:last-child { margin-bottom:0 }
+.post .post-content :is(pre,code) { font-family:ui-monospace,SFMono-Regular,Menlo,monospace }
+.post .post-content code { font-size:.85em; padding:.1em .3em; border:1px solid var(--rule); border-radius:3px; background:var(--paper); color:var(--text) }
+.post .post-content pre { margin:1.5rem 0; padding:1rem; overflow:auto; border:1px solid var(--rule); border-radius:4px; background:var(--paper); font-size:.85rem; line-height:1.6 }
+.post .post-content pre code { font-size:inherit; border:0; padding:0; background:transparent; color:inherit }
+.post .post-content .highlight { background:transparent }
+.post .post-content table:not(.rouge-table):not(.d3-bucket-grid table):not(.d3-correlation-mobile-table) { display:block; width:100%; max-width:100%; overflow:auto; table-layout:auto; overflow-wrap:normal; border-collapse:collapse; border-spacing:0; margin:1.5rem 0; background:var(--paper); border:1px solid var(--rule); border-radius:0; font-size:.85rem }
+.post .post-content :is(th,td):not(.rouge-table *):not(.d3-bucket-grid *):not(.d3-correlation-mobile-table *) { padding:.6rem .75rem; border:1px solid var(--rule); text-align:left; font-family:inherit; font-size:inherit; line-height:inherit; letter-spacing:normal; text-transform:none }
+.post .post-content th:not(.rouge-table *):not(.d3-bucket-grid *):not(.d3-correlation-mobile-table *) { background:#e6e0d4; font-weight:500 }
+.post .post-content .table-scroll { max-width:100%; margin:1.5rem 0; overflow:auto }
+.post .post-content .table-scroll table { margin:0 }
+.post .post-content figure { margin:2rem 0; padding:1rem; border:1px solid var(--rule); border-radius:4px; background:var(--paper); text-align:left }
+.post .post-content img { display:block; max-width:100%; height:auto; border-radius:0; box-shadow:none; margin:0 auto }
+.post .post-content img:not(figure img) { margin:1.5rem auto; border:1px solid var(--rule); border-radius:4px; padding:1rem; background:var(--paper) }
+.post .post-content :is(figcaption,.image-caption) { margin:.75rem 0 0; font-size:.8rem; line-height:1.6; color:var(--text-secondary); text-align:left!important }
+.post .post-content iframe { max-width:100% }
+.post .post-content :is(.headerlink,.heading-anchor) { display:none }
+.post .post-content a.section-link { margin-left:.4em; font-size:.7em; font-weight:400; opacity:.45; text-decoration:none }
+.post .post-content a.section-link:hover,.post .post-content a.section-link:focus-visible { opacity:1 }
+.post .post-content .blog-toc { display:none }
+.post .post-content .plotly-frame-title { font-family:var(--font-heading) }
+.post-toc { margin-top:1.5rem; padding:.75rem 1rem; border:1px solid var(--rule); border-radius:4px; font-size:.85rem }
+.post-toc summary { cursor:pointer }
+.post-toc ul { margin:.75rem 0 0; padding-left:1.25rem }
+.post-toc li { margin:.25rem 0 }
+.post-toc .toc-subsection { margin-left:1rem }
 @media(max-width:600px) {
   .site-header {
     padding:1.25rem;
@@ -382,20 +320,7 @@ button,input,select {
   .post-card h2 {
     font-size:1.4rem
   }
-  .oa-mirror .blog-post-content figure {
-    padding:.6rem
-  }
-  .oa-mirror .blog-post-content {
-    font-size:.95rem
-  }
-  .source-note {
-    padding:.5rem .75rem
-  }
-  .oa-mirror .blog-post-content table {
-    display:block;
-    overflow-x:auto
-  }
-  .original-content {
-    font-size:.95rem
-  }
+  .post .post-content figure,.post .post-content img:not(figure img) { padding:.6rem }
+  .post .post-content { font-size:.95rem }
+  .source-note { padding:.5rem .75rem }
 }

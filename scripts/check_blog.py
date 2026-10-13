@@ -106,6 +106,8 @@ def main():
     # Canonical/source assumptions must remain correct for future original posts too.
     for path in built_posts:
         page = BeautifulSoup(path.read_text(), 'html.parser')
+        if not page.select_one('.post-content') or not page.select_one('.post-toc') or not page.select_one('script[src="/assets/js/blog.js"]'):
+            errors.append(f'Missing shared article layout/navigation: {path}')
         route = '/' + path.parent.relative_to(SITE).as_posix() + '/'
         if route not in archive_links:
             errors.append(f'Post absent from archive navigation: {route}')

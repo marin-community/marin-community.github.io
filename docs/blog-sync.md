@@ -3,7 +3,9 @@
 Marin's blog includes original community posts and selected Open Athena writing.
 Originals use `layout: post`, retain their local canonical URLs, and have no OA
 source attribution. Only posts with `post_kind: mirror` and `source_url` receive
-mirror attribution, source canonicals, or first-party OA figure styling. The
+mirror attribution and source canonicals. All posts share the same article
+typography, contents menu, tables, code, and figure frames; scoped OA styles only
+supply specialized interactive figure internals. See [native authoring](blog-authoring.md). The
 original launch post and the restored 8B/32B retrospectives are featured in the
 main archive; publication/content provenance is in `docs/marin-originals.json`.
 
