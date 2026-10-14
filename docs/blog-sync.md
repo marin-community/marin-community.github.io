@@ -44,8 +44,8 @@ unlabeled cases are deliberately not imported. Never import drafts, future-dated
 noindex, private or confidential content. Fetch failures, source schema changes,
 unsafe paths, collisions and removed listing entries fail before file writes.
 
-If nothing changed and no new classification needs review, report no changes and
-do not open a PR. For new/updated explicitly labeled public posts:
+If no import changed, no classification needs review, and no worthwhile new
+highlight is proposed, report no changes and do not open a PR. For new/updated explicitly labeled public posts:
 
 ```sh
 git switch -c blog/sync-openathena-YYYY-MM-DD
@@ -74,6 +74,41 @@ mobile widths. Check console errors and horizontal overflow. Open/update a **dra
 PR to main** using the existing authorized GitHub access, listing included,
 excluded and ambiguous posts plus checks. Verify the pushed head SHA and the
 `Blog build and content checks` run for that exact SHA. Do not merge or deploy.
+
+## Deliberate homepage highlights
+
+Importing a post and highlighting it are separate decisions. The importer does
+not edit the homepage or highlight every import. During the daily check, read
+new or materially updated Marin posts and judge whether they merit a place in
+**Selected writing**. Favor substantive model releases, technical retrospectives,
+and major reusable data or systems work: useful new results, reproducible methods,
+released code/data, or lessons that help readers build on Marin. Routine news or a
+Marin mention alone is not a reason to highlight. Use editorial judgment rather
+than quotas, fixed scores, or a requirement to select something on every run.
+
+The explicit selection mechanism is the `<p class="selected-writing" id="blogs">`
+list in `index.html`. For a worthy candidate, add a concise, descriptive anchor to
+its existing local `/blog/YYYY/MM/DD/slug/` URL in the same draft PR as the import
+(or a focused draft PR if the post is already mirrored). Resolve the target from
+its canonical/source URL and the inventory before editing. Deduplicate against
+all existing selections by local URL and normalized source canonical. Never invent
+a local destination or highlight an unpublished/unapproved import. Unlabeled
+classification questions remain flagged for maintainer review under the rules
+above.
+
+Preserve existing human selections and their relative order; make additive
+proposals unless a maintainer explicitly asks for removal or replacement. Include
+the full article title, source/local URLs, and a short reason for each proposed
+highlight in the PR description. State when no new highlight is warranted. Verify
+the homepage link opens the intended article, its source attribution/canonical
+remain intact, and the list wraps cleanly on mobile in both themes. Run the usual
+build/content/link checks. Do not merge or deploy automatically.
+
+The data-pipeline selection, **Curating 25 Trillion Tokens for LLM Pretraining**
+(Will Held, 2026-09-11), is a substantive reusable-data example: Datakit covers
+cataloguing, deduplication/decontamination, quality/topic annotation, and learned
+sampling mixtures. Its local target is
+`/blog/2026/09/11/marin-data-pipeline-overview/`.
 
 ## Content checks
 

@@ -125,11 +125,13 @@ def main():
         slug = Path(r['post']).stem[11:]
         route = meta.get('permalink', '/blog/' + r['date'].replace('-', '/') + '/' + slug + '/')
         source_routes[urlsplit(r['source_url']).path.rstrip('/')] = route
-    # The homepage currently highlights these four mirrors plus the open-development link.
-    for slug in ('delphi', 'cluster-scheduling-with-iris', 'pretraining-speedup', 'quantile-balancing', 'open-development-of-frontier-ai'):
+    # The homepage highlights these five mirrors plus the open-development link.
+    for slug in ('marin-data-pipeline-overview', 'delphi', 'cluster-scheduling-with-iris', 'pretraining-speedup', 'quantile-balancing', 'open-development-of-frontier-ai'):
         route = source_routes['/blog/' + slug]
         if not home.select_one('a[href="' + route + '"]'):
             errors.append(f'Homepage article missing its local mirror link: {route}')
+        if slug == 'marin-data-pipeline-overview' and not home.select_one('.selected-writing a[href="' + route + '"]'):
+            errors.append('Data-pipeline article missing from Selected writing')
     for r in originals:
         if 'retro' in r['route'] and not home.select_one('a[href="' + r['route'] + '"]'):
             errors.append(f'Homepage retrospective link must stay local: {r["route"]}')
@@ -150,6 +152,8 @@ def main():
         control = page.select_one('[data-theme-control]')
         if not control or [o.get('value') for o in control.select('option')] != ['system', 'light', 'dark']:
             errors.append(f'Missing shared theme control: {path.relative_to(SITE)}')
+        if len(page.select('[data-theme-control]')) != 1 or not control or not control.find_parent('footer') or (nav and nav.select_one('[data-theme-control]')):
+            errors.append(f'Theme picker must appear once in the footer, outside navigation: {path.relative_to(SITE)}')
         links = {a.get_text(strip=True): a.get('href') for a in nav.select('a')} if nav else {}
         if links.get('Home') != '/' or links.get('Blog') != '/blog/':
             errors.append(f'Missing Home/Blog navigation: {path.relative_to(SITE)}')
