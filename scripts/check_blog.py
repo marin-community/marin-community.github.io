@@ -116,8 +116,15 @@ def main():
             canonical = page.select_one('link[rel="canonical"]')
             if canonical is None or canonical['href'] != 'https://marin.community' + route or page.select_one('.source-note, .oa-mirror'):
                 errors.append(f'Original attribution/canonical regression: {route}')
-    # Check only the blog and its navigation; unrelated analysis sites are preserved.
-    for path in built_posts + [SITE / 'blog/index.html']:
+    # Home and every blog page share discoverable navigation with valid destinations.
+    for path in [SITE / 'index.html'] + built_posts + [SITE / 'blog/index.html']:
+        page = BeautifulSoup(path.read_text(), 'html.parser')
+        nav = page.select_one('nav[aria-label="Main navigation"]')
+        links = {a.get_text(strip=True): a.get('href') for a in nav.select('a')} if nav else {}
+        if links.get('Home') != '/' or links.get('Blog') != '/blog/':
+            errors.append(f'Missing Home/Blog navigation: {path.relative_to(SITE)}')
+    # Check home/blog links without scanning unrelated analysis sites.
+    for path in built_posts + [SITE / 'blog/index.html', SITE / 'index.html']:
         page = BeautifulSoup(path.read_text(), 'html.parser')
         ids = {e['id'] for e in page.select('[id]')}
         for e in page.find_all(True):

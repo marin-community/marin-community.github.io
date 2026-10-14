@@ -10,19 +10,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;500;600&family=Noto+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   {% if page.post_kind == 'mirror' and page.source_url %}<link rel="stylesheet" href="{{ '/assets/css/openathena-mirror.css' | relative_url }}">{% endif %}
   <link rel="stylesheet" href="{{ '/assets/css/blog.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/navigation.css' | relative_url }}">
   <script defer src="{{ '/assets/js/blog.js' | relative_url }}"></script>
 </head>
 <body>
   <a class="skip-link" href="#content">Skip to content</a>
   <header class="site-header">
     <a class="brand" href="{{ '/' | relative_url }}"><img src="{{ '/marin-logo.svg' | relative_url }}" alt="" width="52" height="52"><span>Marin</span></a>
-    <nav aria-label="Main navigation">
-      <a href="{{ '/' | relative_url }}">Home</a>
-      <a href="{{ '/blog/' | relative_url }}" aria-current="{% if page.url == '/blog/' %}page{% else %}location{% endif %}">Blog</a>
-      <a href="https://github.com/marin-community/marin">GitHub</a>
-      <a href="https://marin.readthedocs.io/en/latest/">Docs</a>
-      <a href="https://discord.gg/J9CTk7pqcM">Discord</a>
-    </nav>
+    {% include site-navigation.html %}
   </header>
   <main id="content" class="blog-main">{{ content }}</main>
   <footer class="site-footer">Developing models together, openly.<br>The Marin community · <a href="https://groups.google.com/u/0/g/marin-community/">Mailing list</a> · <a href="https://huggingface.co/marin-community">Hugging Face</a></footer>

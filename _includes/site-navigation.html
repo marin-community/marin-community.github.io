@@ -1,0 +1,7 @@
+<nav class="site-nav" aria-label="Main navigation">
+  <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} aria-current="page"{% endif %}>Home</a>
+  <a href="{{ '/blog/' | relative_url }}"{% if page.url == '/blog/' %} aria-current="page"{% elsif page.layout == 'post' or page.layout == 'mirror' %} aria-current="location"{% endif %}>Blog</a>
+  <a href="https://github.com/marin-community/marin">GitHub</a>
+  <a href="https://marin.readthedocs.io/en/latest/">Docs</a>
+  <a href="https://discord.gg/J9CTk7pqcM">Discord</a>
+</nav>
