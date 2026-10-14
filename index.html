@@ -16,9 +16,11 @@ layout: null
     />
     <script type="module" crossorigin src="/assets/index-CJ5yNz9X.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-NSqI4VOu.css">
+    <link rel="stylesheet" href="{{ '/assets/css/navigation.css' | relative_url }}">
   </head>
   <body>
-    <main>
+    <main class="home-main">
+      {% include site-navigation.html %}
       <div class="header-group">
         <img src="/marin-logo.svg" alt="Marin" class="logo-aside" />
         <h1>

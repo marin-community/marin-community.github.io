@@ -1,0 +1,36 @@
+/* Shared links inherit each page's existing light/dark palette. */
+.site-nav {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:.5rem 1.25rem;
+  font-size:.85rem;
+  line-height:1.6;
+}
+.site-nav a {
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  color:var(--link);
+  text-decoration:none;
+}
+.site-nav a:hover,.site-nav a[aria-current] {
+  text-decoration:underline;
+  text-underline-offset:.2em;
+}
+.site-nav a[aria-current] {
+  color:var(--text);
+}
+.site-nav a:focus-visible {
+  outline:2px solid var(--link);
+  outline-offset:4px;
+}
+.home-main {
+  padding-top:1.5rem;
+}
+.home-main>.site-nav {
+  margin-bottom:1.75rem;
+}
+@media(max-width:600px) {
+  .site-nav { gap:.5rem 1rem; }
+}

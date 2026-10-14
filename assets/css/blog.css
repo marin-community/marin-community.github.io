@@ -71,16 +71,6 @@ button,input,select {
   width:52px;
   height:52px
 }
-.site-header nav {
-  display:flex;
-  flex-wrap:wrap;
-  gap:1.25rem;
-  font-size:.85rem
-}
-.site-header nav a[aria-current] {
-  color:var(--text);
-  text-decoration:underline
-}
 .blog-main {
   max-width:1160px;
   margin:0 auto;
@@ -282,9 +272,6 @@ button,input,select {
     padding:1.25rem;
     align-items:flex-start;
     flex-direction:column;
-    gap:1rem
-  }
-  .site-header nav {
     gap:1rem
   }
   .blog-main {
