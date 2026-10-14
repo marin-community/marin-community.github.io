@@ -68,7 +68,8 @@ def main():
             if not (SITE / path).exists():
                 errors.append(f'Asset missing from build: {path}')
     originals = json.loads((ROOT / 'docs/marin-originals.json').read_text())
-    featured_links = {a['href'] for a in archive.select('.featured-writing a')}
+    if archive.select_one('.featured-writing'):
+        errors.append('Archive must use one post list without a separate originals group')
     for r in originals:
         raw = (ROOT / r['post']).read_text()
         meta = yaml.safe_load(raw.split('---', 2)[1])
@@ -91,10 +92,8 @@ def main():
         if meta.get('title_id') and not page.select_one('h1[id="' + meta['title_id'] + '"]'):
             errors.append(f'Original title anchor changed: {r["route"]}')
         card = archive.select_one('.post-card h2 a[href="' + r['route'] + '"]')
-        if card is None or card.find_parent('article').select_one('.post-label').get_text(strip=True) != 'Marin original':
-            errors.append(f'Original absent/mislabeled in archive: {r["route"]}')
-        if r.get('featured') and r['route'] not in featured_links:
-            errors.append(f'Required older original missing from featured navigation: {r["route"]}')
+        if card is None or card.find_parent('article').select_one('.post-label'):
+            errors.append(f'Original absent or unnecessarily labeled in archive: {r["route"]}')
         if r.get('content_text_sha256'):
             content = page.select_one('.retrospective-content')
             if content is None or sha(content.get_text(' ', strip=True).encode()) != r['content_text_sha256']:
@@ -112,6 +111,8 @@ def main():
         if route not in archive_links:
             errors.append(f'Post absent from archive navigation: {route}')
         if page.select_one('.original-post'):
+            if page.select_one('.post-header .eyebrow').get_text(strip=True) != 'Marin':
+                errors.append(f'Original article must use the general Marin label: {route}')
             canonical = page.select_one('link[rel="canonical"]')
             if canonical is None or canonical['href'] != 'https://marin.community' + route or page.select_one('.source-note, .oa-mirror'):
                 errors.append(f'Original attribution/canonical regression: {route}')
@@ -144,7 +145,7 @@ def main():
     if errors:
         print('\n'.join(sorted(set(errors))), file=sys.stderr)
         return 1
-    print(f'PASS: {len(included)} OA mirrors, {len(originals)} Marin originals, {len(built_posts)} archive posts, {len(assets)} asset checksums; original content and local canonicals, mirror attribution/source canonicals, full text, authors/dates, featured navigation, links/anchors and figure dependencies verified')
+    print(f'PASS: {len(included)} OA mirrors, {len(originals)} Marin originals, {len(built_posts)} archive posts, {len(assets)} asset checksums; original content and local canonicals, mirror attribution/source canonicals, full text, authors/dates, archive navigation, links/anchors and figure dependencies verified')
     return 0
 
 
