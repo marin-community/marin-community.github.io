@@ -1,12 +1,26 @@
 theme: jekyll-theme-minimal
 repository: marin-community/marin-community.github.io
-title: Marin
 url: https://marin.community
+title: Marin
 logo: assets/images/marin-logo.svg
 permalink: /blog/:year/:month/:day/:title/
 future: true
 plugins:
   - jekyll-seo-tag
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  gfm_quirks: paragraph_end
+  syntax_highlighter_opts:
+    default_lang: plaintext
+sass:
+  style: compressed
 exclude:
   - blog_style.py
   - make_figures.py
+  - scripts
+  - docs
+  - vendor
+  - Gemfile
+  - Gemfile.lock

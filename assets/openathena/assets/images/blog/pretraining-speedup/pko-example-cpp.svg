@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 138" width="820" height="138">
+<rect width="100%" height="100%" fill="#F2E7DF" rx="8"/>
+<circle cx="31" cy="15" r="10" fill="#8F3839"/><text x="31" y="20" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="15" font-weight="bold" fill="#F2E7DF" text-anchor="middle">−</text>
+<text x="50" y="20" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#6b6157" font-style="italic">C++ switch — predicting `Draw` after `result.WinnerName = "`</text>
+<rect x="390.2" y="33.0" width="172.3" height="16.0" fill="rgba(56,92,143,0.28)" rx="3"/>
+<text x="22" y="44" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="14" fill="#1F1E1B" xml:space="preserve"><tspan>case Player:    result.PlayerWonTimes++;    </tspan><tspan>result.WinnerName = </tspan><tspan>"Player is Won!";</tspan></text>
+<rect x="390.2" y="55.0" width="172.3" height="16.0" fill="rgba(56,92,143,0.28)" rx="3"/>
+<text x="22" y="66" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="14" fill="#1F1E1B" xml:space="preserve"><tspan>case Computer:  result.ComputerWonTimes++;  </tspan><tspan>result.WinnerName = </tspan><tspan>"Computer is Won!";</tspan></text>
+<rect x="390.2" y="77.0" width="172.3" height="16.0" fill="rgba(56,92,143,0.28)" rx="3"/>
+<rect x="566.9" y="77.0" width="37.7" height="16.0" fill="rgba(143,107,56,0.50)" rx="3"/>
+<text x="22" y="88" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="14" fill="#1F1E1B" xml:space="preserve"><tspan>case Draw:      result.DrawTimes++;         </tspan><tspan>result.WinnerName = </tspan><tspan>"</tspan><tspan font-weight="bold">Draw</tspan><tspan>!";</tspan></text>
+<text x="22" y="116" font-family="ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#6b6157">PKO confidence: &lt;0.001%<tspan dx="14">·</tspan><tspan dx="14">baseline: 0.42%</tspan></text>
+</svg>

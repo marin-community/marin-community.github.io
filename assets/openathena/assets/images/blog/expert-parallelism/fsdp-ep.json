@@ -1,0 +1,53 @@
+{
+  "kind": "video",
+  "src": "fsdp-ep.mp4",
+  "poster": "fsdp-ep.png",
+  "width": 1200,
+  "height": 1108,
+  "steps": [
+    {
+      "time": 0.0,
+      "title": "FSDP: gather non-expert model weights"
+    },
+    {
+      "time": 4.0,
+      "title": "Compute attention with local activations"
+    },
+    {
+      "time": 7.0,
+      "title": "Dispatch activations from GPU 0"
+    },
+    {
+      "time": 8.9,
+      "title": "Dispatch activations from GPU 1"
+    },
+    {
+      "time": 10.7,
+      "title": "Dispatch activations from GPU 2"
+    },
+    {
+      "time": 12.5,
+      "title": "Dispatch activations from GPU 3"
+    },
+    {
+      "time": 15.0,
+      "title": "Compute the expert MLPs on their owner GPUs"
+    },
+    {
+      "time": 18.0,
+      "title": "Return outputs to GPU 0"
+    },
+    {
+      "time": 19.9,
+      "title": "Return outputs to GPU 1"
+    },
+    {
+      "time": 21.7,
+      "title": "Return outputs to GPU 2"
+    },
+    {
+      "time": 23.5,
+      "title": "Return outputs to GPU 3"
+    }
+  ]
+}

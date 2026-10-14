@@ -1,0 +1,382 @@
+---
+layout: mirror
+post_kind: mirror
+title: Improving our LLM Pretraining Efficiency
+authors:
+- Larry Dial
+date: '2026-06-03'
+categories: blog
+description: How Marin pretraining became more efficient through Mixture of Experts,
+  higher expert sparsity, MuonH, PKO, and routed expert normalization.
+source_url: https://openathena.ai/blog/pretraining-speedup/
+canonical_url: https://www.openathena.ai/blog/pretraining-speedup/
+source_content_sha256: 48995e7eaef4814e67a2e683e9330cf2af65e15b571aa9547e78ada65e866a32
+excerpt: How Marin pretraining became more efficient through Mixture of Experts, higher
+  expert sparsity, MuonH, PKO, and routed expert normalization.
+---
+{% raw %}
+<div class="blog-post-body">
+<aside class="blog-toc">
+<nav class="blog-toc-nav">
+<div class="blog-toc-title">Contents</div>
+<ol class="blog-toc-list"></ol>
+</nav>
+<details class="blog-toc-mobile">
+<summary class="blog-toc-title">Contents</summary>
+<ol class="blog-toc-list"></ol>
+</details>
+</aside>
+<div class="blog-post-content project-detail-body">
+<p>In <a href="https://openathena.ai/blog/delphi/">our last post</a> we covered the Delphi Scaling Suite, where we trained dense models up to 1e23 FLOPs. Since then we've scaled up our Mixture of Experts (MoE) recipe to beyond 100B parameters and 1e23 FLOPs and added several architecture and optimizer improvements. This post first covers the MoE transition, then each subsequent improvement, and closes with several promising future directions.</p>
+<h2 id="key-terms">Key terms<a aria-label="Link to section: Key terms" class="heading-anchor" href="#key-terms"></a></h2>
+<ul>
+<li><strong>Theoretical speedup</strong> — counts only model FLOPs, ignoring MFU.</li>
+<li><strong>Realized speedup</strong> — reflects wall-clock time, accounting for MFU.</li>
+</ul>
+<p>Speedups are written as <strong>theoretical</strong> (realized).</p>
+<h2 id="summary">Summary<a aria-label="Link to section: Summary" class="heading-anchor" href="#summary"></a></h2>
+<p>Starting from our Dense Baseline, we achieve the following speedups:</p>
+<ul>
+<li><strong>6.7×</strong> (3.6×) Moving from dense to Marin MoE V1.</li>
+<li><strong>1.4×</strong> (1.3×) Increasing expert sparsity by raising total experts from 64 to 256.</li>
+<li><strong>1.3×</strong> (1.25×) Updating our optimizer from AdamH to MuonH.</li>
+<li><strong>1.2×</strong> (1.2×) Adding partial key offset (PKO).</li>
+<li><strong>1.04×</strong> (1.04×) Adding routed expert normalization + scaling.</li>
+</ul>
+<p>The dense → MoE V1 transition was validated at 1e23 FLOPs. The four subsequent improvements were each measured against MoE V1. We then tested the stacked recipe at 3e19 FLOPs, observing a 2.1× theoretical speedup over MoE V1.</p>
+<h2 id="from-scaling-dense-models-to-scaling-moes">From Scaling Dense Models to Scaling MoEs<a aria-label="Link to section: From Scaling Dense Models to Scaling MoEs" class="heading-anchor" href="#from-scaling-dense-models-to-scaling-moes"></a></h2>
+<p>The primary goal when we transitioned to MoEs was to demonstrate stability and predictability of scaling to over 100 billion parameters. We incorporated the following techniques to accomplish this:</p>
+<ul>
+<li>Added quantile balancing<sup class="footnote-ref" id="fnref-1"><a href="#fn-1">1</a></sup> to maintain similar token counts across 64 routed experts per layer, 4 of which are active per token. We detail the impact of QB in an earlier post <a href="https://openathena.ai/blog/quantile-balancing/">here</a>.</li>
+<li>Kept AdamH<sup class="footnote-ref" id="fnref-2"><a href="#fn-2">2</a></sup> as the optimizer, which constrains the matrix Frobenius norms explicitly instead of relying on weight decay.</li>
+<li>Added a light z-loss on the router logits and final logits.</li>
+<li>Added attention gates<sup class="footnote-ref" id="fnref-3"><a href="#fn-3">3</a></sup> and gated norms<sup class="footnote-ref" id="fnref-4"><a href="#fn-4">4</a></sup>, which reduce outlier activations and give a slight speedup.</li>
+<li>Added Exclusive Self Attention<sup class="footnote-ref" id="fnref-5"><a href="#fn-5">5</a></sup>, which adds another speedup and cleanly lets tokens no-op via a self-attend.</li>
+</ul>
+<p>We put extra emphasis on Adam LR tuning, to ensure that future optimizer ablations compare against a tuned baseline. We sweep over model size, token count, and lr in order to fit the form $lr = A \cdot \text{tokens}^b \cdot \text{dim}^c \cdot \text{bs}^{0.5}$, derived in Figures 1 and 2. We scale layer count roughly linearly with hidden dim.</p>
+<figure><img alt="Per-cell BPB vs Adam LR with log-quadratic fits across hidden dims and token horizons" src="/assets/openathena/assets/images/blog/pretraining-speedup/lr-bpb-grid.png"/><figcaption><strong>Figure 1:</strong> The d768 row of the LR sweep, one panel per token horizon. Each panel plots BPB vs Adam LR with a log-quadratic fit. We swept d512, d1024, and d1280 too; their optima feed into Figure 2. (<a href="https://github.com/marin-community/marin/issues/4225">Issue 4225</a>)</figcaption></figure>
+<figure><img alt="Optimal Adam LR vs tokens fitted to lr = A · tokens^tx · dim^dx · bs^0.5" src="/assets/openathena/assets/images/blog/pretraining-speedup/lr-formula-fit.png"/><figcaption><strong>Figure 2:</strong> The 19 per-cell optima fit the form $lr = 1.680 \cdot \text{tokens}^{-0.282} \cdot \text{dim}^{-0.372} \cdot \text{bs}^{0.5}$ with $R^2 = 0.994$. Left: optimal Adam LR (normalized to bs=32) vs tokens, colored by hidden dim, with each dim's slice of the fit shown as a dashed line. Middle: collapsing by hidden dim — multiplying LR by $\text{dim}^{0.372}$ — pulls every dim onto a single $\text{tokens}^{-0.282}$ trend. Right: predicted vs measured optimal LR across all 19 cells. (<a href="https://github.com/marin-community/marin/issues/4225">Issue 4225</a>)</figcaption></figure>
+<p>An isoFLOP sweep then gives us an optimal 62:1 token:active_parameter ratio for scaling and a pre-registered loss target for a 1e23 run: a 129B-A16B model trained on 1T tokens, which we call Marin MoE V1.</p>
+<figure><img alt="isoFLOP curves from the baseline sweep: paloma macro loss vs tokens at six compute budgets" src="/assets/openathena/assets/images/blog/pretraining-speedup/isoflop-curves.png"/><figcaption><strong>Figure 3:</strong> isoFLOP curves from sweeping six compute budgets (1e18 to 3e20 FLOPs). Each curve plots paloma macro_loss against tokens for runs at different hidden dims; the dashed line is the per-budget log-token parabolic fit, and the star marks its minimum. (<a href="https://github.com/marin-community/marin/issues/4447">Issue 4447</a>)</figcaption></figure>
+<p>These choices result in a training run with a smooth loss curve across the entire trajectory.</p>
+<figure><img alt="Train cross-entropy loss vs tokens for the 1e23 MoE run" src="/assets/openathena/assets/images/blog/pretraining-speedup/loss-curve.png"/><figcaption><strong>Figure 4:</strong> Train cross-entropy loss for the 1e23 MoE run across 1T tokens. The linear trajectory comes from linear LR decay with hyperball after a 10% warmup. (<a href="https://github.com/marin-community/marin/issues/4697">Issue 4697</a>)</figcaption></figure>
+<p>The final loss of the 1e23 run comes within 1% of our <a href="https://github.com/marin-community/marin/issues/4697">preregistered prediction</a>.</p>
+<figure><img alt="Baseline scaling curve: paloma macro loss vs compute, with held-out 1e21 and 1e23 runs landing on the fit" src="/assets/openathena/assets/images/blog/pretraining-speedup/baseline-scaling-curve.png"/><figcaption><strong>Figure 5:</strong> Baseline MoE scaling suite. Six isoFLOP-optimal points from 1e18 to 3e20 FLOPs fit $\text{loss} = 1.6 + 95.18 \cdot C^{-0.0941}$. The pre-registered forecast extrapolates 300× past the fit: at 1e21 the predicted 2.598 matches the measured 2.599 to 0.001, and at 1e23 the measured 2.234 lands 0.8% below the predicted 2.252. (<a href="https://github.com/marin-community/marin/issues/4697">Issue 4697</a>)</figcaption></figure>
+<p>The MoE V1 recipe showed consistent gains over the dense recipe, growing to a speedup of <strong>6.7×</strong> (3.6×) at 1e23.</p>
+<figure><img alt="Dense baseline scaling law with MoE points overlaid; horizontal arrows mark the compute the dense law would need to match each MoE loss" src="/assets/openathena/assets/images/blog/pretraining-speedup/dense-vs-moe.png"/><figcaption><strong>Figure 6:</strong> Dense vs MoE FLOP efficiency. The dense baseline (blue) is the Delphi AdamH scaling law $\text{loss} = 1.65 + 117.8 \cdot C^{-0.0966}$, fit on the dense isoFLOP optima plus the 1e21/1e22/1e23 held-out runs. MoE points (red) are the isoFLOP optima at 1e18–3e20 and the measured 1e21 and 1e23 runs. Each horizontal arrow extends to the compute the dense law would need to reach the same loss — a ~4× FLOP-efficiency gain across isoFLOP scales that widens to 6.7× at 1e23.</figcaption></figure>
+<h2 id="building-on-marin-moe-v1">Building on Marin MoE V1<a aria-label="Link to section: Building on Marin MoE V1" class="heading-anchor" href="#building-on-marin-moe-v1"></a></h2>
+<p>Now that we had demonstrated predictable scaling, we turned our focus to speeding up learning. We assessed changes across 4 compute scales, comparing to the MoE V1 scaling law, with an emphasis on gains that did not diminish at scale. Runs defaulted to the MoE V1 recipe's compute-optimal budgets and tuned learning rates, making the bar for inclusion conservative. We measured loss as cross-entropy across 16 equally weighted Paloma<sup class="footnote-ref" id="fnref-6"><a href="#fn-6">6</a></sup> categories including code, wikitext, and general web.</p>
+<h3 id="expert-sparsity">Expert Sparsity<a aria-label="Link to section: Expert Sparsity" class="heading-anchor" href="#expert-sparsity"></a></h3>
+<p>Going from 64 → 128 → 256 routed experts (4 active) shows consistent gains. More experts give the model more capacity to absorb information from the training data, without raising per-token FLOPs.</p>
+<figure><img alt="Expert sparsity speedup: 128 and 256 expert variants vs the 64-expert baseline across four compute scales" src="/assets/openathena/assets/images/blog/pretraining-speedup/expert-sparsity.png"/><figcaption><strong>Figure 7:</strong> Going from 64 → 128 → 256 routed experts (4 active) at four compute scales. 256 experts gives up to a 1.38× theoretical speedup; the gain grows with compute. (<a href="https://github.com/marin-community/marin/issues/5387">Issue 5387</a>)</figcaption></figure>
+<h3 id="muonh">MuonH<a aria-label="Link to section: MuonH" class="heading-anchor" href="#muonh"></a></h3>
+<p>Adam can be loosely described as "take an equal step size on each parameter, then reactively slow down on unstable ones." Muon<sup class="footnote-ref" id="fnref-7"><a href="#fn-7">7</a></sup> takes a different approach: for each matrix, it orthogonalizes the gradient before applying it, bounding how much that matrix can change its output for any input. One perspective (of many) on why this helps: layer updates happen simultaneously, so each layer's gradient is computed assuming the others are static. If an earlier layer's update substantially shifts the activations flowing into a later layer, the later layer's gradient was estimated against a distribution that no longer exists.</p>
+<p>Similar to the baseline, we apply the hyperball wrapper on the matrices and language-model head as a replacement for weight decay.</p>
+<figure><img alt="MuonH speedup vs AdamH baseline across four compute scales" src="/assets/openathena/assets/images/blog/pretraining-speedup/muonh.png"/><figcaption><strong>Figure 8:</strong> Swapping AdamH for MuonH yields a 1.29–1.41× theoretical speedup across the four compute scales. We note that the first three scales appear to show decreasing gains. MuonH is included in the recipe because the gain appears to stabilize from the 3rd to 4th scale. Realized speedup is excluded from the chart, as these MuonH tests actually ran faster than the baseline due to being incidentally paired with a kernel improvement. We anticipate roughly a 5% gap between theoretical and realized speedup due to MuonH's lower MFU at scale. (<a href="https://github.com/marin-community/marin/issues/5619">Issue 5619</a>)</figcaption></figure>
+<h3 id="partial-key-offset">Partial Key Offset<a aria-label="Link to section: Partial Key Offset" class="heading-anchor" href="#partial-key-offset"></a></h3>
+<p>PKO is a zero-parameter preprocessing of attention keys that gives a 20% gain across all 4 tested compute scales on our evals.</p>
+<figure><img alt="PKO + partial RoPE + last-layer variant speedup across four compute scales" src="/assets/openathena/assets/images/blog/pretraining-speedup/pko.png"/><figcaption><strong>Figure 9:</strong> PKO (with partial RoPE, last-layer aligned) gives a 1.19–1.24× theoretical speedup across compute scales. (<a href="https://github.com/marin-community/marin/issues/4976">Issue 4976</a>)</figcaption></figure>
+<p>MoE V1 uses Rotary Positional Embeddings (RoPE). Half of the gain of PKO is attributed to partial RoPE, which limits RoPE to only the first half of the head dims on both queries and keys. Before describing how PKO extends partial RoPE, I will first show examples where the PKO model over- and underperforms partial RoPE at 1e19.</p>
+<p><img alt="Wikipedia bio: PKO predicts the d of d'état after the second occurrence of coup" src="/assets/openathena/assets/images/blog/pretraining-speedup/pko-example-wiki.svg"/></p>
+<p><img alt="LaTeX paper: PKO predicts the open-brace after textit" src="/assets/openathena/assets/images/blog/pretraining-speedup/pko-example-latex.svg"/></p>
+<p><img alt="C++ switch: PKO loses on predicting Draw after result.WinnerName =" src="/assets/openathena/assets/images/blog/pretraining-speedup/pko-example-cpp.svg"/></p>
+<p>The motivation for PKO (first used in <a href="https://github.com/KellerJordan/modded-nanogpt/pull/169">modded-nanogpt</a>) is that a single attention layer can't do "retrieve the continuation of X from earlier context": mechanically the query matches on a key at position $t$ but should read the value at $t+1$. Forward-shifting all keys by one position fixes this, but breaks classical "find and retrieve X" attention. Under sliding-window attention with partial RoPE, we observe that pattern-matching inductive behavior emerges in the stationary dimensions of the long-window layers, so we restrict the key shift to those dims on only every 4th layer. PKO's gain is much larger on evals than on training loss, suggesting its pattern matching behavior is more robust to distribution shift.</p>
+<h3 id="routed-expert-normalization-and-rescaling">Routed Expert Normalization and Rescaling<a aria-label="Link to section: Routed Expert Normalization and Rescaling" class="heading-anchor" href="#routed-expert-normalization-and-rescaling"></a></h3>
+<p>Marin is open-development: anyone can follow experiments and contribute. Elie Bakouch, a community member, recently noticed a difference between our expert weighting and DeepSeek's<sup class="footnote-ref" id="fnref-8"><a href="#fn-8">8</a></sup>. Within hours of his suggestion to renormalize and scale the routed expert outputs, we confirmed the small boost and added it to the recipe. Without his recommendation, this improvement would not have made it into our next large scale run. When evaluating the change, we compared to the in-progress recipe indicated by the blue dots below.</p>
+<figure><img alt="Routing renorm with X=2.5 vs combined-feature baseline across three compute scales" src="/assets/openathena/assets/images/blog/pretraining-speedup/routed-expert-norm.png"/><figcaption><strong>Figure 10:</strong> Renormalizing and rescaling routed expert outputs (X=2.5) over the combined-feature baseline gives a 1.025–1.052× theoretical speedup. (<a href="https://github.com/marin-community/marin/issues/5797">Issue 5797</a>)</figcaption></figure>
+<h3 id="combining-all-4">Combining all 4<a aria-label="Link to section: Combining all 4" class="heading-anchor" href="#combining-all-4"></a></h3>
+<p>Running the same isoFLOP sweep on the new recipe (solid bowls below) shows the compute-optimal point at each budget shifting to more tokens and fewer active parameters, when compared to the Marin MoE V1 recipe. The shift is likely driven by Expert Sparsity: 4× more routed experts giving the model more sparse capacity to absorb information from extra training tokens.</p>
+<figure><img alt="isoFLOP bowls at four budgets, baseline (dashed) vs combined recipe (solid)" src="/assets/openathena/assets/images/blog/pretraining-speedup/isoflop-compare.png"/><figcaption><strong>Figure 11:</strong> isoFLOP bowls at four shared budgets, baseline (dashed, hollow markers) vs combined recipe (solid, filled markers). Stars mark the parabola-fit minimum of each bowl; arrows show how the optimum shifts toward more tokens and fewer active parameters under the new recipe. (<a href="https://github.com/marin-community/marin/issues/6074">Issue 6074</a>)</figcaption></figure>
+<p>Stacking all four improvements gives a roughly 2× combined theoretical speedup, compared to the Marin MoE V1 recipe.</p>
+<figure><img alt="Combined-recipe optima vs the baseline scaling curve across four compute budgets" src="/assets/openathena/assets/images/blog/pretraining-speedup/combined-speedup.png"/><figcaption><strong>Figure 12:</strong> Combined-recipe isoFLOP optima (1e18 → 3e19 FLOPs) sit ~2× to the left of the baseline scaling curve. Each bronze dot is the per-budget loss minimum from a fresh isoFLOP parabolic fit; the horizontal arrow extends to the compute the baseline would need to reach the same loss. (<a href="https://github.com/marin-community/marin/issues/6074">Issue 6074</a>)</figcaption></figure>
+<p>Recapping the changes:</p>
+<ol>
+<li>Moving from dense to MoE V1 gave a <strong>6.7×</strong> (3.6×) speedup at 1e23 FLOPs.</li>
+<li>Treating MoE V1 as the baseline, stacking the four subsequent improvements gives a <strong>2.1×</strong> theoretical speedup at 3e19 FLOPs. We don't have data on the exact realized speedup due to shifting hardware mid-experiment, but conservatively estimate it at 1.8×, with slight slowdowns from MuonH and higher expert sparsity.</li>
+</ol>
+<h2 id="promising-future-directions">Promising Future Directions<a aria-label="Link to section: Promising Future Directions" class="heading-anchor" href="#promising-future-directions"></a></h2>
+<h3 id="residual-bottleneck">Residual Bottleneck<a aria-label="Link to section: Residual Bottleneck" class="heading-anchor" href="#residual-bottleneck"></a></h3>
+<p>The standard transformer progressively adds to a single residual stream, slowly transitioning it from single token, to token context, to prediction. A large number of techniques have shown improvements upon this, including attention residuals<sup class="footnote-ref" id="fnref-9"><a href="#fn-9">9</a></sup>, per-layer embeddings<sup class="footnote-ref" id="fnref-10"><a href="#fn-10">10</a></sup>, MUDD skip connections<sup class="footnote-ref" id="fnref-11"><a href="#fn-11">11</a></sup>, manifold hyperconnection<sup class="footnote-ref" id="fnref-12"><a href="#fn-12">12</a></sup>, and engram<sup class="footnote-ref" id="fnref-13"><a href="#fn-13">13</a></sup>. Our experiments suggest over 15% speedup is possible, but we're holding off to control the amount of complexity we add to the architecture at each iteration.</p>
+<p>A trivial example of caching the residual stream at the 3rd to last layer and feeding it into all subsequent attention modules is shown, to indicate just how many ways it's possible to outperform the standard residual stream behavior. Block attention residuals is included as well.</p>
+<figure><img alt="Cached attention and block attention residuals (size 4) vs baseline at four compute scales" src="/assets/openathena/assets/images/blog/pretraining-speedup/gate2-speedups.png"/><figcaption><strong>Figure 13:</strong> Two variants vs baseline. Left: cached attention reuses attention output and skips norm computation on cached layers, holding throughput steady and giving a 1.02–1.10× realized speedup. Right: block attention residuals with block size 4 add a softmax-weighted sum over block representations, costing 4–7% throughput but giving a 1.06–1.12× realized speedup. (<a href="https://github.com/marin-community/marin/issues/4987">Issue 4987</a>, <a href="https://github.com/marin-community/marin/issues/5110">Issue 5110</a>)</figcaption></figure>
+<h3 id="inference-efficiency">Inference Efficiency<a aria-label="Link to section: Inference Efficiency" class="heading-anchor" href="#inference-efficiency"></a></h3>
+<p>So far the focus has been pretraining intelligence, but another critical axis is inference efficiency, which is important for downstream use and RL. As we grow our RL stack, it will be advantageous to go beyond our current recipe of 4:1 Grouped Query Attention (GQA) with local/global Sliding Window Attention at 3:1 ratio. Promising candidates include multihead latent attention<sup class="footnote-ref" id="fnref-14"><a href="#fn-14">14</a></sup>, gated delta net<sup class="footnote-ref" id="fnref-15"><a href="#fn-15">15</a></sup>, LatentMoE<sup class="footnote-ref" id="fnref-16"><a href="#fn-16">16</a></sup>, multi-token prediction<sup class="footnote-ref" id="fnref-17"><a href="#fn-17">17</a></sup>, and quantization.</p>
+<p>Below: the speedup from reverting 4:1 GQA to full multihead attention. Mechanisms like multihead latent attention may close the quality gap GQA opens while still shrinking the KV cache.</p>
+<figure><img alt="MHA (no GQA) vs baseline at four compute scales" src="/assets/openathena/assets/images/blog/pretraining-speedup/mha-no-gqa.png"/><figcaption><strong>Figure 14:</strong> Full multihead attention (no GQA) vs the 4:1 GQA baseline at four compute scales. Removing GQA costs 2–4% throughput but improves quality at every scale, giving a 1.10–1.18× realized speedup. (<a href="https://github.com/marin-community/marin/issues/5151">Issue 5151</a>)</figcaption></figure>
+<h2 id="compute-resources">Compute Resources<a aria-label="Link to section: Compute Resources" class="heading-anchor" href="#compute-resources"></a></h2>
+<p>These experiments were made possible through the generosity of the Google TPU Research Cloud.</p>
+<section class="footnotes">
+<ol>
+<li id="fn-1"><p>Jianlin Su, <a href="https://kexue.fm/archives/11619"><em>Quantile Balancing</em></a>.<a class="footnote" href="#fnref-1">↩</a></p></li>
+<li id="fn-2"><p>Wen et al., <a href="https://psychedelic-sunstone-851.notion.site/Fantastic-Pretraining-Optimizers-and-Where-to-Find-Them-2-1-Hyperball-Optimization-2e924306e6f280e7a5ffee00eb40a0dd"><em>Fantastic Pretraining Optimizers and Where to Find Them — Hyperball Optimization</em></a>.<a class="footnote" href="#fnref-2">↩</a></p></li>
+<li id="fn-3"><p>Qiu et al., <a href="https://arxiv.org/abs/2505.06708"><em>Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free</em></a>, 2025.<a class="footnote" href="#fnref-3">↩</a></p></li>
+<li id="fn-4"><p>Qiu et al., <a href="https://arxiv.org/abs/2601.22966"><em>A Unified View of Attention and Residual Sinks: Outlier-Driven Rescaling is Essential for Transformer Training</em></a>, 2026.<a class="footnote" href="#fnref-4">↩</a></p></li>
+<li id="fn-5"><p>Zhai, <a href="https://arxiv.org/abs/2603.09078"><em>Exclusive Self Attention</em></a>, 2026.<a class="footnote" href="#fnref-5">↩</a></p></li>
+<li id="fn-6"><p>Magnusson et al., <a href="https://arxiv.org/abs/2312.10523"><em>Paloma: A Benchmark for Evaluating Language Model Fit</em></a>, 2023.<a class="footnote" href="#fnref-6">↩</a></p></li>
+<li id="fn-7"><p>Keller Jordan, <a href="https://kellerjordan.github.io/posts/muon/"><em>Muon: An optimizer for hidden layers in neural networks</em></a>, 2024.<a class="footnote" href="#fnref-7">↩</a></p></li>
+<li id="fn-8"><p>DeepSeek-AI, <a href="https://arxiv.org/abs/2412.19437"><em>DeepSeek-V3 Technical Report</em></a>, 2024.<a class="footnote" href="#fnref-8">↩</a></p></li>
+<li id="fn-9"><p>Kimi Team, <a href="https://arxiv.org/abs/2603.15031"><em>Attention Residuals</em></a>, 2026.<a class="footnote" href="#fnref-9">↩</a></p></li>
+<li id="fn-10"><p>Google, <a href="https://ai.google.dev/gemma/docs/core/model_card_4"><em>Gemma 4 model card</em></a>.<a class="footnote" href="#fnref-10">↩</a></p></li>
+<li id="fn-11"><p>Xiao et al., <a href="https://arxiv.org/abs/2502.12170"><em>MUDDFormer: Breaking Residual Bottlenecks in Transformers via Multiway Dynamic Dense Connections</em></a>, 2025.<a class="footnote" href="#fnref-11">↩</a></p></li>
+<li id="fn-12"><p>Xie et al., <a href="https://arxiv.org/abs/2512.24880"><em>mHC: Manifold-Constrained Hyper-Connections</em></a>, 2025.<a class="footnote" href="#fnref-12">↩</a></p></li>
+<li id="fn-13"><p>Cheng et al., <a href="https://arxiv.org/abs/2601.07372"><em>Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models</em></a>, 2026.<a class="footnote" href="#fnref-13">↩</a></p></li>
+<li id="fn-14"><p>DeepSeek-AI, <a href="https://arxiv.org/abs/2405.04434"><em>DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model</em></a>, 2024.<a class="footnote" href="#fnref-14">↩</a></p></li>
+<li id="fn-15"><p>Yang et al., <a href="https://arxiv.org/abs/2412.06464"><em>Gated Delta Networks: Improving Mamba2 with Delta Rule</em></a>, 2024.<a class="footnote" href="#fnref-15">↩</a></p></li>
+<li id="fn-16"><p>Elango et al., <a href="https://arxiv.org/abs/2601.18089"><em>LatentMoE: Toward Optimal Accuracy per FLOP and Parameter in Mixture of Experts</em></a>, 2026.<a class="footnote" href="#fnref-16">↩</a></p></li>
+<li id="fn-17"><p>Gloeckle et al., <a href="https://arxiv.org/abs/2404.19737"><em>Better &amp; Faster Large Language Models via Multi-token Prediction</em></a>, 2024.<a class="footnote" href="#fnref-17">↩</a></p></li>
+</ol>
+</section>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{dial2026_pretraining_speedup,
+  author = {Dial, Larry},
+  title = {Improving our LLM Pretraining Efficiency},
+  year = {2026},
+  month = {jun},
+  howpublished = {\url{https://www.openathena.ai/blog/pretraining-speedup/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$']],
+    displayMath: [['$$', '$$']]
+  },
+  output: {
+    displayOverflow: 'linebreak',
+    linebreaks: { inline: true }
+  }
+};
+</script>
+<script async="" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<script>
+(function() {
+  const content = document.querySelector('.blog-post-content');
+  const lists = document.querySelectorAll('.blog-toc-list');
+  if (!content || !lists.length) return;
+
+  const headings = Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+    .filter(function(h) { return !h.closest('.blog-post-citation'); });
+
+  // Find the minimum heading level used so it becomes the top-level TOC entry
+  var minLevel = 6;
+  headings.forEach(function(h) {
+    var level = parseInt(h.tagName[1]);
+    if (level < minLevel) minLevel = level;
+  });
+
+  function buildToc(list) {
+    headings.forEach(function(h) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+      var level = parseInt(h.tagName[1]);
+
+      if (level === minLevel) {
+        li.className = 'toc-h2';
+        li.dataset.sublist = '';
+        list.appendChild(li);
+      } else {
+        var parent = list.querySelector('li.toc-h2:last-child > ol');
+        if (!parent) {
+          parent = document.createElement('ol');
+          var lastTop = list.querySelector('li.toc-h2:last-child');
+          if (lastTop) lastTop.appendChild(parent);
+          else { li.className = 'toc-h3'; list.appendChild(li); return; }
+        }
+        li.className = 'toc-h3';
+        parent.appendChild(li);
+      }
+    });
+  }
+
+  lists.forEach(function(list) { buildToc(list); });
+
+  // Highlight active TOC entry on scroll
+  var tocLinks = document.querySelectorAll('.blog-toc-nav .blog-toc-list a');
+  if (tocLinks.length && headings.length) {
+    function updateActive() {
+      var current = null;
+      var threshold = window.innerHeight * 0.3;
+      for (var i = 0; i < headings.length; i++) {
+        if (headings[i].getBoundingClientRect().top <= threshold) current = headings[i];
+      }
+      // Find the parent top-level heading for the current heading
+      var parentH2 = null;
+      if (current) {
+        var currentLevel = parseInt(current.tagName[1]);
+        if (currentLevel === minLevel) {
+          parentH2 = current;
+        } else {
+          for (var j = Array.prototype.indexOf.call(headings, current) - 1; j >= 0; j--) {
+            if (parseInt(headings[j].tagName[1]) === minLevel) { parentH2 = headings[j]; break; }
+          }
+        }
+      }
+      var activeLink = null;
+      tocLinks.forEach(function(link) {
+        var isActive = current && link.getAttribute('href') === '#' + current.id;
+        var isParent = parentH2 && parentH2 !== current && link.getAttribute('href') === '#' + parentH2.id;
+        link.classList.toggle('active', isActive || isParent);
+        if (isActive) activeLink = link;
+      });
+
+      // Auto-scroll TOC to keep active link visible.
+      // IMPORTANT: do not use scrollIntoView — it scrolls every scrollable ancestor
+      // (including the window), which fights the user's page scroll. Adjust only
+      // the TOC's own scrollTop so the page position stays put.
+      if (activeLink && !userScrolledToc) {
+        var tocNav = document.querySelector('.blog-toc');
+        var linkRect = activeLink.getBoundingClientRect();
+        var tocRect = tocNav.getBoundingClientRect();
+        if (linkRect.bottom > tocRect.bottom || linkRect.top < tocRect.top) {
+          var target = (linkRect.top - tocRect.top) + tocNav.scrollTop
+                     - (tocRect.height - linkRect.height) / 2;
+          tocNav.scrollTop = Math.max(0, target);
+        }
+      }
+    }
+
+    // Track manual TOC scrolling
+    var userScrolledToc = false;
+    var tocEl = document.querySelector('.blog-toc');
+    var tocScrollTimer;
+    tocEl.addEventListener('scroll', function() {
+      userScrolledToc = true;
+      clearTimeout(tocScrollTimer);
+      tocScrollTimer = setTimeout(function() { userScrolledToc = false; }, 1000);
+    }, { passive: true });
+
+    window.addEventListener('scroll', updateActive, { passive: true });
+    updateActive();
+  }
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

@@ -1,0 +1,137 @@
+{
+  "kind": "video",
+  "src": "fsdp.mp4",
+  "poster": "fsdp.png",
+  "width": 960,
+  "height": 736,
+  "steps": [
+    {
+      "time": 0.0,
+      "title": "Each GPU owns a different model shard"
+    },
+    {
+      "time": 2.5,
+      "title": "Load W0 for the forward pass"
+    },
+    {
+      "time": 4.1,
+      "title": "Compute block M0 on every GPU"
+    },
+    {
+      "time": 5.6,
+      "title": "Release temporary copies of W0"
+    },
+    {
+      "time": 6.7,
+      "title": "Load W1 for the forward pass"
+    },
+    {
+      "time": 8.3,
+      "title": "Compute block M1 on every GPU"
+    },
+    {
+      "time": 9.8,
+      "title": "Release temporary copies of W1"
+    },
+    {
+      "time": 10.9,
+      "title": "Load W2 for the forward pass"
+    },
+    {
+      "time": 12.5,
+      "title": "Compute block M2 on every GPU"
+    },
+    {
+      "time": 14.0,
+      "title": "Release temporary copies of W2"
+    },
+    {
+      "time": 15.1,
+      "title": "Load W3 for the forward pass"
+    },
+    {
+      "time": 16.7,
+      "title": "Compute block M3 on every GPU"
+    },
+    {
+      "time": 18.2,
+      "title": "Release temporary copies of W3"
+    },
+    {
+      "time": 19.3,
+      "title": "Each GPU computes local loss Li for its data Di"
+    },
+    {
+      "time": 20.9,
+      "title": "Load W3 again for backward"
+    },
+    {
+      "time": 22.5,
+      "title": "Compute local gradients for W3"
+    },
+    {
+      "time": 24.1,
+      "title": "Reduce the gradients to GPU 3"
+    },
+    {
+      "time": 26.1,
+      "title": "Release temporary state for block M3"
+    },
+    {
+      "time": 27.2,
+      "title": "Load W2 again for backward"
+    },
+    {
+      "time": 28.8,
+      "title": "Compute local gradients for W2"
+    },
+    {
+      "time": 30.4,
+      "title": "Reduce the gradients to GPU 2"
+    },
+    {
+      "time": 32.4,
+      "title": "Release temporary state for block M2"
+    },
+    {
+      "time": 33.5,
+      "title": "Load W1 again for backward"
+    },
+    {
+      "time": 35.1,
+      "title": "Compute local gradients for W1"
+    },
+    {
+      "time": 36.7,
+      "title": "Reduce the gradients to GPU 1"
+    },
+    {
+      "time": 38.7,
+      "title": "Release temporary state for block M1"
+    },
+    {
+      "time": 39.8,
+      "title": "Load W0 again for backward"
+    },
+    {
+      "time": 41.4,
+      "title": "Compute local gradients for W0"
+    },
+    {
+      "time": 43.0,
+      "title": "Reduce the gradients to GPU 0"
+    },
+    {
+      "time": 45.0,
+      "title": "Release temporary state for block M0"
+    },
+    {
+      "time": 46.1,
+      "title": "Update all four owned shards in parallel"
+    },
+    {
+      "time": 49.1,
+      "title": "The training step is complete"
+    }
+  ]
+}
