@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  {% include theme-head.html %}
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% seo %}
   <link rel="icon" type="image/svg+xml" href="{{ '/marin-logo.svg' | relative_url }}">
@@ -11,9 +12,11 @@
   {% if page.post_kind == 'mirror' and page.source_url %}<link rel="stylesheet" href="{{ '/assets/css/openathena-mirror.css' | relative_url }}">{% endif %}
   <link rel="stylesheet" href="{{ '/assets/css/blog.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/navigation.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/theme.css' | relative_url }}">
+  <script defer src="{{ '/assets/js/theme.js' | relative_url }}"></script>
   <script defer src="{{ '/assets/js/blog.js' | relative_url }}"></script>
 </head>
-<body>
+<body class="blog-page">
   <a class="skip-link" href="#content">Skip to content</a>
   <header class="site-header">
     <a class="brand" href="{{ '/' | relative_url }}"><img src="{{ '/marin-logo.svg' | relative_url }}" alt="" width="52" height="52"><span>Marin</span></a>

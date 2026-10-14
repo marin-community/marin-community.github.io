@@ -189,11 +189,11 @@ button,input,select {
 .oa-mirror {
   --bg-paper:var(--paper);
   --dark:var(--text);
-  --text-light:#6e7168;
-  --tag-bg:#d7dcc8;
-  --border:#c9c1b5;
-  --border-secondary:#c9c1b540;
-  --button-bg:#ddd3c5;
+  --text-light:var(--text-secondary);
+  --tag-bg:var(--tag-paper);
+  --border:var(--rule);
+  --border-secondary:var(--rule);
+  --button-bg:var(--button-paper);
   --font-heading:'Shippori Mincho B1',Georgia,serif;
   --font-body:'Noto Serif',Georgia,serif;
   --side-pad:24px;
@@ -248,8 +248,8 @@ button,input,select {
 .post .post-content pre code { font-size:inherit; border:0; padding:0; background:transparent; color:inherit }
 .post .post-content .highlight { background:transparent }
 .post .post-content table:not(.rouge-table):not(.d3-bucket-grid table):not(.d3-correlation-mobile-table) { display:block; width:100%; max-width:100%; overflow:auto; table-layout:auto; overflow-wrap:normal; border-collapse:collapse; border-spacing:0; margin:1.5rem 0; background:var(--paper); border:1px solid var(--rule); border-radius:0; font-size:.85rem }
-.post .post-content :is(th,td):not(.rouge-table *):not(.d3-bucket-grid *):not(.d3-correlation-mobile-table *) { padding:.6rem .75rem; border:1px solid var(--rule); text-align:left; font-family:inherit; font-size:inherit; line-height:inherit; letter-spacing:normal; text-transform:none }
-.post .post-content th:not(.rouge-table *):not(.d3-bucket-grid *):not(.d3-correlation-mobile-table *) { background:#e6e0d4; font-weight:500 }
+.post .post-content :is(th,td):not(.rouge-table *):not(.d3-bucket-grid *):not(.d3-correlation-mobile-table *) { padding:.6rem .75rem; border:1px solid var(--rule); text-align:left; color:inherit; font-family:inherit; font-size:inherit; line-height:inherit; letter-spacing:normal; text-transform:none }
+.post .post-content th:not(.rouge-table *):not(.d3-bucket-grid *):not(.d3-correlation-mobile-table *) { background:var(--table-heading); font-weight:500 }
 .post .post-content .table-scroll { max-width:100%; margin:1.5rem 0; overflow:auto }
 .post .post-content .table-scroll table { margin:0 }
 .post .post-content figure { margin:2rem 0; padding:1rem; border:1px solid var(--rule); border-radius:4px; background:var(--paper); text-align:left }

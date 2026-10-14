@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+import subprocess
 from urllib.parse import unquote, urlsplit
 
 from bs4 import BeautifulSoup
@@ -116,10 +117,39 @@ def main():
             canonical = page.select_one('link[rel="canonical"]')
             if canonical is None or canonical['href'] != 'https://marin.community' + route or page.select_one('.source-note, .oa-mirror'):
                 errors.append(f'Original attribution/canonical regression: {route}')
+    # Homepage article links must point at existing local copies, not their sources.
+    home = BeautifulSoup((SITE / 'index.html').read_text(), 'html.parser')
+    source_routes = {}
+    for r in included:
+        meta = yaml.safe_load((ROOT / r['post']).read_text().split('---', 2)[1])
+        slug = Path(r['post']).stem[11:]
+        route = meta.get('permalink', '/blog/' + r['date'].replace('-', '/') + '/' + slug + '/')
+        source_routes[urlsplit(r['source_url']).path.rstrip('/')] = route
+    # The homepage currently highlights these four mirrors plus the open-development link.
+    for slug in ('delphi', 'cluster-scheduling-with-iris', 'pretraining-speedup', 'quantile-balancing', 'open-development-of-frontier-ai'):
+        route = source_routes['/blog/' + slug]
+        if not home.select_one('a[href="' + route + '"]'):
+            errors.append(f'Homepage article missing its local mirror link: {route}')
+    for r in originals:
+        if 'retro' in r['route'] and not home.select_one('a[href="' + r['route'] + '"]'):
+            errors.append(f'Homepage retrospective link must stay local: {r["route"]}')
+    for link in home.select('a[href]'):
+        parsed = urlsplit(link['href'])
+        if parsed.hostname in ('openathena.ai', 'www.openathena.ai') and parsed.path.rstrip('/') in source_routes:
+            errors.append(f'Homepage still links to mirrored source: {link["href"]}')
     # Home and every blog page share discoverable navigation with valid destinations.
     for path in [SITE / 'index.html'] + built_posts + [SITE / 'blog/index.html']:
         page = BeautifulSoup(path.read_text(), 'html.parser')
         nav = page.select_one('nav[aria-label="Main navigation"]')
+        init = page.select_one('script#marin-theme-init')
+        styles = page.select('link[rel="stylesheet"]')
+        if not init or not styles or page.select('script,link').index(init) > page.select('script,link').index(styles[0]):
+            errors.append(f'Theme must initialize before styles/first paint: {path.relative_to(SITE)}')
+        if not page.select_one('link[href="/assets/css/theme.css"]') or not page.select_one('script[src="/assets/js/theme.js"][defer]'):
+            errors.append(f'Missing shared theme assets: {path.relative_to(SITE)}')
+        control = page.select_one('[data-theme-control]')
+        if not control or [o.get('value') for o in control.select('option')] != ['system', 'light', 'dark']:
+            errors.append(f'Missing shared theme control: {path.relative_to(SITE)}')
         links = {a.get_text(strip=True): a.get('href') for a in nav.select('a')} if nav else {}
         if links.get('Home') != '/' or links.get('Blog') != '/blog/':
             errors.append(f'Missing Home/Blog navigation: {path.relative_to(SITE)}')
@@ -149,6 +179,8 @@ def main():
                     if isinstance(spec.get(key), str) and not urlsplit(spec[key]).scheme:
                         if not (ROOT / asset).parent.joinpath(spec[key]).exists():
                             errors.append(f'Missing animation dependency: {asset}: {spec[key]}')
+    # The existing CI entry point covers preference behavior without changing workflows.
+    subprocess.run(['node', str(ROOT / 'scripts/check_theme.js')], cwd=ROOT, check=True)
     if errors:
         print('\n'.join(sorted(set(errors))), file=sys.stderr)
         return 1
