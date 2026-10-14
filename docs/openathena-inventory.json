@@ -9,8 +9,19 @@
     "tags": [
       "BEHIND THE SCENES"
     ],
-    "status": "review",
-    "reason": "Unlabeled article mentions Marin; needs classification review"
+    "source_content_sha256": "d5ae8ab1650c515b3f93dc9164437efd57dec20eefae610d935a10b67059a204",
+    "classification_reviewed_on": "2026-10-14",
+    "status": "included",
+    "reason": "Full-article classification: The introduction and central project answer focus on MarinFold: distilling structural-biology models into a vanilla LLM architecture. Further answers describe exercising Marin infrastructure, open experiments/training runs, and its community.",
+    "post": "_posts/2026-10-08-meet-our-team-tim-odonnell.html",
+    "mirrored_html_sha256": "9a9ae3d8a7bb1c1633e0c1950ff2c06404db83d85776ae595a3b2eba67e488b1",
+    "assets": {
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
   },
   {
     "source_url": "https://openathena.ai/blog/expert-parallelism/",
@@ -22,9 +33,9 @@
     "tags": [
       "MARIN"
     ],
+    "source_content_sha256": "ca258c7f069541aeca1f78a45f9f707f0886862837fed792adf7649c6d9c14c4",
     "status": "included",
     "reason": "Explicit public MARIN label",
-    "source_content_sha256": "ca258c7f069541aeca1f78a45f9f707f0886862837fed792adf7649c6d9c14c4",
     "post": "_posts/2026-09-29-expert-parallelism.html",
     "mirrored_html_sha256": "0dc29281e7f36b3178095502edd89a9da28d8e2a14d80639b5a7a1347131ff45",
     "assets": {
@@ -57,6 +68,7 @@
       "Open Athena"
     ],
     "tags": [],
+    "source_content_sha256": "f5e8227674eb396f18924f0bd301760df370df49d8f617e835d9858fef6f3a6b",
     "status": "excluded",
     "reason": "Unrelated Open Athena article; no MARIN label or Marin content"
   },
@@ -70,8 +82,10 @@
     "tags": [
       "BEHIND THE SCENES"
     ],
-    "status": "review",
-    "reason": "Unlabeled article mentions Marin; needs classification review"
+    "source_content_sha256": "71af508eca3951e591708bd6ef8421e8d3f84b2424fb9e7ce14619213ac90350",
+    "classification_reviewed_on": "2026-10-14",
+    "status": "excluded",
+    "reason": "The introduction and primary-project discussion focus on Samudra ocean/climate modeling. One secondary answer mentions reusing Marin infrastructure for varied science domains; this does not make the full profile Marin-focused."
   },
   {
     "source_url": "https://openathena.ai/blog/marin-data-pipeline-overview/",
@@ -83,9 +97,9 @@
     "tags": [
       "MARIN"
     ],
+    "source_content_sha256": "67f7711081010edafd8cf28364170a874bb44b77560a04c5fadf18aeec036cd8",
     "status": "included",
     "reason": "Explicit public MARIN label",
-    "source_content_sha256": "67f7711081010edafd8cf28364170a874bb44b77560a04c5fadf18aeec036cd8",
     "post": "_posts/2026-09-11-marin-data-pipeline-overview.html",
     "mirrored_html_sha256": "4309f226d5d20f3780b4bbc7cf275c3c466c8a849ec6939b80826278b590cc54",
     "assets": {
@@ -115,9 +129,9 @@
     "tags": [
       "MARIN"
     ],
+    "source_content_sha256": "db59decdbe80b861f59e29709954e6927f571999a1fc5b34188a173fa357bc72",
     "status": "included",
     "reason": "Explicit public MARIN label",
-    "source_content_sha256": "db59decdbe80b861f59e29709954e6927f571999a1fc5b34188a173fa357bc72",
     "post": "_posts/2026-09-03-marin-535b-launch-note.html",
     "mirrored_html_sha256": "0d9bb276a767a3d1905d0e859334228b952a69d705835be389d4d01b60607e53",
     "assets": {
@@ -138,9 +152,9 @@
     "tags": [
       "MARIN"
     ],
+    "source_content_sha256": "ea1cc3b3b9dbf324caa3c9d69c506629501dffcec43e346cd11504673f9f1204",
     "status": "included",
     "reason": "Explicit public MARIN label",
-    "source_content_sha256": "ea1cc3b3b9dbf324caa3c9d69c506629501dffcec43e346cd11504673f9f1204",
     "post": "_posts/2026-09-02-huang-foundation-marin-535b-training-run.html",
     "mirrored_html_sha256": "0f5cd35403c15a9be51b0c7ae8c850e2a657a9e2233eb352224b3532ce3cb9c0",
     "assets": {
@@ -161,8 +175,21 @@
     "tags": [
       "BEHIND THE SCENES"
     ],
-    "status": "review",
-    "reason": "Unlabeled article mentions Marin; needs classification review"
+    "source_content_sha256": "9a18be86c5a05abcb5c7790485ca72df514be2cb65462d5fa917caac937ee84c",
+    "classification_reviewed_on": "2026-10-14",
+    "status": "included",
+    "reason": "Full-article classification: Although the profile also covers Samudra, dedicated sections describe splitting current work with MarinFold, cross-applying Marin technology to structural biology, and a public program-synthesis extension of Marin. These are substantive Marin project contributions, not an incidental mention.",
+    "post": "_posts/2026-08-27-meet-our-team-alex-merose.html",
+    "mirrored_html_sha256": "ba92fcac37b81159567a15e90e1808d0cf3b8691fda3949e3684c680d8a48e82",
+    "assets": {
+      "assets/openathena/assets/audio/blog/meet-our-team-alex-merose/tiger-roar.mp3": "b40b1ee6165f25314e0c491d57f732a9b6d3478258b93e087a73193c1517ad72",
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252",
+      "assets/openathena/js/window-reversal-demo.js": "25dccdaa85ff2b1cdbac1f2a4209c2d49810ec7e9e672237e80758ebbde626e5"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
   },
   {
     "source_url": "https://openathena.ai/blog/meet-our-team-will-held/",
@@ -174,8 +201,19 @@
     "tags": [
       "BEHIND THE SCENES"
     ],
-    "status": "review",
-    "reason": "Unlabeled article mentions Marin; needs classification review"
+    "source_content_sha256": "737dbb24b0c531c2a9d3ea2ee4bb3a6a83cb35b2a38f5d0d6fc5b27351251dfd",
+    "classification_reviewed_on": "2026-10-14",
+    "status": "included",
+    "reason": "Full-article classification: The introduction identifies his primary project as Marin; his career discussion explains joining Marin through Percy Liang and David Hall, and substantial answers cover Marin open development, experimental research, and transfer of its methods to scientific projects.",
+    "post": "_posts/2026-08-06-meet-our-team-will-held.html",
+    "mirrored_html_sha256": "9892666831db9460409be2a9747f1ceb7b7a684011123cc55ec878c731d97485",
+    "assets": {
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
   },
   {
     "source_url": "https://openathena.ai/blog/marin-dna/",
@@ -188,9 +226,9 @@
       "MARIN",
       "DNA"
     ],
+    "source_content_sha256": "30569e8ba35fdf50a093a784d307193117777973e23724b0c1ce08609e1b9311",
     "status": "included",
     "reason": "Explicit public MARIN label",
-    "source_content_sha256": "30569e8ba35fdf50a093a784d307193117777973e23724b0c1ce08609e1b9311",
     "post": "_posts/2026-08-03-marin-dna.html",
     "mirrored_html_sha256": "e5bdd6a7684a5cf4a3e32ccdee9d6cc4b25c04929f7b623d7cc46da59233fd34",
     "assets": {
@@ -231,6 +269,7 @@
     "tags": [
       "DEEP DIVE"
     ],
+    "source_content_sha256": "7e45dadcaee040cbf08c35859b94150340db20608fa94d49c756e95e7e5b76b8",
     "status": "excluded",
     "reason": "Unrelated Open Athena article; no MARIN label or Marin content"
   },
@@ -242,6 +281,7 @@
       "David Siegel"
     ],
     "tags": [],
+    "source_content_sha256": "c90d7461bcd5fe9f361482c555bed61ad29ed9dffd5beae5486cfd885696b4e6",
     "status": "excluded",
     "reason": "Unrelated Open Athena article; no MARIN label or Marin content"
   },
@@ -253,8 +293,10 @@
       "Yael Elmatad"
     ],
     "tags": [],
-    "status": "review",
-    "reason": "Unlabeled article mentions Marin; needs classification review"
+    "source_content_sha256": "5640d2db7a2f24798b0ad705586fc9e0dc8bdf8c2d8fe8487bef284204aa300f",
+    "classification_reviewed_on": "2026-10-14",
+    "status": "excluded",
+    "reason": "The article is a general argument about agentic software engineering, staffing, evaluation, and Open Athena practices. Marin appears only as a parenthetical example of an internal platform; it reports no Marin-specific work or results."
   },
   {
     "source_url": "https://openathena.ai/blog/meet-our-team-betsy-cannon/",
@@ -266,6 +308,7 @@
     "tags": [
       "BEHIND THE SCENES"
     ],
+    "source_content_sha256": "af750378e9765099758fcc45f07a08f8ba0105aab6944bcd72b4e5906cf9f99d",
     "status": "excluded",
     "reason": "Unrelated Open Athena article; no MARIN label or Marin content"
   },
@@ -279,9 +322,9 @@
     "tags": [
       "MARIN"
     ],
+    "source_content_sha256": "305a0c82301a30436c255ab2ef2cf3576ea1526eed7e72ce19f3cc8a53dbd847",
     "status": "included",
     "reason": "Explicit public MARIN label",
-    "source_content_sha256": "305a0c82301a30436c255ab2ef2cf3576ea1526eed7e72ce19f3cc8a53dbd847",
     "post": "_posts/2026-06-29-open-development-of-frontier-ai.html",
     "mirrored_html_sha256": "eb7cc603628f3aa2ca4b5b0a3469653ab829f96a9f932f6f0bd79735206597fa",
     "assets": {
@@ -302,9 +345,9 @@
     "tags": [
       "MARIN"
     ],
+    "source_content_sha256": "0ac56c47471b58ed04b4faceadc69ebfa66ebed6a9da6c22df726315174cc095",
     "status": "included",
     "reason": "Explicit public MARIN label",
-    "source_content_sha256": "0ac56c47471b58ed04b4faceadc69ebfa66ebed6a9da6c22df726315174cc095",
     "post": "_posts/2026-06-25-cluster-scheduling-with-iris.html",
     "mirrored_html_sha256": "b76036ae99cc810c8a63e9fc863f8443fe8702738a21b70acfc4fc227b12584c",
     "assets": {
@@ -327,6 +370,7 @@
       "Jared Crooks"
     ],
     "tags": [],
+    "source_content_sha256": "8b45d0fa3ce014d1ebaaf90f0f3d6a165cdbbe1c725dbae9e95cb36b345761bc",
     "status": "excluded",
     "reason": "Unrelated Open Athena article; no MARIN label or Marin content"
   },
@@ -340,9 +384,9 @@
     "tags": [
       "MARIN"
     ],
+    "source_content_sha256": "48995e7eaef4814e67a2e683e9330cf2af65e15b571aa9547e78ada65e866a32",
     "status": "included",
     "reason": "Explicit public MARIN label",
-    "source_content_sha256": "48995e7eaef4814e67a2e683e9330cf2af65e15b571aa9547e78ada65e866a32",
     "post": "_posts/2026-06-03-pretraining-speedup.html",
     "mirrored_html_sha256": "b2ee5a0762325028ef0943a6fcb088260417d0ad25703178d41f69fe69f45a5a",
     "assets": {
@@ -381,9 +425,9 @@
     "tags": [
       "MARIN"
     ],
+    "source_content_sha256": "921687cb3dbf6041c9f6c95891e81e92beea7e6d63814806cd6a54b8cc0a4189",
     "status": "included",
     "reason": "Explicit public MARIN label",
-    "source_content_sha256": "921687cb3dbf6041c9f6c95891e81e92beea7e6d63814806cd6a54b8cc0a4189",
     "post": "_posts/2026-05-11-delphi.html",
     "mirrored_html_sha256": "7aca02b1829e2318046475f8faf97dc4d2a5e5df3167e616f7a67d44ac4b73a9",
     "assets": {
@@ -419,9 +463,9 @@
     "tags": [
       "MARIN"
     ],
+    "source_content_sha256": "59fe584043b5b85f829625077de101fffc13a467b3124d0e7e5fa3d27eb5bf74",
     "status": "included",
     "reason": "Explicit public MARIN label",
-    "source_content_sha256": "59fe584043b5b85f829625077de101fffc13a467b3124d0e7e5fa3d27eb5bf74",
     "post": "_posts/2026-04-10-quantile-balancing.html",
     "mirrored_html_sha256": "e3423642f6a63d2f72d33209faa1f89b5acfbf0f83ef903c4f953042293dcf85",
     "assets": {
@@ -447,7 +491,9 @@
       "Eric Czech"
     ],
     "tags": [],
+    "source_content_sha256": "9bb1f97dd8e4ef2a793dab88f64837b2db8918994fddea349e2a256baf302cf1",
+    "classification_reviewed_on": "2026-10-14",
     "status": "review",
-    "reason": "Unlabeled article mentions Marin; needs classification review"
+    "reason": "The central topic is generic scaling-law fitting, with Llama 3 examples and an OA vpnls implementation. The motivation names Marin and DNA experiments but does not identify those experiments/results as Marin or MarinDNA work. David should decide whether adjacent OA scaling-method research belongs in this mirror scope."
   }
 ]

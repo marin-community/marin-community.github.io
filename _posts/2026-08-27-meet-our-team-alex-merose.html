@@ -1,0 +1,210 @@
+---
+layout: mirror
+post_kind: mirror
+title: 'Meet our team: Alex Merose'
+authors:
+- Sophie Bushwick
+date: '2026-08-27'
+categories: blog
+description: In this Q&A, Alex Merose lays out the machine learning project that changed
+  his career, the value of doing basic research in the open using tools at the frontier
+  of AI, what Open Athena has in common with Bell Labs, and why we should think like
+  mapmakers rather than soldiers.
+source_url: https://openathena.ai/blog/meet-our-team-alex-merose/
+canonical_url: https://www.openathena.ai/blog/meet-our-team-alex-merose/
+source_content_sha256: 9a18be86c5a05abcb5c7790485ca72df514be2cb65462d5fa917caac937ee84c
+excerpt: In this Q&A, Alex Merose lays out the machine learning project that changed
+  his career, the value of doing basic research in the open using tools at the frontier
+  of AI, what Open Athena has in common with Bell Labs, and why we should think like
+  mapmakers rather than soldiers.
+---
+{% raw %}
+<div class="blog-post-content project-detail-body">
+<p>Alex Merose is a founding member of technical staff at Open Athena and works remotely in the Monterey Bay area. He focuses on the Samudra ocean-modeling project, among other contributions. In this Q&amp;A, Alex describes the machine learning encounter that changed his career trajectory, gets into the value of doing basic research in the open using tools at the frontier of AI, and explains why we should all think like mapmakers rather than soldiers.</p>
+<p><strong>What’s one of your earliest experiences with AI technology?</strong></p>
+<p><strong>Alex Merose:</strong> I went to the University of California, San Diego, and at the time, I was thinking of becoming a human-computer interaction major and going into design. But then in 2011, I met a grad student in the cognitive science department—his name is <a href="https://www.linkedin.com/in/alricalthoff/">Alric Althoff</a>, and he became a good friend at the time. He showed me a demo that changed the course of my life, because it made me want to pursue computation or machine learning. He had a piece of audio that he had broken up into “windows” that were different segments of time, and the windows were really large, so it sounded like this weird garbled sound effect mess. And he then had a program running in a loop where the windows would get smaller and smaller, to the point where the audio sounded like it was playing forward. He used his ability to listen to the audio to figure out how to turn continuous measures of sound into discrete numbers (quantized number representations). By listening to sound, he applied the same hard-coded parameters of, “how much of a window of time of audio do you need that, if you reversed it, it could basically be the same hearing it forward and backward?”</p>
+<div class="audio-demo" id="window-reversal-demo">
+<div class="audio-demo-screen"><canvas aria-label="Waveform of the processed clip, with a tick mark at each window boundary" class="audio-demo-canvas" data-wr="canvas"></canvas></div>
+<div class="audio-demo-controls">
+<div class="audio-demo-row">
+<button aria-pressed="false" class="audio-demo-button audio-demo-button-primary" data-wr="play" type="button">Play</button>
+<button aria-pressed="false" class="audio-demo-button" data-wr="ladder" type="button">Run the shrinking loop</button>
+<span class="audio-demo-spacer"></span>
+<button aria-pressed="true" class="audio-demo-button" data-wr="clip" type="button">Tiger roar</button>
+<button aria-pressed="false" class="audio-demo-button" data-wr="record" type="button">Record 4 s</button>
+<button aria-pressed="false" class="audio-demo-button" data-wr="filebtn" type="button">Your own file</button>
+<input accept="audio/*" data-wr="file" hidden="" type="file"/>
+</div>
+<div class="audio-demo-row">
+<label class="audio-demo-label" for="wr-window">Window</label>
+<input data-wr="window" id="wr-window" max="1000" min="0" type="range" value="800"/>
+<output data-wr="window-value" for="wr-window">400 ms</output>
+</div>
+<p class="audio-demo-status" data-wr="status"></p>
+</div>
+</div>
+<script defer="" src="/assets/openathena/js/window-reversal-demo.js"></script>
+<p>He used that as a preprocessing step for better tuning a brain-computer interface, which used machine learning to detect something important in the brain. The brain-computer interfaces work by interpreting signals in the brain that seem mostly like noise and making sense of them to use them as a control interface, which can detect hard-to-reach signals, or control an artificial arm, or do spelling and reading. The whole process of doing that was so cool and so interesting, it made me want to study it more seriously.</p>
+<p>When people think of AI, they think of modern generative AI or large language models, but that was the first encounter with the internals of AI technology that I was really excited about, that changed the direction of me wanting to focus on it and learn as much as I can about it.</p>
+<p><strong>What drew you to work at Open Athena?</strong></p>
+<p>Previously, I worked on AI weather models at Google Research. Then I was considering what I would do next in my career—I was on a 15-month trip around the world, and I was figuring out what I should do to re-enter back into the workforce. When I was on Jeju Island in South Korea, I had a video call with Jeff Hammerbacher via a recommendation from an open-source contributor named <a href="https://github.com/tomwhite">Tom White</a>. (On my trip, I had been filing issues to Tom’s codebase to think of better distributed systems for numerical computation, a project called <a href="https://github.com/cubed-dev/cubed">Cubed</a>.)</p>
+<p>When Jeff told me his pitch about Open Athena, a project that he was interested in starting, he was talking about how he wanted to do something different, something that could be really impactful and really change how we do science at large. I was taken by the excitement and the potential for what Open Athena could be, and out of all the possible job offers I was considering, it very quickly became my top choice. While a lot of hyperscaler tech companies are at the forefront of science, competing with academia, I really liked the idea that we could <em>accompany</em> academia and work better together with the scientific community. That made Open Athena feel like the right home for what I wanted to do in my career and in research.</p>
+<p><strong>Which Open Athena project do you primarily work on?</strong></p>
+<p>As I mentioned, I have a background in AI weather models, and I currently work on the Samudra team. Samudra is a collaboration with NYU and MIT, led by Laure Zanna and Abigail Bodner. Instead of emulating the weather, we're trying to emulate what's going on in the ocean—<em>samudra</em> is the Sanskrit word that means “the joining of waters,” and it's also the primary Sanskrit word for the ocean. What we're trying to do in this project is see if we can use machine learning to rethink the outrageously expensive computational cost of making climate predictions. Right now, to make any sort of estimation of what's going to happen in any part of the Earth system, like the ocean, it takes compute resources available only to governments. It requires supercomputers with tens of thousands of CPUs to make a weather forecast, and maybe similar resources to make an ocean forecast.</p>
+<p>We think we can emulate numerical methods, using relatively modest GPU hardware. What would typically take a supercomputer, we can do on a GPU cluster with eight A100s. A small team could purchase those and train a model, and that's exactly what we're trying to do. It may not perform as well as the numerical models in some dimensions, but with that added efficiency, with that surplus of compute, it'll be really exciting to see if we can go beyond what is possible with today's capability, and estimate what's going on in the oceans at a higher scale or longer term.</p>
+<p><strong>What sort of non-Samudra work do you do at Open Athena?</strong></p>
+<p>Until recently, I was just doing Samudra, but now I'm splitting my time with building a new type of modeling approach. <a href="https://marin.community/">Marin</a> is Open Athena’s large language modeling open development process and ecosystem, built out of Stanford University. I'm trying to see how well the tools that make up Marin can be cross-applied outside of language modeling and more towards other domains of science.</p>
+<p>Right now, I'm working on an open-source project, part of Open Athena, called <a href="https://github.com/Open-Athena/MarinFold">MarinFold</a>. It uses Marin technology for structural biology—specifically, to see if we can take language model technology and use it for protein folding. We take the simplest idea that we know how to scale really well and see if that is sufficient to solve one of the hardest problems in biology, which is understanding how sequences of DNA translate to molecules that make a substantial difference in real biological processes.</p>
+<p><strong>What do you like best about working here?</strong></p>
+<p>That's really hard to narrow down to just one thing! The very easy answer is my coworkers. We work with an all-star team of machine learning researchers and distributed system scientists and domain scientists in various fields. I don't know of a better place in industry to do AI for science. If you're doing computational science, you might work at a hyperscaler that's more resourced with compute, but they're way less collaborative. I feel like Open Athena strikes the right balance of working with the scientific community, and also working with incredible, highly talented computer scientists. That combination is dangerous in a good way, and that gets me really excited.</p>
+<p>Besides that, one of the reasons why I really like working at Open Athena is, their values are really well aligned to mine. They thought really critically about the kinds of dangers of being optimal at every turn—that every attempt to be a utilitarian monster is problematic, because the calculability dilemmas are not an abstract problem of moral philosophy. Whenever you try to pursue the maximum good, you might fool yourself into thinking you're being objective. However, there is no objective – you can’t step outside of ideology. And in that room for incoherence is room for doing major wrong. What I like about the science perspective that Open Athena has is that it's really founded in humility and trying to diffuse concentrations of power. That attitude really resonates with my own set of beliefs: that as much as possible, we should try to democratize really advanced technology.</p>
+<p>Creating things in the open, doing basic research with tools at the frontier of technology, might mean that a lot more people can materially benefit from the output of that work. For example, maybe home insurance prices would go down if we created open-source climate models so risk managers didn't have to pay premiums to a hedge fund to get a climate risk score. That might mean that people's homes are more insurable. Or maybe if we had a better understanding of the weather in the long term, we might be able to open up new markets to types of insurance products. That could mean that a farmer in a very rural part of a data-limited region might be able to actually insure their crops and gain stability, where before they would have none. And I think the normal incentives to build that kind of technology usually require a return. I like that we're a nonprofit, that we can do basic research and give it out and have a public benefit for it.</p>
+<p><strong>What does a typical work day look like for you?</strong></p>
+<p>It kind of depends on the day of the week. I try to concentrate my meetings to Mondays in particular, maybe a little bit on Tuesdays. So those days of the week, I have a lot of meetings to sync with the team. A lot of other days, I have free working and thinking time. My old life in a big tech company was somehow half the day of meetings and half the day of individual contributor work, and you're somehow supposed to be doing both of them full-time. I am really relieved that a lot of my days are writing either code or English documents—or now with coding agents, the combination of those two things. (Now English <em>is</em> a programming language, for better or for worse.) And I feel really great having a lot more individual contributor time.</p>
+<p>I don't know if everyone at Open Athena does this, but I can see some of my coworkers following Google's philosophy of 70-20-10% time. We have the freedom to spend 70% of the time on projects that are our immediate milestones and goals—we use an objectives and key results system (aka OKRs) — 20% of the time looking a little bit ahead on more experimental stuff, and then 10% of the time doing really experimental R&amp;D-type work. In that last category, I have an <a href="https://github.com/Open-Athena/kelp">open-source project</a> that's an extension of Marin that does program synthesis. I'm trying to see if I have a new way, based off of a <a href="https://arxiv.org/abs/2405.20519">paper</a> from <a href="https://people.eecs.berkeley.edu/~russell/">Stuart Russell</a>, to use syntax trees as a medium of diffusion to generate programs. That started out as just an interest, because coding agents were fun and I wanted to try my hand at agentic programming. But I'm starting to realize this nascent experimental research project I've messed around with could be really relevant for doing my primary work of creating better science models. That’s the hope, anyway.</p>
+<p>I think Open Athena has a Bell Labs kind of feel. One of my coworkers—actually the lead of the MarinFold project, Tim O’Donnell—he told me about a <a href="https://www.cs.virginia.edu/~robins/YouAndYourResearch.html">paper</a> from <a href="https://www.trailblazers.psd.uchicago.edu/richard-hamming">Richard Hamming</a>, who's the mathematician who created the <a href="https://www.ibm.com/think/topics/hamming-distance">Hamming distance</a> while at Bell Labs. Hamming wrote a really influential lecture that summarized how impactful research happens. Do people have better output from having their office doors open or closed? The people at Bell Labs who had their doors closed got more done, but they often solved the wrong problem; the people who had their doors open had less output, but they were often solving the right thing, or more interesting problems, from talking to people. And I feel that with my balance of meetings versus individual contributor time, maybe the door is ajar.</p>
+<p><strong>Do you have any favorite AI tricks or tips, whether for home or for work?</strong></p>
+<p>I am part of a community of <a href="https://bsky.app/starter-pack/dollspace.gay/3mcvfx27t7u2e">AI users on Bluesky.</a> A <a href="https://bsky.app/profile/dollspace.gay">community member</a> there has this idea of “iterative adversarial refinement” that I use quite a lot. It's a really popular tool amongst my internet friends. Using AI to give you an answer—the way to get the most value out of it is to be skeptical and critical of that answer, and to self-supervise. That's a hard thing to do. Iterative adversarial refinement has one AI system making its best attempt at a code contribution as possible. Then what you do is, you have a new agent in a fresh context, and you prompt it to be critical of the work that you just submitted. You have it be an adversary and try to find as many mistakes or problems with the initial draft as possible. And I actually create multiple iterations—the idea of the refinement process is to keep on repeating that loop, spinning more tokens, until the adversary agent starts hallucinating problems, at which point you know to stop – you’ve found all the potential issues in the contribution up to the limit of agents. That internet friend of mine has even created <a href="https://github.com/Corvidae-Coding-Projects/OpenClaudia">tools to automate this feedback loop</a>.</p>
+<p>Actually, it's on my to-do list one of these days to create a scout's-mindset adversarial agent. There's this book that's really influential to me, called <a href="https://www.goodreads.com/book/show/42041926-the-scout-mindset"><em>The Scout Mindset</em></a>, that argues that the mindset we all should be in should be the one of a mapmaker rather than a soldier. A soldier tries to defend their territory against someone else's, but a scout, their goal is to make a more accurate map. And the idea is, if you receive an argument or a contradiction to what was stated, that's like a gift for you to make a more accurate map, to make a more complete picture of the territory. And at the same time, being a mapmaker, you do want to make sure that your map of the territory really is as accurate as possible, so the goal of you pushing back on the argument is to make sure that it really is worth committing to everyone's shared understanding.</p>
+<p>I think that most of the adversarial iterative refinements, or the adversarial loops, are still a soldier's mindset. They still are having agents be competitive against each other. Some people even are abusive to their agents, like their Claudes, which I don't think I could ever do. So something I want to experiment with—and maybe my tip for people—is to think of you working on a team with your agents, and maybe they're working collaboratively, but at odds with each other, because we're all here to try to make a better map.</p>
+<p><strong>Do you have a favorite piece of science trivia?</strong></p>
+<p>The <a href="https://www.nesdis.noaa.gov/about/k-12-education/atmosphere/what-the-coriolis-effect">Coriolis effect</a> is a ubiquitous force in the Earth system. It means that weather patterns will go up or down, parallel to the equator, due to the spinning of the Earth. But the term “Coriolis” comes from the game of billiards—it comes from playing pool. In the early Industrial Revolution, there was this French mathematician, <a href="https://www.britannica.com/biography/Gaspard-Gustave-de-Coriolis">Coriolis</a>, who thought he could explain the entire universe and physics through the game of billiards, the geometry or math of moving balls around. And this is a fun fact when you're at an <a href="https://m2lines.github.io/">M²LInES summit</a>, and it's after a day of conferences, and you're talking with your fellow climate physicists over a game of billiards. You can talk about how “yeah, we're modeling whatever, but at the end of the day, we're all really just shooting pool.”</p>
+<p><strong>Can you tell me about a hobby or activity you enjoy outside of work hours?</strong></p>
+<p>Probably the hobby that I'm most serious about is travel. Like I mentioned earlier, I dropped out of my then-dream job, Google, to travel the world with my wife for 15 months. And two days from now, we're leaving for Corfu, Greece, for a two-week babymoon. I text all my friends about visiting Uzbekistan one day. I feel like we should go there right now before anyone thinks about it. It seems really cool, and the food's probably amazing, and so is the architecture. I'm big into travel and everything that entails.</p>
+<p><strong>Do you have a signature response emoji, or one you use most often?</strong></p>
+<p>Because I worked at a big tech co, and that big tech co was Google, I use the plus sign in Slack a lot more, which is so boring. But the thumbs up doesn't feel right, you know? Maybe it’s because Google created Google+, whereas Facebook created the thumbs up—I feel like they trained me to use the plus sign in Slack, to honor Google+, as opposed to Facebook's likes. I also use the “hmm,” the thinking face emoji. And then I like the fire emoji quite a lot for when people do something really interesting or cool in Slack, so long as it’s deserved.</p>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{bushwick2026_meet_our_team_alex_merose,
+  author = {Bushwick, Sophie},
+  title = {Meet our team: Alex Merose},
+  year = {2026},
+  month = {aug},
+  howpublished = {\url{https://www.openathena.ai/blog/meet-our-team-alex-merose/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

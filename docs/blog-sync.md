@@ -9,8 +9,10 @@ supply specialized interactive figure internals. See [native authoring](blog-aut
 original launch post and the restored 8B/32B retrospectives remain in the
 single chronological archive; publication/content provenance is in `docs/marin-originals.json`.
 
-The OA import workflow imports **published posts explicitly labeled MARIN** in the public
-<https://openathena.ai/blog/> listing, including MARIN + DNA. It preserves full
+The OA import workflow imports **publicly published Marin-focused posts** from
+<https://openathena.ai/blog/>. A MARIN label (including MARIN + DNA) is a useful
+signal, not the sole eligibility criterion. Unlabeled posts can be included after
+a full-article content review, recorded in `docs/openathena-classifications.json`. It preserves full
 article HTML, authorship, dates, original citations and canonical URLs. Figures,
 animation manifests/videos, plot data and first-party JavaScript are copied under
 `assets/openathena/`. Source CSS is scoped to `.oa-mirror` so it cannot restyle the
@@ -37,15 +39,21 @@ python3 -m venv /tmp/marin-blog-sync
 
 The default command fetches and inspects all public listing rows and reports
 changes without writing. New unlabeled pieces mentioning Marin/MarinDNA/MarinFold
-are reported as `review`, while unrelated OA pieces are `excluded`. Review these
-classifications with a maintainer; a passing import is not a classification
-approval. Inspect `docs/openathena-inventory.json` for the full inventory. Current
-unlabeled cases are deliberately not imported. Never import drafts, future-dated,
+are reported as `review`, while unrelated OA pieces are `excluded`. Read each candidate in full and decide whether its substantive focus is Marin,
+MarinDNA, MarinFold, or work directly built on that ecosystem. Incidental mentions
+in general OA/science pieces are insufficient. Record include/exclude/review,
+article title/URL, date, concise evidence, the full published text SHA-256, and
+highlight decision/rationale in `docs/openathena-classifications.json`. The importer
+reuses unchanged reviews; changed reviewed content returns to review and blocks
+`--write` until that decision is refreshed. It never silently removes an old
+mirror. Genuine scope ambiguity goes to a maintainer; a passing import is not
+classification approval. Inspect `docs/openathena-inventory.json` for all statuses.
+The six initial unlabeled cases have now been read and classified as below. Never import drafts, future-dated,
 noindex, private or confidential content. Fetch failures, source schema changes,
 unsafe paths, collisions and removed listing entries fail before file writes.
 
 If nothing changed and no new classification needs review, report no changes and
-do not open a PR. For new/updated explicitly labeled public posts:
+do not open a PR. For new/updated clearly eligible public posts:
 
 ```sh
 git switch -c blog/sync-openathena-YYYY-MM-DD
@@ -92,20 +100,42 @@ links or execute figures; browser inspection supplements it. Source CSS and
 scripts are reviewed snapshot copies, not remotely loaded first-party code.
 The PR workflow has read-only repository permissions and no deployment job.
 
-## Initial classification (2026-10-12)
+## Classification after full-article review (2026-10-14)
 
-Included: Expert parallelism; Curating 25 Trillion Tokens; 535B launch note;
-Huang Foundation 535B announcement; MarinDNA; Open Development of Frontier AI;
-Cluster Scheduling with Iris; Improving LLM Pretraining Efficiency; Delphi;
-Quantile Balancing. These are all ten explicitly labeled MARIN posts.
+Included: the ten MARIN-labeled posts (Expert parallelism; Curating 25 Trillion
+Tokens; 535B launch note; Huang Foundation 535B announcement; MarinDNA; Open
+Development of Frontier AI; Cluster Scheduling with Iris; Improving LLM
+Pretraining Efficiency; Delphi; Quantile Balancing), plus these three unlabeled
+profiles, with full content-review evidence and hashes in the classifications file:
 
-Needs review: team interviews with Tim O'Donnell, Jesse Rusak, Alex Merose and
-Will Held; Research Software Engineering in the Age of Agentic Tooling; Problems
-with Chinchilla Approach 2. They mention Marin or related work but lack the MARIN
-label. Will Held's interview is especially relevant to the Marin community;
-Tim's and Alex's discuss MarinFold; Chinchilla discusses adjacent scaling work.
+- Tim O'Donnell: primary MarinFold work, Marin infrastructure, open experiments,
+  and community development.
+- Alex Merose: substantial dedicated MarinFold work, cross-applying Marin tools
+  to structural biology, and a public program-synthesis extension of Marin,
+  alongside Samudra work.
+- Will Held: primary Marin contributor; Marin open development, experiments, and
+  transferring language-model methods to science.
 
-Excluded as unrelated: ARIA Activation Partner announcement; Scaling Samudra;
-David Siegel's Fortune open-source AI piece; Betsy Cannon interview; Preparing
-for the AI Future with Ethics in Mind. See the JSON inventory for titles, source
-URLs, dates, reasons, source/HTML checksums, assets and external dependencies.
+The profiles are included in the archive, without new Selected writing links:
+they provide contributor context but do not present a major release, substantive
+technical retrospective, or reusable technical result deserving a homepage highlight.
+
+Excluded after full reading: Jesse Rusak's profile primarily concerns Samudra
+ocean/climate modeling, with a secondary Marin-infrastructure discussion. Research
+Software Engineering in the Age of Agentic Tooling is general agentic-engineering
+and staffing guidance; Marin is an incidental platform example. The five existing
+unrelated exclusions remain: ARIA Activation Partner announcement; Scaling Samudra;
+David Siegel's Fortune piece; Betsy Cannon interview; Preparing for the AI Future
+with Ethics in Mind.
+
+Genuinely ambiguous: **Problems with Chinchilla Approach 2**
+(<https://openathena.ai/blog/problems-with-chinchilla-approach-2/>). It analyzes
+generic scaling-law fitting, Llama 3 data, and an OA vpnls implementation. Its
+motivation names Marin and DNA experiments, but does not identify the reported
+work as Marin/MarinDNA. A maintainer should decide whether this adjacent research
+belongs in the mirror scope. It may have lasting technical highlight value if
+that relationship/scope is confirmed; it is not imported or highlighted yet.
+
+No cron is installed by this repository workflow. Full text, authors/dates,
+assets (including Alex's local tiger-roar audio sample), source attribution and
+canonical links are preserved for inclusions.

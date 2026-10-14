@@ -79,7 +79,7 @@
 .post .post-content .blog-post-citation-copy.is-copied .icon-check { color:var(--link); }
 /* Imported chart specifications have fixed ink colors. Keep their drawing
    surfaces light rather than recoloring scientific figures or source data. */
-.post .post-content :is(.plotly-figure-block,[data-d3-src]) {
+.post .post-content :is(.plotly-figure-block,[data-d3-src],.audio-demo) {
   --text:#212b33;
   --text-secondary:#3a4a57;
   --text-light:#6e7168;
