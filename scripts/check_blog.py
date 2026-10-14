@@ -125,11 +125,13 @@ def main():
         slug = Path(r['post']).stem[11:]
         route = meta.get('permalink', '/blog/' + r['date'].replace('-', '/') + '/' + slug + '/')
         source_routes[urlsplit(r['source_url']).path.rstrip('/')] = route
-    # The homepage currently highlights these four mirrors plus the open-development link.
-    for slug in ('delphi', 'cluster-scheduling-with-iris', 'pretraining-speedup', 'quantile-balancing', 'open-development-of-frontier-ai'):
+    # The homepage highlights these five mirrors plus the open-development link.
+    for slug in ('marin-data-pipeline-overview', 'delphi', 'cluster-scheduling-with-iris', 'pretraining-speedup', 'quantile-balancing', 'open-development-of-frontier-ai'):
         route = source_routes['/blog/' + slug]
         if not home.select_one('a[href="' + route + '"]'):
             errors.append(f'Homepage article missing its local mirror link: {route}')
+        if slug == 'marin-data-pipeline-overview' and not home.select_one('.selected-writing a[href="' + route + '"]'):
+            errors.append('Data-pipeline article missing from Selected writing')
     for r in originals:
         if 'retro' in r['route'] and not home.select_one('a[href="' + r['route'] + '"]'):
             errors.append(f'Homepage retrospective link must stay local: {r["route"]}')
