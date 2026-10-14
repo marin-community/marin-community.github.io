@@ -11,3 +11,12 @@ See [native blog authoring](docs/blog-authoring.md) for a ready-to-copy Markdown
 template and the shared article layout. See [the Open Athena sync workflow](docs/blog-sync.md)
 for checking/importing published Marin posts through draft PRs and validating the
 build. The sync does not install a recurring schedule or deploy changes.
+
+The shared navbar's theme control offers System, Light, and Dark on home and every
+blog page. Explicit choices persist in browser storage under `marin-theme`; System
+clears that override and follows OS changes. Initialization runs before styles to
+avoid a wrong-theme first paint. If storage is blocked, the control still works
+on the current page, and new pages fall back to System. Theme regression checks:
+`node scripts/check_theme.js` (also run by `check_blog.py`, so Node.js is required
+for the combined validation command). Imported scientific plots retain light drawing
+surfaces for their fixed source ink colors.

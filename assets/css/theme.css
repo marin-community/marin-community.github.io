@@ -1,0 +1,101 @@
+/* System default also works without JavaScript. Explicit preferences win over
+   the homepage's existing media rules through the root attribute selector. */
+:root,:root[data-theme="light"] {
+  color-scheme:light;
+  --bg:#eee8dd;
+  --bg-alt:#ffebcc;
+  --accent-light:#bfddf0;
+  --accent:#8cc0eb;
+  --chart-dot:#c45a3c;
+  --text:#212b33;
+  --text-secondary:#3a4a57;
+  --link:#2a6496;
+  --paper:#f8f4ec;
+  --rule:#c9c1b5;
+  --olive:#6c7055;
+  --table-heading:#e6e0d4;
+  --tag-paper:#d7dcc8;
+  --button-paper:#ddd3c5;
+}
+@media(prefers-color-scheme:dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme:dark;
+    --bg:#1a2028;
+    --bg-alt:#212b33;
+    --accent-light:#2a4055;
+    --accent:#3a6a8c;
+    --chart-dot:#d4795e;
+    --text:#e8e0d0;
+    --text-secondary:#b8b0a0;
+    --link:#8cc0eb;
+    --paper:#222c37;
+    --rule:#536171;
+    --olive:#bcc8a5;
+    --table-heading:#303d4b;
+    --tag-paper:#384538;
+    --button-paper:#374454;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme:dark;
+  --bg:#1a2028;
+  --bg-alt:#212b33;
+  --accent-light:#2a4055;
+  --accent:#3a6a8c;
+  --chart-dot:#d4795e;
+  --text:#e8e0d0;
+  --text-secondary:#b8b0a0;
+  --link:#8cc0eb;
+  --paper:#222c37;
+  --rule:#536171;
+  --olive:#bcc8a5;
+  --table-heading:#303d4b;
+  --tag-paper:#384538;
+  --button-paper:#374454;
+}
+.blog-page { --accent:#9e6d43; }
+:root[data-theme] .site-nav [data-theme-control][hidden] {
+  display:inline-block;
+  visibility:hidden;
+}
+.site-nav .theme-select {
+  min-height:44px;
+  max-width:100%;
+  padding:.35rem .6rem;
+  border:1px solid var(--rule);
+  border-radius:4px;
+  background:var(--paper);
+  color:var(--text);
+  font:inherit;
+}
+.theme-select:focus-visible { outline:2px solid var(--link); outline-offset:4px; }
+.post .post-content .footnotes li,
+.post .post-content .blog-post-citation h2,
+.post .post-content .blog-post-citation pre code,
+.post .post-content .blog-post-citation-copy { color:var(--text-secondary); }
+.post .post-content .blog-post-citation-copy:hover { color:var(--text); }
+.post .post-content :is(.footnotes a,.footnote-ref a) { color:var(--link); }
+.post .post-content .fn-comma { color:var(--text-secondary); }
+.post .post-content .blog-post-citation-copy.is-copied .icon-check { color:var(--link); }
+/* Imported chart specifications have fixed ink colors. Keep their drawing
+   surfaces light rather than recoloring scientific figures or source data. */
+.post .post-content :is(.plotly-figure-block,[data-d3-src]) {
+  --text:#212b33;
+  --text-secondary:#3a4a57;
+  --text-light:#6e7168;
+  --dark:#212b33;
+  --paper:#f8f4ec;
+  --bg-paper:#f8f4ec;
+  --link:#2a6496;
+  --rule:#c9c1b5;
+  --table-heading:#e6e0d4;
+  background:#f8f4ec;
+  color:#212b33;
+  color-scheme:light;
+  border-radius:4px;
+}
+:root[data-theme="dark"] .post-content pre :is(.hljs-comment,.hljs-quote,.c,.c1,.cm) { color:#aab7c5; }
+:root[data-theme="dark"] .post-content pre :is(.hljs-keyword,.hljs-selector-tag,.k,.kn,.kd) { color:#d3b4f5; }
+:root[data-theme="dark"] .post-content pre :is(.hljs-string,.hljs-attr,.s,.s1,.s2) { color:#b8d895; }
+:root[data-theme="dark"] .post-content pre :is(.hljs-number,.hljs-literal,.m,.mi,.mf) { color:#ecc394; }
+:root[data-theme="dark"] .post-content pre :is(.hljs-title,.hljs-built_in,.nf,.nb) { color:#9cccf0; }

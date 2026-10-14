@@ -1,0 +1,36 @@
+<script id="marin-theme-init">
+(() => {
+  const key = 'marin-theme';
+  const root = document.documentElement;
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+  const valid = value => value === 'light' || value === 'dark' ? value : 'system';
+  const read = () => {
+    try { return valid(localStorage.getItem(key)); } catch { return 'system'; }
+  };
+  let preference = read();
+  const apply = () => {
+    root.dataset.themePreference = preference;
+    root.dataset.theme = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+    // Color the initial document/scrollbars even before external CSS arrives.
+    root.style.colorScheme = root.dataset.theme;
+    root.style.backgroundColor = root.dataset.theme === 'dark' ? '#1a2028' : '#eee8dd';
+    document.querySelectorAll('[data-theme-control]').forEach(control => { control.value = preference; });
+  };
+  window.MarinTheme = {
+    setPreference(value) {
+      preference = valid(value);
+      try {
+        if (preference === 'system') localStorage.removeItem(key);
+        else localStorage.setItem(key, preference);
+      } catch { /* Keep the current selection usable when storage is blocked. */ }
+      apply();
+    }
+  };
+  media.addEventListener('change', () => { if (preference === 'system') apply(); });
+  window.addEventListener('storage', event => {
+    if (event.key === key || event.key === null) { preference = read(); apply(); }
+  });
+  window.addEventListener('pageshow', () => { preference = read(); apply(); });
+  apply();
+})();
+</script>
