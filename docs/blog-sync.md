@@ -26,7 +26,8 @@ run this workflow and use draft PRs. Do not merge or deploy automatically.
 
 Use a clean, isolated checkout of current `main`. Check for an existing sync PR
 before opening another; update its branch when appropriate. Never reset another
-person's checkout. Use the repository's Ruby 3.2.3 and Bundler versions.
+person's checkout. Use Ruby 3.4.7 from `.ruby-version` and the Bundler version in
+`Gemfile.lock`.
 
 ```sh
 python3 -m venv /tmp/marin-blog-sync

@@ -5,6 +5,8 @@ title: Marin
 logo: assets/images/marin-logo.svg
 permalink: /blog/:year/:month/:day/:title/
 future: true
+plugins:
+  - jekyll-seo-tag
 markdown: kramdown
 kramdown:
   input: GFM

@@ -1,5 +1,7 @@
 To serve locally:
 
+    # Use the Ruby version in .ruby-version, then install the locked dependencies.
+    bundle install
     bundle exec jekyll serve
 
 The Marin blog is at `/blog/`, with original community posts and selected Open

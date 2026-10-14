@@ -17,7 +17,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2.3'
           bundler-cache: true
       - uses: actions/setup-python@v5
         with:
@@ -32,3 +31,5 @@ jobs:
           JEKYLL_BUILD_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Check content, attribution, figures and local links
         run: python scripts/check_blog.py
+      - name: Check published report routes and rendering
+        run: python scripts/check_reports.py

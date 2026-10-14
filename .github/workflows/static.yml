@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   build:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,11 +25,12 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.2.3"
           bundler-cache: true
 
       - name: Build with Jekyll
-        run: bundle exec jekyll build --baseurl "$PAGES_BASE_PATH"
+        run: |
+          printf 'github:\n  build_revision: "%s"\n' "$GITHUB_SHA" > "$RUNNER_TEMP/jekyll-build.yml"
+          bundle exec jekyll build --trace --config "_config.yml,$RUNNER_TEMP/jekyll-build.yml" --baseurl "$PAGES_BASE_PATH"
         env:
           JEKYLL_ENV: production
           JEKYLL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -40,6 +42,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
 
   deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs: build
     steps:
