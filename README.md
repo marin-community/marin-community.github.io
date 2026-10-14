@@ -12,7 +12,7 @@ template and the shared article layout. See [the Open Athena sync workflow](docs
 for checking/importing published Marin posts through draft PRs and validating the
 build. The sync does not install a recurring schedule or deploy changes.
 
-The shared navbar's theme control offers System, Light, and Dark on home and every
+The shared footer's theme control offers System, Light, and Dark on home and every
 blog page. Explicit choices persist in browser storage under `marin-theme`; System
 clears that override and follows OS changes. Initialization runs before styles to
 avoid a wrong-theme first paint. If storage is blocked, the control still works

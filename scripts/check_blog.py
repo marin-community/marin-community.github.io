@@ -152,6 +152,8 @@ def main():
         control = page.select_one('[data-theme-control]')
         if not control or [o.get('value') for o in control.select('option')] != ['system', 'light', 'dark']:
             errors.append(f'Missing shared theme control: {path.relative_to(SITE)}')
+        if len(page.select('[data-theme-control]')) != 1 or not control or not control.find_parent('footer') or (nav and nav.select_one('[data-theme-control]')):
+            errors.append(f'Theme picker must appear once in the footer, outside navigation: {path.relative_to(SITE)}')
         links = {a.get_text(strip=True): a.get('href') for a in nav.select('a')} if nav else {}
         if links.get('Home') != '/' or links.get('Blog') != '/blog/':
             errors.append(f'Missing Home/Blog navigation: {path.relative_to(SITE)}')
