@@ -11,8 +11,11 @@ single chronological archive; publication/content provenance is in `docs/marin-o
 
 The OA import workflow imports **publicly published Marin-focused posts** from
 <https://openathena.ai/blog/>. A MARIN label (including MARIN + DNA) is a useful
-signal, not the sole eligibility criterion. Unlabeled posts can be included after
-a full-article content review, recorded in `docs/openathena-classifications.json`. It preserves full
+signal, not the sole eligibility criterion. Contributor profiles are excluded for
+now at David’s request (2026-10-14), including Marin-focused profiles. The importer
+also excludes new “Meet our team:” profiles even if labeled MARIN. Unlabeled
+research posts can be included after a full-article content review, recorded in
+`docs/openathena-classifications.json`. It preserves full
 article HTML, authorship, dates, original citations and canonical URLs. Figures,
 animation manifests/videos, plot data and first-party JavaScript are copied under
 `assets/openathena/`. Source CSS is scoped to `.oa-mirror` so it cannot restyle the
@@ -39,7 +42,9 @@ python3 -m venv /tmp/marin-blog-sync
 
 The default command fetches and inspects all public listing rows and reports
 changes without writing. New unlabeled pieces mentioning Marin/MarinDNA/MarinFold
-are reported as `review`, while unrelated OA pieces are `excluded`. Read each candidate in full and decide whether its substantive focus is Marin,
+are reported as `review`, while unrelated OA pieces are `excluded`. Apply the
+profile exclusion first; do not re-add profiles without a new maintainer decision.
+Read each remaining candidate in full and decide whether its substantive focus is Marin,
 MarinDNA, MarinFold, or work directly built on that ecosystem. Incidental mentions
 in general OA/science pieces are insufficient. Record include/exclude/review,
 article title/URL, date, concise evidence, the full published text SHA-256, and
@@ -102,31 +107,31 @@ The PR workflow has read-only repository permissions and no deployment job.
 
 ## Classification after full-article review (2026-10-14)
 
-Included: the ten MARIN-labeled posts (Expert parallelism; Curating 25 Trillion
-Tokens; 535B launch note; Huang Foundation 535B announcement; MarinDNA; Open
-Development of Frontier AI; Cluster Scheduling with Iris; Improving LLM
-Pretraining Efficiency; Delphi; Quantile Balancing), plus these three unlabeled
-profiles, with full content-review evidence and hashes in the classifications file:
+Included: the ten MARIN-labeled research/project posts (Expert parallelism;
+Curating 25 Trillion Tokens; 535B launch note; Huang Foundation 535B announcement;
+MarinDNA; Open Development of Frontier AI; Cluster Scheduling with Iris;
+Improving LLM Pretraining Efficiency; Delphi; Quantile Balancing).
 
-- Tim O'Donnell: primary MarinFold work, Marin infrastructure, open experiments,
-  and community development.
-- Alex Merose: substantial dedicated MarinFold work, cross-applying Marin tools
-  to structural biology, and a public program-synthesis extension of Marin,
-  alongside Samudra work.
-- Will Held: primary Marin contributor; Marin open development, experiments, and
-  transferring language-model methods to science.
+Excluded for now at David’s request: **all contributor profiles**, including the
+three Marin-focused profiles reviewed here. Their full-article evidence is kept
+in `docs/openathena-classifications.json`, with explicit exclusion decisions and
+content hashes so future checks cannot re-add them from labels or old decisions:
 
-The profiles are included in the archive, without new Selected writing links:
-they provide contributor context but do not present a major release, substantive
-technical retrospective, or reusable technical result deserving a homepage highlight.
+- Tim O'Donnell: MarinFold, Marin infrastructure and open experiments.
+- Alex Merose: dedicated MarinFold and program-synthesis work alongside Samudra.
+- Will Held: primary Marin contributor, open development and experiments.
+- Jesse Rusak: primarily Samudra ocean/climate modeling, with a secondary Marin
+  infrastructure discussion; also covered by the profile exclusion.
 
-Excluded after full reading: Jesse Rusak's profile primarily concerns Samudra
-ocean/climate modeling, with a secondary Marin-infrastructure discussion. Research
-Software Engineering in the Age of Agentic Tooling is general agentic-engineering
-and staffing guidance; Marin is an incidental platform example. The five existing
-unrelated exclusions remain: ARIA Activation Partner announcement; Scaling Samudra;
-David Siegel's Fortune piece; Betsy Cannon interview; Preparing for the AI Future
-with Ethics in Mind.
+No profile pages, profile-only assets or homepage highlights are added. The
+pre-existing Betsy Cannon interview remains excluded. A future source text change
+still requires refreshed review; it does not override the profile exclusion.
+
+Research Software Engineering in the Age of Agentic Tooling remains excluded:
+it is general agentic-engineering and staffing guidance, with Marin only an
+incidental platform example. The other existing unrelated exclusions remain:
+ARIA Activation Partner announcement; Scaling Samudra; David Siegel's Fortune
+piece; Preparing for the AI Future with Ethics in Mind.
 
 Genuinely ambiguous: **Problems with Chinchilla Approach 2**
 (<https://openathena.ai/blog/problems-with-chinchilla-approach-2/>). It analyzes
@@ -136,6 +141,6 @@ work as Marin/MarinDNA. A maintainer should decide whether this adjacent researc
 belongs in the mirror scope. It may have lasting technical highlight value if
 that relationship/scope is confirmed; it is not imported or highlighted yet.
 
-No cron is installed by this repository workflow. Full text, authors/dates,
-assets (including Alex's local tiger-roar audio sample), source attribution and
-canonical links are preserved for inclusions.
+No cron is installed by this repository workflow. Existing published content,
+assets, attribution and canonical links are unchanged by these classification
+decisions.

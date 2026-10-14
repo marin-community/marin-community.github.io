@@ -2,12 +2,12 @@
   {
     "source_url": "https://openathena.ai/blog/meet-our-team-tim-odonnell/",
     "title": "Meet our team: Tim O'Donnell",
-    "decision": "include",
+    "decision": "exclude",
     "reviewed_on": "2026-10-14",
     "content_sha256": "d5ae8ab1650c515b3f93dc9164437efd57dec20eefae610d935a10b67059a204",
-    "reason": "The introduction and central project answer focus on MarinFold: distilling structural-biology models into a vanilla LLM architecture. Further answers describe exercising Marin infrastructure, open experiments/training runs, and its community.",
-    "highlight": "not_selected",
-    "highlight_reason": "Contributor profile with useful Marin context, but no major release, substantive technical retrospective, or reusable result that merits adding to Selected writing."
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: The introduction and central project answer focus on MarinFold: distilling structural-biology models into a vanilla LLM architecture. Further answers describe exercising Marin infrastructure, open experiments/training runs, and its community.",
+    "highlight": "not_applicable",
+    "highlight_reason": "Contributor profiles are excluded for now at David’s request."
   },
   {
     "source_url": "https://openathena.ai/blog/meet-our-team-jesse-rusak/",
@@ -15,29 +15,29 @@
     "decision": "exclude",
     "reviewed_on": "2026-10-14",
     "content_sha256": "71af508eca3951e591708bd6ef8421e8d3f84b2424fb9e7ce14619213ac90350",
-    "reason": "The introduction and primary-project discussion focus on Samudra ocean/climate modeling. One secondary answer mentions reusing Marin infrastructure for varied science domains; this does not make the full profile Marin-focused.",
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: The introduction and primary-project discussion focus on Samudra ocean/climate modeling. One secondary answer mentions reusing Marin infrastructure for varied science domains; this does not make the full profile Marin-focused.",
     "highlight": "not_applicable",
-    "highlight_reason": "Outside the Marin-focused scope."
+    "highlight_reason": "Contributor profiles are excluded for now at David’s request."
   },
   {
     "source_url": "https://openathena.ai/blog/meet-our-team-alex-merose/",
     "title": "Meet our team: Alex Merose",
-    "decision": "include",
+    "decision": "exclude",
     "reviewed_on": "2026-10-14",
     "content_sha256": "9a18be86c5a05abcb5c7790485ca72df514be2cb65462d5fa917caac937ee84c",
-    "reason": "Although the profile also covers Samudra, dedicated sections describe splitting current work with MarinFold, cross-applying Marin technology to structural biology, and a public program-synthesis extension of Marin. These are substantive Marin project contributions, not an incidental mention.",
-    "highlight": "not_selected",
-    "highlight_reason": "Contributor profile with useful Marin context, but no major release, substantive technical retrospective, or reusable result that merits adding to Selected writing."
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: Although the profile also covers Samudra, dedicated sections describe splitting current work with MarinFold, cross-applying Marin technology to structural biology, and a public program-synthesis extension of Marin. These are substantive Marin project contributions, not an incidental mention.",
+    "highlight": "not_applicable",
+    "highlight_reason": "Contributor profiles are excluded for now at David’s request."
   },
   {
     "source_url": "https://openathena.ai/blog/meet-our-team-will-held/",
     "title": "Meet our team: Will Held",
-    "decision": "include",
+    "decision": "exclude",
     "reviewed_on": "2026-10-14",
     "content_sha256": "737dbb24b0c531c2a9d3ea2ee4bb3a6a83cb35b2a38f5d0d6fc5b27351251dfd",
-    "reason": "The introduction identifies his primary project as Marin; his career discussion explains joining Marin through Percy Liang and David Hall, and substantial answers cover Marin open development, experimental research, and transfer of its methods to scientific projects.",
-    "highlight": "not_selected",
-    "highlight_reason": "Contributor profile with useful Marin context, but no major release, substantive technical retrospective, or reusable result that merits adding to Selected writing."
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: The introduction identifies his primary project as Marin; his career discussion explains joining Marin through Percy Liang and David Hall, and substantial answers cover Marin open development, experimental research, and transfer of its methods to scientific projects.",
+    "highlight": "not_applicable",
+    "highlight_reason": "Contributor profiles are excluded for now at David’s request."
   },
   {
     "source_url": "https://openathena.ai/blog/research-software-engineering-in-the-age-of-agentic-tooling/",

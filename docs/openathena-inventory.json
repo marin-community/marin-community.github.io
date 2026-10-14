@@ -11,17 +11,8 @@
     ],
     "source_content_sha256": "d5ae8ab1650c515b3f93dc9164437efd57dec20eefae610d935a10b67059a204",
     "classification_reviewed_on": "2026-10-14",
-    "status": "included",
-    "reason": "Full-article classification: The introduction and central project answer focus on MarinFold: distilling structural-biology models into a vanilla LLM architecture. Further answers describe exercising Marin infrastructure, open experiments/training runs, and its community.",
-    "post": "_posts/2026-10-08-meet-our-team-tim-odonnell.html",
-    "mirrored_html_sha256": "9a9ae3d8a7bb1c1633e0c1950ff2c06404db83d85776ae595a3b2eba67e488b1",
-    "assets": {
-      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
-    },
-    "external_dependencies": [
-      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
-      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
-    ]
+    "status": "excluded",
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: The introduction and central project answer focus on MarinFold: distilling structural-biology models into a vanilla LLM architecture. Further answers describe exercising Marin infrastructure, open experiments/training runs, and its community."
   },
   {
     "source_url": "https://openathena.ai/blog/expert-parallelism/",
@@ -85,7 +76,7 @@
     "source_content_sha256": "71af508eca3951e591708bd6ef8421e8d3f84b2424fb9e7ce14619213ac90350",
     "classification_reviewed_on": "2026-10-14",
     "status": "excluded",
-    "reason": "The introduction and primary-project discussion focus on Samudra ocean/climate modeling. One secondary answer mentions reusing Marin infrastructure for varied science domains; this does not make the full profile Marin-focused."
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: The introduction and primary-project discussion focus on Samudra ocean/climate modeling. One secondary answer mentions reusing Marin infrastructure for varied science domains; this does not make the full profile Marin-focused."
   },
   {
     "source_url": "https://openathena.ai/blog/marin-data-pipeline-overview/",
@@ -177,19 +168,8 @@
     ],
     "source_content_sha256": "9a18be86c5a05abcb5c7790485ca72df514be2cb65462d5fa917caac937ee84c",
     "classification_reviewed_on": "2026-10-14",
-    "status": "included",
-    "reason": "Full-article classification: Although the profile also covers Samudra, dedicated sections describe splitting current work with MarinFold, cross-applying Marin technology to structural biology, and a public program-synthesis extension of Marin. These are substantive Marin project contributions, not an incidental mention.",
-    "post": "_posts/2026-08-27-meet-our-team-alex-merose.html",
-    "mirrored_html_sha256": "ba92fcac37b81159567a15e90e1808d0cf3b8691fda3949e3684c680d8a48e82",
-    "assets": {
-      "assets/openathena/assets/audio/blog/meet-our-team-alex-merose/tiger-roar.mp3": "b40b1ee6165f25314e0c491d57f732a9b6d3478258b93e087a73193c1517ad72",
-      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252",
-      "assets/openathena/js/window-reversal-demo.js": "25dccdaa85ff2b1cdbac1f2a4209c2d49810ec7e9e672237e80758ebbde626e5"
-    },
-    "external_dependencies": [
-      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
-      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
-    ]
+    "status": "excluded",
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: Although the profile also covers Samudra, dedicated sections describe splitting current work with MarinFold, cross-applying Marin technology to structural biology, and a public program-synthesis extension of Marin. These are substantive Marin project contributions, not an incidental mention."
   },
   {
     "source_url": "https://openathena.ai/blog/meet-our-team-will-held/",
@@ -203,17 +183,8 @@
     ],
     "source_content_sha256": "737dbb24b0c531c2a9d3ea2ee4bb3a6a83cb35b2a38f5d0d6fc5b27351251dfd",
     "classification_reviewed_on": "2026-10-14",
-    "status": "included",
-    "reason": "Full-article classification: The introduction identifies his primary project as Marin; his career discussion explains joining Marin through Percy Liang and David Hall, and substantial answers cover Marin open development, experimental research, and transfer of its methods to scientific projects.",
-    "post": "_posts/2026-08-06-meet-our-team-will-held.html",
-    "mirrored_html_sha256": "9892666831db9460409be2a9747f1ceb7b7a684011123cc55ec878c731d97485",
-    "assets": {
-      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
-    },
-    "external_dependencies": [
-      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
-      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
-    ]
+    "status": "excluded",
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: The introduction identifies his primary project as Marin; his career discussion explains joining Marin through Percy Liang and David Hall, and substantial answers cover Marin open development, experimental research, and transfer of its methods to scientific projects."
   },
   {
     "source_url": "https://openathena.ai/blog/marin-dna/",
@@ -310,7 +281,7 @@
     ],
     "source_content_sha256": "af750378e9765099758fcc45f07a08f8ba0105aab6944bcd72b4e5906cf9f99d",
     "status": "excluded",
-    "reason": "Unrelated Open Athena article; no MARIN label or Marin content"
+    "reason": "Contributor profiles excluded for now at David’s request (2026-10-14)"
   },
   {
     "source_url": "https://openathena.ai/blog/open-development-of-frontier-ai/",

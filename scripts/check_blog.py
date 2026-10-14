@@ -2,7 +2,6 @@
 """Offline validation of built blog URLs, attribution, full text, assets, and links."""
 import hashlib
 import json
-import re
 from pathlib import Path
 import sys
 import subprocess
@@ -184,10 +183,6 @@ def main():
                     errors.append(f'{path.relative_to(SITE)}: missing anchor {link}')
     # Animation assets referenced from JSON must resolve next to the manifest.
     for asset in assets:
-        if asset.endswith('/window-reversal-demo.js'):
-            sample = re.search(r"var CLIP = ['\"](/[^'\"]+)['\"];", (ROOT / asset).read_text())
-            if not sample or not sample[1].startswith('/assets/openathena/') or sample[1].lstrip('/') not in assets or not (SITE / sample[1].lstrip('/')).exists():
-                errors.append('Audio demo must retain a checksummed local sample')
         if asset.endswith('.json'):
             spec = json.loads((ROOT / asset).read_text())
             if isinstance(spec, dict):

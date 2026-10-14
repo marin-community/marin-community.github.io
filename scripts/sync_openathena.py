@@ -98,17 +98,6 @@ def main():
                         dependency = url.urljoin(absolute, spec[key])
                         asset(dependency)
                         asset_dependencies[absolute].append(dependency)
-            elif p.name == 'window-reversal-demo.js':
-                # This reviewed audio demo fetches its sample from a JS constant.
-                script = asset_data[absolute][1].decode()
-                sample = re.search(r"var CLIP = ['\"](/assets/audio/[^'\"]+)['\"];", script)
-                if sample is None:
-                    raise ValueError('Audio demo sample schema changed; review asset dependencies')
-                dependency = url.urljoin(absolute, sample[1])
-                local_sample = asset(dependency)
-                asset_dependencies[absolute].append(dependency)
-                script = script[:sample.start(1)] + local_sample + script[sample.end(1):]
-                asset_data[absolute] = (target, script.encode())
         active_assets.add(absolute)
         for dependency in asset_dependencies[absolute]:
             asset(dependency)
@@ -152,6 +141,8 @@ def main():
         elif review and not reviewed:
             record.update(status='review', reason='Content changed since full-article classification; review again before writing')
             stale_classifications.append(source_url)
+        elif re.match(r'^Meet our team:\s*\S', title, re.I):
+            record.update(status='excluded', reason=review['reason'] if reviewed and review['decision'] == 'exclude' else 'Contributor profiles excluded for now at David’s request (2026-10-14)')
         elif reviewed and review['decision'] != 'include':
             record.update(status='excluded' if review['decision'] == 'exclude' else 'review', reason=review['reason'])
         elif 'MARIN' not in tags and not (reviewed and review['decision'] == 'include'):

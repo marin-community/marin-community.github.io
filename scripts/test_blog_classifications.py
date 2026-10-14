@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline regression checks for full-article classification and audio assets."""
+"""Offline regression checks for full-article classification and profile policy."""
 import contextlib
 import io
 import json
@@ -12,26 +12,25 @@ import sync_openathena as sync
 
 
 class ClassificationTests(unittest.TestCase):
-    def run_import(self, decision=None, stale=False, draft=False, audio=False, future=False):
+    def run_import(self, decision=None, stale=False, draft=False, future=False, profile=False, tagged=False):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         root = Path(self.temp.name)
         (root / '_posts').mkdir()
         (root / 'docs').mkdir()
         source = sync.BASE + '/blog/profile/'
+        title = 'Meet our team: Example' if profile else 'Research note'
         date = 'October 08, 2099' if future else 'October 08, 2025'
         meta = date + ' · Sophie Bushwick'
         body = '<p>Substantial MarinFold work and open Marin experiments.</p>'
         text_hash = sync.digest(sync.BeautifulSoup(body, 'html.parser').get_text(' ', strip=True).encode())
-        listing = f'<a class="blog-row" href="/blog/profile/"><span class="blog-row-title">Profile</span><span class="blog-row-summary">Profile summary</span><span class="blog-row-meta">{meta}</span></a>'
+        tag = '<span class="resource-type-tag">MARIN</span>' if tagged else ''
+        listing = f'<a class="blog-row" href="/blog/profile/">{tag}<span class="blog-row-title">{title}</span><span class="blog-row-summary">Article summary</span><span class="blog-row-meta">{meta}</span></a>'
         head = '<meta name="robots" content="noindex">' if draft else ''
-        script = '<script src="/js/window-reversal-demo.js"></script>' if audio else ''
-        article = f'<html><head>{head}<link rel="canonical" href="{source}"></head><body><header class="blog-post-header"><h1>Profile</h1><div class="blog-post-meta">{meta}</div></header><div class="blog-post-body"><div class="blog-post-content">{body}</div>{script}</div></body></html>'
+        article = f'<html><head>{head}<link rel="canonical" href="{source}"></head><body><header class="blog-post-header"><h1>{title}</h1><div class="blog-post-meta">{meta}</div></header><div class="blog-post-body"><div class="blog-post-content">{body}</div></div></body></html>'
         resources = {
             sync.BASE + '/blog/': listing.encode(), source: article.encode(),
             sync.BASE + '/css/style.css': b'',
-            sync.BASE + '/js/window-reversal-demo.js': b"var CLIP = '/assets/audio/tiger.mp3';",
-            sync.BASE + '/assets/audio/tiger.mp3': b'public audio fixture',
         }
         reviews = [] if decision is None else [dict(source_url=source, decision=decision,
             content_sha256='0' * 64 if stale else text_hash, reviewed_on='2026-10-14', reason='Full article reviewed')]
@@ -49,15 +48,19 @@ class ClassificationTests(unittest.TestCase):
             sync.main()
         return root, json.loads(inventory.read_text())[0]
 
-    def test_reviewed_unlabeled_include_preserves_audio_dependency(self):
-        root, record = self.run_import(decision='include', audio=True)
+    def test_reviewed_unlabeled_research_can_be_included(self):
+        root, record = self.run_import(decision='include')
         self.assertEqual(record['status'], 'included')
         self.assertEqual(record['authors'], ['Sophie Bushwick'])
         self.assertEqual(record['date'], '2025-10-08')
-        self.assertEqual(len(record['assets']), 2)
-        self.assertIn('/assets/openathena/assets/audio/tiger.mp3', (root / 'assets/openathena/js/window-reversal-demo.js').read_text())
-        for path, checksum in record['assets'].items():
-            self.assertEqual(sync.digest((root / path).read_bytes()), checksum)
+        self.assertTrue((root / record['post']).exists())
+
+    def test_profile_policy_overrides_label_and_old_inclusion(self):
+        for decision in [None, 'include', 'exclude']:
+            with self.subTest(decision=decision):
+                root, record = self.run_import(decision=decision, profile=True, tagged=True)
+                self.assertEqual(record['status'], 'excluded')
+                self.assertEqual(list((root / '_posts').iterdir()), [])
 
     def test_explicit_exclusion_and_ambiguity_do_not_import(self):
         for decision, status in [('exclude', 'excluded'), ('review', 'review')]:
