@@ -9,12 +9,18 @@ supply specialized interactive figure internals. See [native authoring](blog-aut
 original launch post and the restored 8B/32B retrospectives remain in the
 single chronological archive; publication/content provenance is in `docs/marin-originals.json`.
 
-The OA import workflow imports **published posts explicitly labeled MARIN** in the public
-<https://openathena.ai/blog/> listing, including MARIN + DNA. It preserves full
+The OA import workflow imports **publicly published Marin-focused posts** from
+<https://openathena.ai/blog/>. A MARIN label (including MARIN + DNA) is a useful
+signal, not the sole eligibility criterion. Contributor profiles are excluded for
+now at David’s request (2026-10-14), including Marin-focused profiles. The importer
+also excludes new “Meet our team:” profiles even if labeled MARIN. Unlabeled
+research posts can be included after a full-article content review, recorded in
+`docs/openathena-classifications.json`. It preserves full
 article HTML, authorship, dates, original citations and canonical URLs. Figures,
 animation manifests/videos, plot data and first-party JavaScript are copied under
-`assets/openathena/`. Source CSS is scoped to `.oa-mirror` so it cannot restyle the
-Marin header or unrelated pages. Third-party MathJax, Plotly, D3 and highlight.js
+`assets/openathena/`. Source CSS is scoped to `.oa-mirror` and its named footnote/
+GitHub preview overlays, so it cannot restyle the Marin header or unrelated pages.
+Third-party MathJax, Plotly, D3 and highlight.js
 remain the source's explicit CDN dependencies; the site fonts match Marin's
 landing page. Math and interactive figures therefore require JavaScript/network
 access, as on the source. Static images, text, code, citations and JSON are local.
@@ -37,15 +43,23 @@ python3 -m venv /tmp/marin-blog-sync
 
 The default command fetches and inspects all public listing rows and reports
 changes without writing. New unlabeled pieces mentioning Marin/MarinDNA/MarinFold
-are reported as `review`, while unrelated OA pieces are `excluded`. Review these
-classifications with a maintainer; a passing import is not a classification
-approval. Inspect `docs/openathena-inventory.json` for the full inventory. Current
-unlabeled cases are deliberately not imported. Never import drafts, future-dated,
+are reported as `review`, while unrelated OA pieces are `excluded`. Apply the
+profile exclusion first; do not re-add profiles without a new maintainer decision.
+Read each remaining candidate in full and decide whether its substantive focus is Marin,
+MarinDNA, MarinFold, or work directly built on that ecosystem. Incidental mentions
+in general OA/science pieces are insufficient. Record include/exclude/review,
+article title/URL, date, concise evidence, the full published text SHA-256, and
+highlight decision/rationale in `docs/openathena-classifications.json`. The importer
+reuses unchanged reviews; changed reviewed content returns to review and blocks
+`--write` until that decision is refreshed. It never silently removes an old
+mirror. Genuine scope ambiguity goes to a maintainer; a passing import is not
+classification approval. Inspect `docs/openathena-inventory.json` for all statuses.
+The six initial unlabeled cases have now been read and classified as below. Never import drafts, future-dated,
 noindex, private or confidential content. Fetch failures, source schema changes,
 unsafe paths, collisions and removed listing entries fail before file writes.
 
 If nothing changed and no new classification needs review, report no changes and
-do not open a PR. For new/updated explicitly labeled public posts:
+do not open a PR. For new/updated clearly eligible public posts:
 
 ```sh
 git switch -c blog/sync-openathena-YYYY-MM-DD
@@ -92,20 +106,63 @@ links or execute figures; browser inspection supplements it. Source CSS and
 scripts are reviewed snapshot copies, not remotely loaded first-party code.
 The PR workflow has read-only repository permissions and no deployment job.
 
-## Initial classification (2026-10-12)
+## Classification after full-article review (2026-10-14)
 
-Included: Expert parallelism; Curating 25 Trillion Tokens; 535B launch note;
-Huang Foundation 535B announcement; MarinDNA; Open Development of Frontier AI;
-Cluster Scheduling with Iris; Improving LLM Pretraining Efficiency; Delphi;
-Quantile Balancing. These are all ten explicitly labeled MARIN posts.
+Included: the ten MARIN-labeled research/project posts (Expert parallelism;
+Curating 25 Trillion Tokens; 535B launch note; Huang Foundation 535B announcement;
+MarinDNA; Open Development of Frontier AI; Cluster Scheduling with Iris;
+Improving LLM Pretraining Efficiency; Delphi; Quantile Balancing).
 
-Needs review: team interviews with Tim O'Donnell, Jesse Rusak, Alex Merose and
-Will Held; Research Software Engineering in the Age of Agentic Tooling; Problems
-with Chinchilla Approach 2. They mention Marin or related work but lack the MARIN
-label. Will Held's interview is especially relevant to the Marin community;
-Tim's and Alex's discuss MarinFold; Chinchilla discusses adjacent scaling work.
+Excluded for now at David’s request: **all contributor profiles**, including the
+three Marin-focused profiles reviewed here. Their full-article evidence is kept
+in `docs/openathena-classifications.json`, with explicit exclusion decisions and
+content hashes so future checks cannot re-add them from labels or old decisions:
 
-Excluded as unrelated: ARIA Activation Partner announcement; Scaling Samudra;
-David Siegel's Fortune open-source AI piece; Betsy Cannon interview; Preparing
-for the AI Future with Ethics in Mind. See the JSON inventory for titles, source
-URLs, dates, reasons, source/HTML checksums, assets and external dependencies.
+- Tim O'Donnell: MarinFold, Marin infrastructure and open experiments.
+- Alex Merose: dedicated MarinFold and program-synthesis work alongside Samudra.
+- Will Held: primary Marin contributor, open development and experiments.
+- Jesse Rusak: primarily Samudra ocean/climate modeling, with a secondary Marin
+  infrastructure discussion; also covered by the profile exclusion.
+
+No profile pages, profile-only assets or homepage highlights are added. The
+pre-existing Betsy Cannon interview remains excluded. A future source text change
+still requires refreshed review; it does not override the profile exclusion.
+
+Research Software Engineering in the Age of Agentic Tooling remains excluded:
+it is general agentic-engineering and staffing guidance, with Marin only an
+incidental platform example. The other existing unrelated exclusions remain:
+ARIA Activation Partner announcement; Scaling Samudra; David Siegel's Fortune
+piece; Preparing for the AI Future with Ethics in Mind.
+
+Genuinely ambiguous: **Problems with Chinchilla Approach 2**
+(<https://openathena.ai/blog/problems-with-chinchilla-approach-2/>). It analyzes
+generic scaling-law fitting, Llama 3 data, and an OA vpnls implementation. Its
+motivation names Marin and DNA experiments, but does not identify the reported
+work as Marin/MarinDNA. A maintainer should decide whether this adjacent research
+belongs in the mirror scope. It may have lasting technical highlight value if
+that relationship/scope is confirmed; it is not imported or highlighted yet.
+
+## October 15 check and highlight
+
+Added **There is no posttraining data commons** (David Hall, 2026-10-15), after
+reading the entire public article and confirming its listing, date, byline and
+canonical. Although labeled EXPLAINER rather than MARIN, it connects Marin's
+pretraining pipeline and task-audit evidence to an open posttraining commons.
+The full-article inclusion and text hash are recorded in the classifications file.
+Its local URL is `/blog/2026/10/15/there-is-no-posttraining-data-commons/`.
+
+The additive **Posttraining data commons** Selected writing link is warranted by
+the article's lasting technical framework for worlds, intent, tools and graders,
+and its analysis of task reproducibility and verification failures. Existing
+selections and their relative order are retained. The data-pipeline highlight
+and footer theme picker remain in separate PR #38; do not duplicate or undo them.
+No profiles or Chinchilla article are imported. Existing published content,
+assets, attribution and canonical links remain unchanged.
+
+For each daily check, read new or materially updated eligible writing fully and
+assess highlights separately from import eligibility. Favor substantial lasting
+technical work, releases or retrospectives; do not select for novelty alone.
+Add only concise local links, preserve existing selections and deduplicate against
+open PRs as well as main. Include each decision's rationale in the draft PR.
+
+No cron is installed by this repository workflow.

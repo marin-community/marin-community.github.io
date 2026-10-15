@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Review published OA posts; optionally mirror explicit MARIN posts. No scheduling/push."""
+"""Review public OA posts; mirror MARIN labels or content-reviewed inclusions. No push."""
 import argparse
 import datetime as dt
 import hashlib
@@ -15,6 +15,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 BASE = 'https://openathena.ai'
 INVENTORY = ROOT / 'docs/openathena-inventory.json'
+CLASSIFICATIONS = ROOT / 'docs/openathena-classifications.json'
 
 
 def digest(data):
@@ -63,6 +64,13 @@ def main():
     if not rows:
         raise ValueError('Listing schema changed: no published blog rows')
     previous = {r['source_url']: r for r in json.loads(INVENTORY.read_text())} if INVENTORY.exists() else {}
+    classifications = {}
+    for review in json.loads(CLASSIFICATIONS.read_text()) if CLASSIFICATIONS.exists() else []:
+        key = normalize(review['source_url'])
+        if key in classifications or review['decision'] not in ('include', 'exclude', 'review') or not re.fullmatch(r'[a-f0-9]{64}', review['content_sha256']) or not review['reason'].strip():
+            raise ValueError(f'Invalid/duplicate full-article classification: {key}')
+        classifications[key] = review
+    stale_classifications = []
     writes, inventory = {}, []
     asset_data = {}
     asset_dependencies = {}
@@ -121,16 +129,27 @@ def main():
         if article_meta is None or not article_meta.get_text(' ', strip=True).startswith(meta_text):
             raise ValueError(f'Listing/article authors or dates differ: {source_url}')
         text_hash = digest(content.get_text(' ', strip=True).encode())
-        record = dict(source_url=source_url, title=title, date=date.isoformat(), authors=[author], tags=tags)
+        record = dict(source_url=source_url, title=title, date=date.isoformat(), authors=[author], tags=tags, source_content_sha256=text_hash)
+        review = classifications.get(source_url)
+        reviewed = review and review['content_sha256'] == text_hash
+        if reviewed:
+            record['classification_reviewed_on'] = review['reviewed_on']
         future = date > dt.datetime.now(dt.timezone.utc).date()
         draft = page.select_one('meta[name="robots"][content*="noindex"]') or re.search(r'\b(draft|unpublished)\b', ' '.join(page.body.get('class', [])), re.I)
         if future or draft:
             record.update(status='excluded', reason='Future-dated or unpublished/noindex; do not import')
-        elif 'MARIN' not in tags:
+        elif review and not reviewed:
+            record.update(status='review', reason='Content changed since full-article classification; review again before writing')
+            stale_classifications.append(source_url)
+        elif re.match(r'^Meet our team:\s*\S', title, re.I):
+            record.update(status='excluded', reason=review['reason'] if reviewed and review['decision'] == 'exclude' else 'Contributor profiles excluded for now at David’s request (2026-10-14)')
+        elif reviewed and review['decision'] != 'include':
+            record.update(status='excluded' if review['decision'] == 'exclude' else 'review', reason=review['reason'])
+        elif 'MARIN' not in tags and not (reviewed and review['decision'] == 'include'):
             ambiguous = bool(re.search(r'\bmarin(?:dna|fold)?\b', content.get_text(' ', strip=True), re.I))
             record.update(status='review' if ambiguous else 'excluded', reason='Unlabeled article mentions Marin; needs classification review' if ambiguous else 'Unrelated Open Athena article; no MARIN label or Marin content')
         else:
-            record.update(status='included', reason='Explicit public MARIN label', source_content_sha256=text_hash)
+            record.update(status='included', reason=('Full-article classification: ' + review['reason']) if reviewed else 'Explicit public MARIN label')
             old = existing.get(source_url)
             path = old[0] if old else ROOT / '_posts' / f'{date.isoformat()}-{slug}.html'
             # URL deduplication wins; also avoid cloning an existing content-identical post.
@@ -185,11 +204,15 @@ def main():
         inventory.append(record)
         print(f"{record['status']:9} {date} {title}")
 
-    # CSS is isolated with native @scope, leaving Marin navigation/other pages intact.
+    # Source preview overlays mount on body, outside the article wrapper.
+    # Scope those named overlays too, leaving Marin navigation/other pages intact.
     css = fetch(BASE + '/css/style.css').decode()
     css = re.sub(r'@font-face\s*\{[^}]*\}', '', css)
     css = re.sub(r'url\([\'\"]?([^\)\'\"]+)[\'\"]?\)', lambda m: 'url("' + url.urljoin(BASE, m[1]) + '")', css)
-    writes[Path('assets/css/openathena-mirror.css')] = ('/* Source: https://openathena.ai/css/style.css; scoped public article/figure styles. */\n@scope (.oa-mirror) {\n' + css + '\n}\n').encode()
+    # Explicit :scope lets these rules style a portal that is itself a scope root.
+    css = re.sub(r'(?m)^(\.(?:fn-tooltip|github-hovercard))(?=[\s.{:#>+~])',
+                 r':is(\1, :scope\1)', css)
+    writes[Path('assets/css/openathena-mirror.css')] = ('/* Source: https://openathena.ai/css/style.css; scoped public article/figure styles. */\n@scope (.oa-mirror, body:has(.oa-mirror) > :is(.fn-tooltip, .github-hovercard)) {\n' + css + '\n}\n').encode()
     writes[INVENTORY.relative_to(ROOT)] = (json.dumps(inventory, ensure_ascii=False, indent=2) + '\n').encode()
     # A disappearing source row is flagged, never silently removed from the mirror.
     removed = set(previous) - {r['source_url'] for r in inventory}
@@ -199,6 +222,8 @@ def main():
     for p in changes:
         print(('WRITE ' if args.write else 'CHANGE ') + p.as_posix())
     if args.write:
+        if stale_classifications:
+            raise ValueError(f'Refresh changed full-article classifications before any writes: {stale_classifications}')
         # Fetch/parse everything successfully before modifying files.
         for p in changes:
             (ROOT / p).parent.mkdir(parents=True, exist_ok=True)

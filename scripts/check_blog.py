@@ -24,6 +24,17 @@ def main():
     sources = set()
     assets = set()
     included = [r for r in inventory if r['status'] == 'included']
+    # Unlabeled inclusions must have a matching, full-article classification.
+    reviews_path = ROOT / 'docs/openathena-classifications.json'
+    reviews = {r['source_url']: r for r in json.loads(reviews_path.read_text())} if reviews_path.exists() else {}
+    for r in inventory:
+        review = reviews.get(r['source_url'])
+        if review:
+            expected_status = {'include':'included', 'exclude':'excluded', 'review':'review'}[review['decision']]
+            if r['status'] != expected_status or r['source_content_sha256'] != review['content_sha256']:
+                errors.append(f'Classification/content regression: {r["source_url"]}')
+        elif r['status'] == 'included' and 'MARIN' not in r['tags']:
+            errors.append(f'Unlabeled import lacks full-article classification: {r["source_url"]}')
     built_posts = list((SITE / 'blog').glob('*/*/*/*/index.html'))
     archive = BeautifulSoup((SITE / 'blog/index.html').read_text(), 'html.parser')
     archive_links = {a['href'] for a in archive.select('.post-card h2 a')}
@@ -137,6 +148,9 @@ def main():
         parsed = urlsplit(link['href'])
         if parsed.hostname in ('openathena.ai', 'www.openathena.ai') and parsed.path.rstrip('/') in source_routes:
             errors.append(f'Homepage still links to mirrored source: {link["href"]}')
+    commons_route = source_routes['/blog/there-is-no-posttraining-data-commons']
+    if len(home.select('#blogs a[href="' + commons_route + '"]')) != 1:
+        errors.append('Posttraining data commons must have one local Selected writing link')
     # Home and every blog page share discoverable navigation with valid destinations.
     for path in [SITE / 'index.html'] + built_posts + [SITE / 'blog/index.html']:
         page = BeautifulSoup(path.read_text(), 'html.parser')
@@ -181,6 +195,7 @@ def main():
                             errors.append(f'Missing animation dependency: {asset}: {spec[key]}')
     # The existing CI entry point covers preference behavior without changing workflows.
     subprocess.run(['node', str(ROOT / 'scripts/check_theme.js')], cwd=ROOT, check=True)
+    subprocess.run([sys.executable, str(ROOT / 'scripts/test_blog_classifications.py')], cwd=ROOT, check=True)
     if errors:
         print('\n'.join(sorted(set(errors))), file=sys.stderr)
         return 1
