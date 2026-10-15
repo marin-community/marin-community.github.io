@@ -30,7 +30,7 @@ class ClassificationTests(unittest.TestCase):
         article = f'<html><head>{head}<link rel="canonical" href="{source}"></head><body><header class="blog-post-header"><h1>{title}</h1><div class="blog-post-meta">{meta}</div></header><div class="blog-post-body"><div class="blog-post-content">{body}</div></div></body></html>'
         resources = {
             sync.BASE + '/blog/': listing.encode(), source: article.encode(),
-            sync.BASE + '/css/style.css': b'',
+            sync.BASE + '/css/style.css': b'.fn-tooltip { position: absolute; }',
         }
         reviews = [] if decision is None else [dict(source_url=source, decision=decision,
             content_sha256='0' * 64 if stale else text_hash, reviewed_on='2026-10-14', reason='Full article reviewed')]
@@ -54,6 +54,10 @@ class ClassificationTests(unittest.TestCase):
         self.assertEqual(record['authors'], ['Sophie Bushwick'])
         self.assertEqual(record['date'], '2025-10-08')
         self.assertTrue((root / record['post']).exists())
+        self.assertIn('body:has(.oa-mirror) > :is(.fn-tooltip, .github-hovercard)',
+                      (root / 'assets/css/openathena-mirror.css').read_text())
+        self.assertIn(':is(.fn-tooltip, :scope.fn-tooltip)',
+                      (root / 'assets/css/openathena-mirror.css').read_text())
 
     def test_profile_policy_overrides_label_and_old_inclusion(self):
         for decision in [None, 'include', 'exclude']:

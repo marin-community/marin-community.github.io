@@ -204,11 +204,15 @@ def main():
         inventory.append(record)
         print(f"{record['status']:9} {date} {title}")
 
-    # CSS is isolated with native @scope, leaving Marin navigation/other pages intact.
+    # Source preview overlays mount on body, outside the article wrapper.
+    # Scope those named overlays too, leaving Marin navigation/other pages intact.
     css = fetch(BASE + '/css/style.css').decode()
     css = re.sub(r'@font-face\s*\{[^}]*\}', '', css)
     css = re.sub(r'url\([\'\"]?([^\)\'\"]+)[\'\"]?\)', lambda m: 'url("' + url.urljoin(BASE, m[1]) + '")', css)
-    writes[Path('assets/css/openathena-mirror.css')] = ('/* Source: https://openathena.ai/css/style.css; scoped public article/figure styles. */\n@scope (.oa-mirror) {\n' + css + '\n}\n').encode()
+    # Explicit :scope lets these rules style a portal that is itself a scope root.
+    css = re.sub(r'(?m)^(\.(?:fn-tooltip|github-hovercard))(?=[\s.{:#>+~])',
+                 r':is(\1, :scope\1)', css)
+    writes[Path('assets/css/openathena-mirror.css')] = ('/* Source: https://openathena.ai/css/style.css; scoped public article/figure styles. */\n@scope (.oa-mirror, body:has(.oa-mirror) > :is(.fn-tooltip, .github-hovercard)) {\n' + css + '\n}\n').encode()
     writes[INVENTORY.relative_to(ROOT)] = (json.dumps(inventory, ensure_ascii=False, indent=2) + '\n').encode()
     # A disappearing source row is flagged, never silently removed from the mirror.
     removed = set(previous) - {r['source_url'] for r in inventory}

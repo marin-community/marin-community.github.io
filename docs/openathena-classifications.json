@@ -58,5 +58,15 @@
     "reason": "The central topic is generic scaling-law fitting, with Llama 3 examples and an OA vpnls implementation. The motivation names Marin and DNA experiments but does not identify those experiments/results as Marin or MarinDNA work. David should decide whether adjacent OA scaling-method research belongs in this mirror scope.",
     "highlight": "awaiting_scope_decision",
     "highlight_reason": "Potentially useful lasting technical work, but import/highlight require clarification of its Marin relationship."
+  },
+  {
+    "source_url": "https://openathena.ai/blog/there-is-no-posttraining-data-commons/",
+    "title": "There is no posttraining data commons",
+    "decision": "include",
+    "reviewed_on": "2026-10-15",
+    "content_sha256": "64c7f47ce7323c9763e0d3e54bec66b25ce05eb9b6fc9d2d34a8386b47bfd68f",
+    "reason": "Full public explainer requested for this Marin mirror check. It connects Marin’s pretraining data pipeline and direct Marin task-audit evidence to the infrastructure required for an open posttraining task commons, with a substantive world/intent/tools/grader framework and reproducibility/failure analysis.",
+    "highlight": "selected",
+    "highlight_reason": "Lasting technical explanation of why reusable posttraining tasks require preserved worlds, explicit intent, tools and trustworthy graders, grounded in task-audit evidence. Relevant to builders of open Marin posttraining infrastructure, beyond the announcement date."
   }
 ]

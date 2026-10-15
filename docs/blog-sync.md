@@ -18,8 +18,9 @@ research posts can be included after a full-article content review, recorded in
 `docs/openathena-classifications.json`. It preserves full
 article HTML, authorship, dates, original citations and canonical URLs. Figures,
 animation manifests/videos, plot data and first-party JavaScript are copied under
-`assets/openathena/`. Source CSS is scoped to `.oa-mirror` so it cannot restyle the
-Marin header or unrelated pages. Third-party MathJax, Plotly, D3 and highlight.js
+`assets/openathena/`. Source CSS is scoped to `.oa-mirror` and its named footnote/
+GitHub preview overlays, so it cannot restyle the Marin header or unrelated pages.
+Third-party MathJax, Plotly, D3 and highlight.js
 remain the source's explicit CDN dependencies; the site fonts match Marin's
 landing page. Math and interactive figures therefore require JavaScript/network
 access, as on the source. Static images, text, code, citations and JSON are local.
@@ -141,6 +142,27 @@ work as Marin/MarinDNA. A maintainer should decide whether this adjacent researc
 belongs in the mirror scope. It may have lasting technical highlight value if
 that relationship/scope is confirmed; it is not imported or highlighted yet.
 
-No cron is installed by this repository workflow. Existing published content,
-assets, attribution and canonical links are unchanged by these classification
-decisions.
+## October 15 check and highlight
+
+Added **There is no posttraining data commons** (David Hall, 2026-10-15), after
+reading the entire public article and confirming its listing, date, byline and
+canonical. Although labeled EXPLAINER rather than MARIN, it connects Marin's
+pretraining pipeline and task-audit evidence to an open posttraining commons.
+The full-article inclusion and text hash are recorded in the classifications file.
+Its local URL is `/blog/2026/10/15/there-is-no-posttraining-data-commons/`.
+
+The additive **Posttraining data commons** Selected writing link is warranted by
+the article's lasting technical framework for worlds, intent, tools and graders,
+and its analysis of task reproducibility and verification failures. Existing
+selections and their relative order are retained. The data-pipeline highlight
+and footer theme picker remain in separate PR #38; do not duplicate or undo them.
+No profiles or Chinchilla article are imported. Existing published content,
+assets, attribution and canonical links remain unchanged.
+
+For each daily check, read new or materially updated eligible writing fully and
+assess highlights separately from import eligibility. Favor substantial lasting
+technical work, releases or retrospectives; do not select for novelty alone.
+Add only concise local links, preserve existing selections and deduplicate against
+open PRs as well as main. Include each decision's rationale in the draft PR.
+
+No cron is installed by this repository workflow.

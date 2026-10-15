@@ -1,5 +1,29 @@
 [
   {
+    "source_url": "https://openathena.ai/blog/there-is-no-posttraining-data-commons/",
+    "title": "There is no posttraining data commons",
+    "date": "2026-10-15",
+    "authors": [
+      "David Hall"
+    ],
+    "tags": [
+      "EXPLAINER"
+    ],
+    "source_content_sha256": "64c7f47ce7323c9763e0d3e54bec66b25ce05eb9b6fc9d2d34a8386b47bfd68f",
+    "classification_reviewed_on": "2026-10-15",
+    "status": "included",
+    "reason": "Full-article classification: Full public explainer requested for this Marin mirror check. It connects Marin’s pretraining data pipeline and direct Marin task-audit evidence to the infrastructure required for an open posttraining task commons, with a substantive world/intent/tools/grader framework and reproducibility/failure analysis.",
+    "post": "_posts/2026-10-15-there-is-no-posttraining-data-commons.html",
+    "mirrored_html_sha256": "070d59a87e688345469415e03fd611bf5af26c81d8fcbf4c36420fc1537d17aa",
+    "assets": {
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
+  },
+  {
     "source_url": "https://openathena.ai/blog/meet-our-team-tim-odonnell/",
     "title": "Meet our team: Tim O'Donnell",
     "date": "2026-10-08",
