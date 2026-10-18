@@ -1,0 +1,72 @@
+[
+  {
+    "source_url": "https://openathena.ai/blog/meet-our-team-tim-odonnell/",
+    "title": "Meet our team: Tim O'Donnell",
+    "decision": "exclude",
+    "reviewed_on": "2026-10-14",
+    "content_sha256": "d5ae8ab1650c515b3f93dc9164437efd57dec20eefae610d935a10b67059a204",
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: The introduction and central project answer focus on MarinFold: distilling structural-biology models into a vanilla LLM architecture. Further answers describe exercising Marin infrastructure, open experiments/training runs, and its community.",
+    "highlight": "not_applicable",
+    "highlight_reason": "Contributor profiles are excluded for now at David’s request."
+  },
+  {
+    "source_url": "https://openathena.ai/blog/meet-our-team-jesse-rusak/",
+    "title": "Meet our team: Jesse Rusak",
+    "decision": "exclude",
+    "reviewed_on": "2026-10-14",
+    "content_sha256": "71af508eca3951e591708bd6ef8421e8d3f84b2424fb9e7ce14619213ac90350",
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: The introduction and primary-project discussion focus on Samudra ocean/climate modeling. One secondary answer mentions reusing Marin infrastructure for varied science domains; this does not make the full profile Marin-focused.",
+    "highlight": "not_applicable",
+    "highlight_reason": "Contributor profiles are excluded for now at David’s request."
+  },
+  {
+    "source_url": "https://openathena.ai/blog/meet-our-team-alex-merose/",
+    "title": "Meet our team: Alex Merose",
+    "decision": "exclude",
+    "reviewed_on": "2026-10-14",
+    "content_sha256": "9a18be86c5a05abcb5c7790485ca72df514be2cb65462d5fa917caac937ee84c",
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: Although the profile also covers Samudra, dedicated sections describe splitting current work with MarinFold, cross-applying Marin technology to structural biology, and a public program-synthesis extension of Marin. These are substantive Marin project contributions, not an incidental mention.",
+    "highlight": "not_applicable",
+    "highlight_reason": "Contributor profiles are excluded for now at David’s request."
+  },
+  {
+    "source_url": "https://openathena.ai/blog/meet-our-team-will-held/",
+    "title": "Meet our team: Will Held",
+    "decision": "exclude",
+    "reviewed_on": "2026-10-14",
+    "content_sha256": "737dbb24b0c531c2a9d3ea2ee4bb3a6a83cb35b2a38f5d0d6fc5b27351251dfd",
+    "reason": "Excluded for now at David’s request (2026-10-14): contributor profiles are out of scope. Full-article assessment: The introduction identifies his primary project as Marin; his career discussion explains joining Marin through Percy Liang and David Hall, and substantial answers cover Marin open development, experimental research, and transfer of its methods to scientific projects.",
+    "highlight": "not_applicable",
+    "highlight_reason": "Contributor profiles are excluded for now at David’s request."
+  },
+  {
+    "source_url": "https://openathena.ai/blog/research-software-engineering-in-the-age-of-agentic-tooling/",
+    "title": "Research Software Engineering in the Age of Agentic Tooling",
+    "decision": "exclude",
+    "reviewed_on": "2026-10-14",
+    "content_sha256": "5640d2db7a2f24798b0ad705586fc9e0dc8bdf8c2d8fe8487bef284204aa300f",
+    "reason": "The article is a general argument about agentic software engineering, staffing, evaluation, and Open Athena practices. Marin appears only as a parenthetical example of an internal platform; it reports no Marin-specific work or results.",
+    "highlight": "not_applicable",
+    "highlight_reason": "Outside the Marin-focused scope."
+  },
+  {
+    "source_url": "https://openathena.ai/blog/problems-with-chinchilla-approach-2/",
+    "title": "Problems with Chinchilla Approach 2",
+    "decision": "review",
+    "reviewed_on": "2026-10-14",
+    "content_sha256": "9bb1f97dd8e4ef2a793dab88f64837b2db8918994fddea349e2a256baf302cf1",
+    "reason": "The central topic is generic scaling-law fitting, with Llama 3 examples and an OA vpnls implementation. The motivation names Marin and DNA experiments but does not identify those experiments/results as Marin or MarinDNA work. David should decide whether adjacent OA scaling-method research belongs in this mirror scope.",
+    "highlight": "awaiting_scope_decision",
+    "highlight_reason": "Potentially useful lasting technical work, but import/highlight require clarification of its Marin relationship."
+  },
+  {
+    "source_url": "https://openathena.ai/blog/there-is-no-posttraining-data-commons/",
+    "title": "There is no posttraining data commons",
+    "decision": "include",
+    "reviewed_on": "2026-10-15",
+    "content_sha256": "64c7f47ce7323c9763e0d3e54bec66b25ce05eb9b6fc9d2d34a8386b47bfd68f",
+    "reason": "Full public explainer requested for this Marin mirror check. It connects Marin’s pretraining data pipeline and direct Marin task-audit evidence to the infrastructure required for an open posttraining task commons, with a substantive world/intent/tools/grader framework and reproducibility/failure analysis.",
+    "highlight": "selected",
+    "highlight_reason": "Lasting technical explanation of why reusable posttraining tasks require preserved worlds, explicit intent, tools and trustworthy graders, grounded in task-audit evidence. Relevant to builders of open Marin posttraining infrastructure, beyond the announcement date."
+  }
+]

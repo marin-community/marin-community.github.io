@@ -1,5 +1,5 @@
 /* Source: https://openathena.ai/css/style.css; scoped public article/figure styles. */
-@scope (.oa-mirror) {
+@scope (.oa-mirror, body:has(.oa-mirror) > :is(.fn-tooltip, .github-hovercard)) {
 /* ===== RESET & BASE ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -4802,7 +4802,7 @@ ul { list-style: none; }
   vertical-align: super;
 }
 
-.fn-tooltip {
+:is(.fn-tooltip, :scope.fn-tooltip) {
   position: absolute;
   top: 0;
   left: 0;
@@ -4824,28 +4824,28 @@ ul { list-style: none; }
   pointer-events: none;
 }
 
-.fn-tooltip.visible {
+:is(.fn-tooltip, :scope.fn-tooltip).visible {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
 }
 
-.fn-tooltip p {
+:is(.fn-tooltip, :scope.fn-tooltip) p {
   margin: 0;
 }
 
-.fn-tooltip p + p {
+:is(.fn-tooltip, :scope.fn-tooltip) p + p {
   margin-top: 0.5rem;
 }
 
-.fn-tooltip a {
+:is(.fn-tooltip, :scope.fn-tooltip) a {
   color: #9e6d43;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
 }
 
-.github-hovercard {
+:is(.github-hovercard, :scope.github-hovercard) {
   position: absolute;
   top: 0;
   left: 0;
@@ -4867,7 +4867,7 @@ ul { list-style: none; }
   pointer-events: none;
 }
 
-.github-hovercard.visible {
+:is(.github-hovercard, :scope.github-hovercard).visible {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
