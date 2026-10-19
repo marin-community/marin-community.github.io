@@ -54,18 +54,29 @@
   --button-paper:#374454;
 }
 .blog-page { --accent:#9e6d43; }
-:root[data-theme] .site-nav [data-theme-control][hidden] {
+/* A small shared control at the bottom of home and every blog page. */
+.footer-theme {
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  margin-top:1.5rem;
+  color:var(--text-secondary);
+  font-size:.8rem;
+  font-style:normal;
+}
+:root:not([data-theme]) .footer-theme { display:none; }
+:root[data-theme] .footer-theme [data-theme-control][hidden] {
   display:inline-block;
   visibility:hidden;
 }
-.site-nav .theme-select {
+.footer-theme .theme-select {
   min-height:44px;
   max-width:100%;
   padding:.35rem .6rem;
   border:1px solid var(--rule);
   border-radius:4px;
-  background:var(--paper);
-  color:var(--text);
+  background:transparent;
+  color:var(--text-secondary);
   font:inherit;
 }
 .theme-select:focus-visible { outline:2px solid var(--link); outline-offset:4px; }
