@@ -202,3 +202,37 @@ Add only concise local links, preserve existing selections and deduplicate again
 open PRs as well as main. Include each decision's rationale in the draft PR.
 
 No cron is installed by this repository workflow.
+
+## October 29 material sync
+
+Added **Post-Training in the Open** (Ben Feuer, 2026-10-29), after reading the full
+public MARIN deep dive. It announces Snowball v0.1 and explains the open
+posttraining stack, checkpoint lineage, evaluation policy and community work.
+Its three figures, code blocks, links and authorship/date are preserved at
+`/blog/2026/10/29/post-training-in-the-open/`.
+
+The additive **Snowball post-training** Selected writing link is warranted by
+the major model release and lasting reusable posttraining/evaluation lessons.
+Existing selections and their relative order remain unchanged, as does the
+homepage hero chart from PR #40. No native post is changed.
+
+The public source also added a small figure Expand/Collapse script and styles.
+Those reviewed source snapshots are copied with their references on existing
+mirrors; existing article prose and figure data are unchanged. The script acts
+only on explicitly expandable figures and makes no network requests.
+
+The data-pipeline source currently has an unresolved `[^token-count-baseline]`
+reference and drops its former footnote. Its existing complete Marin snapshot is
+retained, with the observed source hash/reason in `source_update_held` in the
+inventory. The importer holds such incomplete updates when existing metadata and
+assets still match, and requires review if they do not. Once the public source
+is corrected the normal import resumes. A held source update is not a deletion
+or approval to remove existing text. Do not add another data-pipeline highlight.
+
+During this material sync the commons article was re-read and its classification
+hash refreshed. Its ordered words and links are unchanged; routine reimport
+incorporates the already-published upstream control-character removal while
+keeping classification, inventory and mirror consistent. This is incidental
+source synchronization, with no separate formatting-only PR, custom repair logic
+or change to the Open Athena repository/cancelled fix checkouts. Profiles remain
+excluded and Chinchilla's relevance remains pending.

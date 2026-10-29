@@ -153,6 +153,9 @@ def main():
     commons_route = source_routes['/blog/there-is-no-posttraining-data-commons']
     if len(home.select('#blogs a[href="' + commons_route + '"]')) != 1:
         errors.append('Posttraining data commons must have one local Selected writing link')
+    snowball_route = source_routes['/blog/post-training-in-the-open']
+    if len(home.select('#blogs a[href="' + snowball_route + '"]')) != 1:
+        errors.append('Snowball post-training must have one local Selected writing link')
     # Home and every blog page share discoverable navigation with valid destinations.
     for path in [SITE / 'index.html'] + built_posts + [SITE / 'blog/index.html']:
         page = BeautifulSoup(path.read_text(), 'html.parser')
@@ -203,6 +206,9 @@ def main():
     if errors:
         print('\n'.join(sorted(set(errors))), file=sys.stderr)
         return 1
+    for record in included:
+        if record.get('source_update_held'):
+            print(f'HELD upstream update: {record["source_url"]}: {record["source_update_held"]["reason"]}')
     print(f'PASS: {len(included)} OA mirrors, {len(originals)} Marin originals, {len(built_posts)} archive posts, {len(assets)} asset checksums; original content and local canonicals, mirror attribution/source canonicals, full text, authors/dates, archive navigation, links/anchors and figure dependencies verified')
     return 0
 

@@ -1,5 +1,34 @@
 [
   {
+    "source_url": "https://openathena.ai/blog/post-training-in-the-open/",
+    "title": "Post-Training in the Open",
+    "date": "2026-10-29",
+    "authors": [
+      "Ben Feuer"
+    ],
+    "tags": [
+      "DEEP DIVE",
+      "MARIN"
+    ],
+    "source_content_sha256": "2a0b4ba2d5040e6f516132b7fcf356a416c5644aec29001bfe7d15d10c19c692",
+    "classification_reviewed_on": "2026-10-29",
+    "status": "included",
+    "reason": "Full-article classification: Full public MARIN deep dive announcing Snowball v0.1 and describing its open pretraining/posttraining stack, model lineage, evaluation policy, community contributions and reproducible local-use commands.",
+    "post": "_posts/2026-10-29-post-training-in-the-open.html",
+    "mirrored_html_sha256": "7ae60ea2e4284e1593bb87cfd22c03099973b7e2036291cd5860ec738770601d",
+    "assets": {
+      "assets/openathena/assets/images/blog/post-training-in-the-open/image1.png": "b2223da25afdf5f96d872b521f51ad00299d42e9a9f9dd3f5063a634998d156e",
+      "assets/openathena/assets/images/blog/post-training-in-the-open/image2.png": "d729a7608cb50517f945703907e110a83707623c3dadf3847627e0f03897df1d",
+      "assets/openathena/assets/images/blog/post-training-in-the-open/image3.png": "3917d01ad65ed6ce387fb2836aafb3064aa15a1db136577ddc1c3154c4cb0bb9",
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
+  },
+  {
     "source_url": "https://openathena.ai/blog/there-is-no-posttraining-data-commons/",
     "title": "There is no posttraining data commons",
     "date": "2026-10-15",
@@ -9,13 +38,14 @@
     "tags": [
       "EXPLAINER"
     ],
-    "source_content_sha256": "64c7f47ce7323c9763e0d3e54bec66b25ce05eb9b6fc9d2d34a8386b47bfd68f",
-    "classification_reviewed_on": "2026-10-15",
+    "source_content_sha256": "2e18dd18f51daefd557d5dd2dfb07ef0e43d14b2b12622110c6c5356d7067653",
+    "classification_reviewed_on": "2026-10-29",
     "status": "included",
     "reason": "Full-article classification: Full public explainer requested for this Marin mirror check. It connects Marin’s pretraining data pipeline and direct Marin task-audit evidence to the infrastructure required for an open posttraining task commons, with a substantive world/intent/tools/grader framework and reproducibility/failure analysis.",
     "post": "_posts/2026-10-15-there-is-no-posttraining-data-commons.html",
-    "mirrored_html_sha256": "070d59a87e688345469415e03fd611bf5af26c81d8fcbf4c36420fc1537d17aa",
+    "mirrored_html_sha256": "7b7b947e30263e66e25e381a385ce44c599468134ca9704a1a539c65141c8b5e",
     "assets": {
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
       "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
     },
     "external_dependencies": [
@@ -52,7 +82,7 @@
     "status": "included",
     "reason": "Explicit public MARIN label",
     "post": "_posts/2026-09-29-expert-parallelism.html",
-    "mirrored_html_sha256": "0dc29281e7f36b3178095502edd89a9da28d8e2a14d80639b5a7a1347131ff45",
+    "mirrored_html_sha256": "1d3eb2533c45b0f3e4e3fdfae180b8ed6f81fb5a540db0880a9bec1b6dd3fbe8",
     "assets": {
       "assets/openathena/assets/images/blog/expert-parallelism/ep-results-8062.png": "56c8afaed024679d36afb1b77d69f616ed86d7d14ee42d4805f045b852c783c0",
       "assets/openathena/assets/images/blog/expert-parallelism/fixed-pool-protocol.png": "06c71e038af9ff2eda7255e70686e612bcf51b592552efdaade5250c4afcb68e",
@@ -68,6 +98,7 @@
       "assets/openathena/assets/images/blog/expert-parallelism/moe-token-routing.mp4": "412e99dc1112f9405cae538b2ed570411adcf0ec647adf5ac3ae55c83944b015",
       "assets/openathena/assets/images/blog/expert-parallelism/moe-token-routing.png": "305437b6e9ad46ecd659f0c007e662288e42a78968aedcf7f5017ea14cc3b68f",
       "assets/openathena/js/animation-figures.js": "217ba1094a8cd2c6b3867252609269da42af9bd308c8890011762d0a8ebe9f31",
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
       "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
     },
     "external_dependencies": [
@@ -132,7 +163,14 @@
       "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
       "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css",
       "https://cdn.jsdelivr.net/npm/d3@7"
-    ]
+    ],
+    "source_update_held": {
+      "observed_source_content_sha256": "b55f31a7ec053bd6f5ba437ee280f090e0119a6fceaad264247edb69aeec31a6",
+      "unresolved_footnotes": [
+        "[^token-count-baseline]"
+      ],
+      "reason": "Public source has unresolved footnotes; retain the existing complete mirror until corrected"
+    }
   },
   {
     "source_url": "https://openathena.ai/blog/marin-535b-launch-note/",
@@ -148,8 +186,9 @@
     "status": "included",
     "reason": "Explicit public MARIN label",
     "post": "_posts/2026-09-03-marin-535b-launch-note.html",
-    "mirrored_html_sha256": "0d9bb276a767a3d1905d0e859334228b952a69d705835be389d4d01b60607e53",
+    "mirrored_html_sha256": "d0e6fd0a47dec8f826ba3b065e9e05a93ea1f665e724f55bb393d0dbbd032570",
     "assets": {
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
       "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
     },
     "external_dependencies": [
@@ -171,8 +210,9 @@
     "status": "included",
     "reason": "Explicit public MARIN label",
     "post": "_posts/2026-09-02-huang-foundation-marin-535b-training-run.html",
-    "mirrored_html_sha256": "0f5cd35403c15a9be51b0c7ae8c850e2a657a9e2233eb352224b3532ce3cb9c0",
+    "mirrored_html_sha256": "84682fb0061a6246573073216dfb26a59203fce8f399d002bdbfcc6614fe42f7",
     "assets": {
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
       "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
     },
     "external_dependencies": [
@@ -225,7 +265,7 @@
     "status": "included",
     "reason": "Explicit public MARIN label",
     "post": "_posts/2026-08-03-marin-dna.html",
-    "mirrored_html_sha256": "e5bdd6a7684a5cf4a3e32ccdee9d6cc4b25c04929f7b623d7cc46da59233fd34",
+    "mirrored_html_sha256": "cff575bcd1ff67b19397c78939f39f379b5b5d57ec4e05c3681e7ca81d62d47c",
     "assets": {
       "assets/openathena/assets/images/blog/marin-dna/annotation_derived_training_pool.svg": "0bbd20606b38a5ed20235ad6d8f9397ad96a95e6585aeee26d731bf1f59a6a2f",
       "assets/openathena/assets/images/blog/marin-dna/continued_training_data_exposures.svg": "465377019dffbe5bfc691faee5dcbed72cf5bf46d4e1acbeb2d8c4ff0bcf7585",
@@ -247,6 +287,7 @@
       "assets/openathena/assets/images/blog/marin-dna/parameter_transfer_methodology_v1.svg": "00525eaeecac6bcc9d12864739b69fe5ffca6f57314d332c7f69228676569f52",
       "assets/openathena/assets/images/blog/marin-dna/promoter_cds_specialists.svg": "be572c91408b5fcb148eb7b02adcae9eb5e17cb57866ca0fdb437947fc7eb0dd",
       "assets/openathena/assets/images/blog/marin-dna/upstream_cds_balance.svg": "fb19e450f519c3bddc2abc7983d747d253c6db95f4ce5eb347b9630ee85be3ae",
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
       "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
     },
     "external_dependencies": [
@@ -321,8 +362,9 @@
     "status": "included",
     "reason": "Explicit public MARIN label",
     "post": "_posts/2026-06-29-open-development-of-frontier-ai.html",
-    "mirrored_html_sha256": "eb7cc603628f3aa2ca4b5b0a3469653ab829f96a9f932f6f0bd79735206597fa",
+    "mirrored_html_sha256": "83338ca013dd8511bee376a4ea13556acd37eafb7727c1e94b06ad9cdc1c2004",
     "assets": {
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
       "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
     },
     "external_dependencies": [
@@ -344,12 +386,13 @@
     "status": "included",
     "reason": "Explicit public MARIN label",
     "post": "_posts/2026-06-25-cluster-scheduling-with-iris.html",
-    "mirrored_html_sha256": "b76036ae99cc810c8a63e9fc863f8443fe8702738a21b70acfc4fc227b12584c",
+    "mirrored_html_sha256": "73a65cc9b44699fa263d3c6411c616e1adf055ba9f0c0f251b61210c99a387dc",
     "assets": {
       "assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image1.png": "6f5fbc84b86523afb72e4b6fdb13ac716f0dd6fb597cbd2701c95bea3742bf66",
       "assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image2.png": "e1148b0133085cfed51569c8f37e3d16e64f32e374fff592be3cdfd32ea650bb",
       "assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image3.png": "2384788475f25f72646de28e0dd61cb6c1ae13b4da3372a5adb024b4d51c4bf2",
       "assets/openathena/assets/images/blog/cluster-scheduling-with-iris/image4.png": "1b3cf81b8812d4b555f57a0b9d4dc5c05108ed36a61deb08ab4711cce145b426",
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
       "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
     },
     "external_dependencies": [
@@ -383,7 +426,7 @@
     "status": "included",
     "reason": "Explicit public MARIN label",
     "post": "_posts/2026-06-03-pretraining-speedup.html",
-    "mirrored_html_sha256": "b2ee5a0762325028ef0943a6fcb088260417d0ad25703178d41f69fe69f45a5a",
+    "mirrored_html_sha256": "f43d3d2bd2a541383d9b83b5cdd9dfe24c958f2af36b57083695492f7921d05b",
     "assets": {
       "assets/openathena/assets/images/blog/pretraining-speedup/baseline-scaling-curve.png": "a70de00d5d339694bc035ec1483f907ac754fd7850f610917ab52b438f7c2b72",
       "assets/openathena/assets/images/blog/pretraining-speedup/combined-speedup.png": "149fd89f72a289e56146e0cfc7008afa375264d346c4d7942da68fc93b6f4070",
@@ -402,6 +445,7 @@
       "assets/openathena/assets/images/blog/pretraining-speedup/pko-example-wiki.svg": "c445bf709141caa440f776c924bc86a7ed1e2993732173c401c3fab3d7ca3173",
       "assets/openathena/assets/images/blog/pretraining-speedup/pko.png": "6da07d06de9758604bdb9fabbb9723af042c3929859c1659af7a2cc6e5df4e31",
       "assets/openathena/assets/images/blog/pretraining-speedup/routed-expert-norm.png": "730d9982210ef2b850671360742309dfea31edec52819fb7ac5d45ef795ec06e",
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
       "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
     },
     "external_dependencies": [
@@ -424,7 +468,7 @@
     "status": "included",
     "reason": "Explicit public MARIN label",
     "post": "_posts/2026-05-11-delphi.html",
-    "mirrored_html_sha256": "7aca02b1829e2318046475f8faf97dc4d2a5e5df3167e616f7a67d44ac4b73a9",
+    "mirrored_html_sha256": "2c21de05b00d484f3f1727f8bc5babf9151a4ed92ca522713065b3a4a53166d0",
     "assets": {
       "assets/openathena/assets/images/blog/delphi/delphi-ladder-mobile.json": "cb23db74d07c572381df8bc552599781713839ceec9cdf477bf9379ef786a7ab",
       "assets/openathena/assets/images/blog/delphi/delphi-ladder.json": "3a0a05b559de7d6b39dbffd5903127456d8324baa7915f60657384c039881708",
@@ -439,6 +483,7 @@
       "assets/openathena/assets/images/blog/delphi/mmlu-emergence-mobile.json": "be2ccace42060a422cd9de13c2f40903c4f046d9e278d95a52b776ad8ed11eed",
       "assets/openathena/assets/images/blog/delphi/mmlu-emergence.json": "0667d47e798fa392888deb0265c3f58bfbe96751dec3716bbc7cc8ee477c0a96",
       "assets/openathena/assets/images/blog/delphi/overtraining-forecast.json": "f6c2c04ad549794bc09de1b930b3681b927854f042fa766236727a878d6112a8",
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
       "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
     },
     "external_dependencies": [
@@ -462,7 +507,7 @@
     "status": "included",
     "reason": "Explicit public MARIN label",
     "post": "_posts/2026-04-10-quantile-balancing.html",
-    "mirrored_html_sha256": "e3423642f6a63d2f72d33209faa1f89b5acfbf0f83ef903c4f953042293dcf85",
+    "mirrored_html_sha256": "252443f7bb6ffae8fbad6ae85ee7721e91f178e445a5bc38fa87ad09551b850c",
     "assets": {
       "assets/openathena/assets/images/blog/quantile-balancing/expert-routing-1e21.gif": "fb460b40b4b305743a9f2c7896e98364e24cf72d445466c3ba35595da62d2353",
       "assets/openathena/assets/images/blog/quantile-balancing/expert-routing-layer4.gif": "e0709c44c2c92b57bd8bbf1dc47fcdceb8e48d9aa2ba682987e47686fdb4763b",
@@ -471,6 +516,7 @@
       "assets/openathena/assets/images/blog/quantile-balancing/loss-curve.png": "aaedad26d09703c5644016d866a3f1ae11be5f67a4b23ee2d6889cafe4942c8d",
       "assets/openathena/assets/images/blog/quantile-balancing/router-bias.gif": "ed8751e98a9b006c383fae9889242c4d7ef2e75a0d1ba06c4bd5e9d5ebbb8675",
       "assets/openathena/assets/images/blog/quantile-balancing/router-cosine-similarity.gif": "f0654c4039bde2a9f36561e1057c9f75ace6f7858a6a14dc67e4edfaab760858",
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
       "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
     },
     "external_dependencies": [
