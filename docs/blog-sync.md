@@ -141,6 +141,8 @@ It does not validate arbitrary remote
 links or execute figures; browser inspection supplements it. Source CSS and
 scripts are reviewed snapshot copies, not remotely loaded first-party code.
 The PR workflow has read-only repository permissions and no deployment job.
+It pins Ubuntu 24.04 because the locked Ruby 3.4.7 build is unavailable on the
+Ubuntu 26.04 image now used by `ubuntu-latest`.
 
 ## Classification after full-article review (2026-10-14)
 
