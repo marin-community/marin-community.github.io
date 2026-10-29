@@ -63,10 +63,21 @@
     "source_url": "https://openathena.ai/blog/there-is-no-posttraining-data-commons/",
     "title": "There is no posttraining data commons",
     "decision": "include",
-    "reviewed_on": "2026-10-15",
-    "content_sha256": "64c7f47ce7323c9763e0d3e54bec66b25ce05eb9b6fc9d2d34a8386b47bfd68f",
+    "reviewed_on": "2026-10-29",
+    "content_sha256": "2e18dd18f51daefd557d5dd2dfb07ef0e43d14b2b12622110c6c5356d7067653",
     "reason": "Full public explainer requested for this Marin mirror check. It connects Marin’s pretraining data pipeline and direct Marin task-audit evidence to the infrastructure required for an open posttraining task commons, with a substantive world/intent/tools/grader framework and reproducibility/failure analysis.",
     "highlight": "selected",
-    "highlight_reason": "Lasting technical explanation of why reusable posttraining tasks require preserved worlds, explicit intent, tools and trustworthy graders, grounded in task-audit evidence. Relevant to builders of open Marin posttraining infrastructure, beyond the announcement date."
+    "highlight_reason": "Lasting technical explanation of why reusable posttraining tasks require preserved worlds, explicit intent, tools and trustworthy graders, grounded in task-audit evidence. Relevant to builders of open Marin posttraining infrastructure, beyond the announcement date.",
+    "review_note": "Re-read full public source during the material Snowball sync. Ordered words and links remain unchanged; upstream removed the known control characters. Routine reimport keeps classification, inventory and mirror consistent."
+  },
+  {
+    "source_url": "https://openathena.ai/blog/post-training-in-the-open/",
+    "title": "Post-Training in the Open",
+    "decision": "include",
+    "reviewed_on": "2026-10-29",
+    "content_sha256": "2a0b4ba2d5040e6f516132b7fcf356a416c5644aec29001bfe7d15d10c19c692",
+    "reason": "Full public MARIN deep dive announcing Snowball v0.1 and describing its open pretraining/posttraining stack, model lineage, evaluation policy, community contributions and reproducible local-use commands.",
+    "highlight": "selected",
+    "highlight_reason": "Major open model release with lasting reusable posttraining, lineage and evaluation lessons, beyond a routine announcement."
   }
 ]

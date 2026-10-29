@@ -12,6 +12,21 @@ import sync_openathena as sync
 
 
 class ClassificationTests(unittest.TestCase):
+    def test_unresolved_source_footnote_preserves_complete_mirror_metadata(self):
+        body = sync.BeautifulSoup('<p>Baseline![^missing]</p><pre>[^code-example]</pre><code>[^inline-example]</code>', 'html.parser')
+        missing = sync.unresolved_footnotes(body)
+        self.assertEqual(missing, ['[^missing]'])
+        previous = dict(source_url=sync.BASE+'/blog/research/', title='Research', date='2026-10-01', authors=['Author'], status='included', assets={'figure.png':'a'*64}, source_content_sha256='b'*64, mirrored_html_sha256='c'*64)
+        current = dict(previous, source_content_sha256='d'*64)
+        held = sync.hold_incomplete_update(current, previous, previous['assets'], missing)
+        self.assertEqual(held['source_content_sha256'], previous['source_content_sha256'])
+        self.assertEqual(held['mirrored_html_sha256'], previous['mirrored_html_sha256'])
+        self.assertEqual(held['source_update_held']['observed_source_content_sha256'], current['source_content_sha256'])
+        with self.assertRaisesRegex(ValueError, 'require review'):
+            sync.hold_incomplete_update(current, None, previous['assets'], missing)
+        with self.assertRaisesRegex(ValueError, 'changed existing assets'):
+            sync.hold_incomplete_update(current, previous, {'figure.png':'e'*64}, missing)
+
     def run_import(self, decision=None, stale=False, draft=False, future=False, profile=False, tagged=False):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
