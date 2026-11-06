@@ -238,3 +238,28 @@ keeping classification, inventory and mirror consistent. This is incidental
 source synchronization, with no separate formatting-only PR, custom repair logic
 or change to the Open Athena repository/cancelled fix checkouts. Profiles remain
 excluded and Chinchilla's relevance remains pending.
+
+## November 6 material sync
+
+Added **Scaling Marin's Open LLM Pre-Training** (Will Held, 2026-11-04), after
+reading the full public MARIN/MOCHI article. It is an edited technical talk with
+audience questions, not a contributor profile or interview. It announces the
+completion of the main pretraining phase of Marin 535B-A23B (Mochi), connects the
+scaling, compute, expert-parallelism and data work, and explains community recipe
+iteration with Belay. All three figures, technical Q&A, references and citation
+code are preserved at `/blog/2026/11/04/scaling-marins-open-llm-pre-training/`.
+The dashboard figure is a historical screenshot from the talk; its progress
+percentage is not the article's publication-day completion status.
+
+The additive **Mochi pre-training overview** Selected writing link is warranted
+by that major milestone and its lasting end-to-end technical retrospective. It
+complements the existing component articles and Snowball posttraining release.
+Existing selections and their order remain, including the single data-pipeline
+selection. No native post or shared layout/theme is changed. The new citation-copy
+handler only copies the displayed public BibTeX after a user click and makes no
+network requests; existing source scripts/dependencies remain unchanged.
+
+The data-pipeline source update remains held for its unresolved baseline footnote,
+preserving the existing complete copy. Contributor profiles remain excluded and
+Chinchilla's existing scope decision remains pending. This update continues the
+existing automation-owned draft PR rather than opening a duplicate.

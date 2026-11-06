@@ -156,6 +156,9 @@ def main():
     snowball_route = source_routes['/blog/post-training-in-the-open']
     if len(home.select('#blogs a[href="' + snowball_route + '"]')) != 1:
         errors.append('Snowball post-training must have one local Selected writing link')
+    mochi_route = source_routes['/blog/scaling-marins-open-llm-pre-training']
+    if len(home.select('#blogs a[href="' + mochi_route + '"]')) != 1:
+        errors.append('Mochi pre-training must have one local Selected writing link')
     # Home and every blog page share discoverable navigation with valid destinations.
     for path in [SITE / 'index.html'] + built_posts + [SITE / 'blog/index.html']:
         page = BeautifulSoup(path.read_text(), 'html.parser')

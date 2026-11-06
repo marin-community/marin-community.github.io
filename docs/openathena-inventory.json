@@ -1,5 +1,34 @@
 [
   {
+    "source_url": "https://openathena.ai/blog/scaling-marins-open-llm-pre-training/",
+    "title": "Scaling Marin's Open LLM Pre-Training",
+    "date": "2026-11-04",
+    "authors": [
+      "Will Held"
+    ],
+    "tags": [
+      "MARIN",
+      "MOCHI"
+    ],
+    "source_content_sha256": "8aeb6b173e62ac53bb89c31322d9799692c809a86dc2b82b8d69cb2b147e956f",
+    "classification_reviewed_on": "2026-11-06",
+    "status": "included",
+    "reason": "Full-article classification: Full public MARIN/MOCHI technical talk announcing completion of the main pretraining phase of Marin 535B-A23B. It explains the end-to-end training recipe, scaling validation, distributed compute, expert parallelism, data curation and Belay community experiments. Audience technical Q&A is part of the talk, not a contributor profile or interview.",
+    "post": "_posts/2026-11-04-scaling-marins-open-llm-pre-training.html",
+    "mirrored_html_sha256": "99efb2fdcc17cc235ee4e6152463f5cfd82437876ea34b70e594244eb3d519dc",
+    "assets": {
+      "assets/openathena/assets/images/blog/scaling-marins-open-llm-pre-training/image1.png": "a4664a0c59cfedcfd9c928962ce1837c62c3842ce14932f0b8c2d6d1992bb4e2",
+      "assets/openathena/assets/images/blog/scaling-marins-open-llm-pre-training/image2.png": "09648a465b2f869281c04b86f91dcecce407249b9d3d5d420c58ae266378b6b0",
+      "assets/openathena/assets/images/blog/scaling-marins-open-llm-pre-training/image3.png": "e5cbe9d6788c1ed1fd712e88f4f0e440230923553a493ca9bacdfdd9fa65cf1a",
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css"
+    ]
+  },
+  {
     "source_url": "https://openathena.ai/blog/post-training-in-the-open/",
     "title": "Post-Training in the Open",
     "date": "2026-10-29",
