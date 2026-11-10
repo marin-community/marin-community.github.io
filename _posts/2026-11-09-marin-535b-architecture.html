@@ -1,0 +1,761 @@
+---
+layout: mirror
+post_kind: mirror
+title: Architecture Decisions for Marin 535B-A23B
+authors:
+- Larry Dial
+date: '2026-11-09'
+categories: blog
+description: The goals, experiments, and judgment calls behind the architecture of
+  Marin 535B-A23B, from model sizing and EP token dropping to each notable component.
+source_url: https://openathena.ai/blog/marin-535b-architecture/
+canonical_url: https://www.openathena.ai/blog/marin-535b-architecture/
+source_content_sha256: 128235337956dd810aa26757481c692d3abcb6bb5984d54c7d77c3984b7d15ac
+excerpt: The goals, experiments, and judgment calls behind the architecture of Marin
+  535B-A23B, from model sizing and EP token dropping to each notable component.
+---
+{% raw %}
+<div class="blog-post-body">
+<aside class="blog-toc">
+<nav class="blog-toc-nav">
+<div class="blog-toc-title">Contents</div>
+<ol class="blog-toc-list"></ol>
+</nav>
+<details class="blog-toc-mobile">
+<summary class="blog-toc-title">Contents</summary>
+<ol class="blog-toc-list"></ol>
+</details>
+</aside>
+<div class="blog-post-content project-detail-body">
+<p>Marin 535B-A23B finished pretraining on 18T tokens on November 5, 2026, representing a big step up in the scale of models Marin has trained. This post is my account of the reasoning and experiments behind its architecture. I first cover the architecture, then how Marin's goals influenced its design, how things were derisked, and evidence behind each component.</p>
+<figure><img alt="Marin 535B-A23B training loss over the full 18T-token run" src="/assets/openathena/assets/images/blog/marin-535b-architecture/hero-loss.png"/><figcaption><strong>Figure 1:</strong> Train cross-entropy loss for the full 18T-token run, at every logged step. Dashed lines mark the switch to ragged all-to-all EP, the data mix update, data mix phase 2, and the 4k → 16k and 16k → 65k context extensions. Tokens per step stay at 46.1M throughout.</figcaption></figure>
+<h2 id="architecture">Architecture<a aria-label="Link to section: Architecture" class="heading-anchor" href="#architecture"></a></h2>
+<p>First, the architecture's full details and code can be found <a href="https://github.com/marin-community/marin/issues/8435">here</a>. I'll summarize them below, then afterwards describe how we got here.</p>
+<h3 id="standard-components">Standard components<a aria-label="Link to section: Standard components" class="heading-anchor" href="#standard-components"></a></h3>
+<ul>
+<li>8 of 384 Latent MoE<sup class="footnote-ref" id="fnref-1"><a href="#fn-1">1</a></sup> (2x compression) with 2 shared experts and SwiGLU activation</li>
+<li>3:1 local sliding-window (2,048) / global attention, with GQA (4:1 local, 8:1 global) and gated attention<sup class="footnote-ref" id="fnref-2"><a href="#fn-2">2</a></sup></li>
+<li>Weight initialization with standard deviation 0.5/√<code>hidden_dim</code></li>
+<li>Sigmoid router; top-k routing weights renormalized to sum to 2.5</li>
+<li>Partial RoPE (50%) on local, NoPE on global</li>
+<li>Logit z loss (weight 1e-4)</li>
+<li>Head dim 128 (num heads = <code>hidden_dim</code>/128)</li>
+<li>Base optimizer Muon<sup class="footnote-ref" id="fnref-3"><a href="#fn-3">3</a></sup></li>
+</ul>
+<h3 id="notable-components">Notable components<a aria-label="Link to section: Notable components" class="heading-anchor" href="#notable-components"></a></h3>
+<ul>
+<li>Learnable RMSNorm on the LatentMoE latent</li>
+<li>Gated Norm<sup class="footnote-ref" id="fnref-4"><a href="#fn-4">4</a></sup></li>
+<li>Exclusive self attention (XSA)<sup class="footnote-ref" id="fnref-5"><a href="#fn-5">5</a></sup></li>
+<li>QK RMSNorm with a fixed (non-learnable) 1.3 multiplier</li>
+<li>Short convolutions (SConv) with kernel size 4 on keys, attention output, MLP output</li>
+<li>Top-k Quantile Balancing<sup class="footnote-ref" id="fnref-6"><a href="#fn-6">6</a></sup> on raw logits, w/ histogram binning for updates</li>
+<li>RMSNorm on the embedding</li>
+<li>1% warmup, then linear decay to 5% of peak</li>
+<li>Shallow architecture: 6144 hidden dim, 48 layers (width:depth ratio of 128)</li>
+<li>No leading dense layers</li>
+<li>Hyperball<sup class="footnote-ref" id="fnref-7"><a href="#fn-7">7</a></sup> optimizer: MuonH on all matrices, except AdamH on the <code>lm_head</code> and plain Adam on the embedding, router, attention gate, norm gains and SConv kernels</li>
+<li>LR fit of <code>adam_lr = 0.087571 · tokens^-0.3461 · hidden^-0.3448 · √(tokens_per_batch)</code>, with Adam held at a 3/13 ratio to MuonH (<code>muonh_lr = 13/3 · adam_lr</code>) (<a href="https://github.com/marin-community/marin/issues/7856#issuecomment-5194730613">fit</a>; see the <a href="https://openathena.ai/blog/pretraining-speedup/#from-scaling-dense-models-to-scaling-moes">pretraining speedup post</a> for how the fit is performed)</li>
+</ul>
+<figure><img alt="Block diagram of Marin 535B-A23B: stack, block, attention and routed MoE" src="/assets/openathena/assets/images/blog/marin-535b-architecture/architecture.svg" style="box-shadow: none; border: 1px solid #1F1E1B; border-radius: 6px;"/><figcaption><strong>Figure 2:</strong> Marin 535B-A23B. Notable components are shaded rust; standard components are neutral. The optimizer (MuonH / AdamH / Adam) is not shown.</figcaption></figure>
+<h2 id="background">Background<a aria-label="Link to section: Background" class="heading-anchor" href="#background"></a></h2>
+<p>The design decisions can be best understood through the context of Marin's goals.</p>
+<p>The first goal was to make use of 768 GB200s provided on July 15th to produce the best possible model by December, building on the Marin stack in JAX. Out of architecture learning efficiency, realized MFU, and inference speed, realized MFU (different from theoretical MFU) was the dominant driver. That is, every week we were asking, "Will we get a better model by December if we tune model FLOPs utilization for one more week, or if we launch now? What MFU are we actually getting for each architecture feature? How much can we expect to improve MFU mid-run?"</p>
+<p>The second goal was to demonstrate that Marin can train large mixture of experts models in a stable and predictable manner. One of the more fun aspects of Marin launches is that for big runs, we preregister a forecast and livestream the run on wandb. This only means something if we put effort into tuning the forecast and launch with an architecture that we have confidence will scale predictably. Achieving this goal is important for enabling future runs.</p>
+<p>The third goal was to provide a base for the organization and community to develop supervised fine-tuning and reinforcement learning workflows. To this end, it is useful to launch with an architecture that has similar inductive biases to the literature, such that our first large scale RL runs can leverage prior learnings in the literature. From there, we can branch into more experimental approaches.</p>
+<p>Converting these goals into a utility function based on model quality gives something like:</p>
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">Utility as a function of model quality</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="Utility as a function of model quality. &lt;strong&gt;Figure 3:&lt;/strong&gt; Left: a model built to approach the frontier loses value gradually as quality drops, then sees a steep fall-off for failed training runs. Right: a model built to be end users' first choice is worth little unless it reaches current SOTA." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/marin-535b-architecture/utility-functions.json" data-plotly-src-mobile="/assets/openathena/assets/images/blog/marin-535b-architecture/utility-functions-mobile.json" role="img" style="min-height:380px;"></div></div></div><figcaption><strong>Figure 3:</strong> Left: a model built to approach the frontier loses value gradually as quality drops, then sees a steep fall-off for failed training runs. Right: a model built to be end users' first choice is worth little unless it reaches current SOTA.</figcaption></figure>
+<p>Given that we are in the approaching-the-frontier camp and this run represents our first major scale up, there is substantial utility in minimizing the risk that the run fails or does not complete by December.</p>
+<h2 id="looking-for-unknown-unknowns">Looking for unknown unknowns<a aria-label="Link to section: Looking for unknown unknowns" class="heading-anchor" href="#looking-for-unknown-unknowns"></a></h2>
+<p>The biggest risk on my mind was unknown unknowns: things we are unaware of until they go wrong. To address this, I find it helpful to work in ways that enable surprise. Specifically, getting as much mileage as possible on the hardware in the month before launch, look at a bunch of plots manually, and get exposed to information I wasn't specifically looking for. Here are some issues this uncovered:</p>
+<ul>
+<li>On GPU, every 1/10,000 steps on every 1/10 runs, the <code>lm_head</code> parameter norm would collapse due to incorrect numerics on a sharded calculation. This was fixed by moving away from <code>jnp.linalg.norm</code> to an explicit norm with an explicit sharding call (<a href="https://github.com/marin-community/marin/issues/8073">Issue #8073</a>).</li>
+</ul>
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">lm_head parameter norm collapse on GPU</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="lm_head parameter norm collapse on GPU. &lt;strong&gt;Figure 4:&lt;/strong&gt; A d1024 MoE (3e19 FLOPs, &lt;a href='https://wandb.ai/marin-community/marin_moe/runs/iso-3e19-d1024-lrm97-v2'&gt;run&lt;/a&gt;). Left: training loss, every 20th step plus every step around the event. Right: &lt;code&gt;lm_head&lt;/code&gt; parameter norm, which hyperball should hold fixed. At step 24,682 the norm drops from 150.7 to 21.4 in a single update and the loss jumps from 2.07 to 9.14; the gradient was normal at the step that produced the bad update. An earlier, smaller drop at step 4,575 (176.7 to 150.8) is the same bug, with little visible effect on loss. The total parameter norm changes by only 0.24% at the collapse, so the per-matrix norm is what exposes it." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/marin-535b-architecture/lm-head-collapse.json" data-plotly-src-mobile="/assets/openathena/assets/images/blog/marin-535b-architecture/lm-head-collapse-mobile.json" role="img" style="min-height:320px;"></div></div></div><figcaption><strong>Figure 4:</strong> A d1024 MoE (3e19 FLOPs, <a href="https://wandb.ai/marin-community/marin_moe/runs/iso-3e19-d1024-lrm97-v2">run</a>). Left: training loss, every 20th step plus every step around the event. Right: <code>lm_head</code> parameter norm, which hyperball should hold fixed. At step 24,682 the norm drops from 150.7 to 21.4 in a single update and the loss jumps from 2.07 to 9.14; the gradient was normal at the step that produced the bad update. An earlier, smaller drop at step 4,575 (176.7 to 150.8) is the same bug, with little visible effect on loss. The total parameter norm changes by only 0.24% at the collapse, so the per-matrix norm is what exposes it.</figcaption></figure>
+- Applying hyperball projections to the embedding parameters looked fine initially, but raising the learning rate by just 1.2x showed growing gradient spikes. Moving the embed out of hyperball resolved this ([Issue #5773](https://github.com/marin-community/marin/issues/5773)).
+
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">Embedding gradient norm: AdamH at three learning rates vs plain Adam</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="Embedding gradient norm: AdamH at three learning rates vs plain Adam. &lt;strong&gt;Figure 5:&lt;/strong&gt; Token-embedding gradient norm over training for a d1024 MoE (9e18 FLOPs) with the embedding in AdamH. Only the embedding learning-rate multiplier changes between the first three panels. At 1.0× the largest spike is about 6× the median; at 1.2× about 60×; at 1.4× about 700×, and the spikes keep growing over training. Right: the smallest rung of the hero scaling ladder (&lt;a href='https://wandb.ai/marin-community/marin_moe/runs/rav-ladder-d768-v2'&gt;d768&lt;/a&gt;, 5e19 FLOPs), with the embedding in plain Adam outside hyperball: the gradient norm decays smoothly with no spikes. This is a different model, so compare the shape of the curves rather than their level." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/marin-535b-architecture/embed-lr-spikes.json" data-plotly-src-mobile="/assets/openathena/assets/images/blog/marin-535b-architecture/embed-lr-spikes-mobile.json" role="img" style="min-height:320px;"></div></div></div><figcaption><strong>Figure 5:</strong> Token-embedding gradient norm over training for a d1024 MoE (9e18 FLOPs) with the embedding in AdamH. Only the embedding learning-rate multiplier changes between the first three panels. At 1.0× the largest spike is about 6× the median; at 1.2× about 60×; at 1.4× about 700×, and the spikes keep growing over training. Right: the smallest rung of the hero scaling ladder (<a href="https://wandb.ai/marin-community/marin_moe/runs/rav-ladder-d768-v2">d768</a>, 5e19 FLOPs), with the embedding in plain Adam outside hyperball: the gradient norm decays smoothly with no spikes. This is a different model, so compare the shape of the curves rather than their level.</figcaption></figure>
+<ul>
+<li>Running without logit z loss on the <code>lm_head</code> caused loss blow up in the overtrained regime, so we kept it in the recipe. Even though hyperball constrains the <code>lm_head</code> matrix, the RMSNorm gain on the activation entering the <code>lm_head</code> would continue to grow, leading to substantial logit growth (<a href="https://github.com/marin-community/marin/issues/8227#issuecomment-5310655656">Issue #8227</a>).</li>
+</ul>
+<figure class="plotly-figure-block" style="margin:1.75rem 0;"><div class="plotly-frame-outer" style="background-color:#d0c1b3;padding: 1rem;border-radius:14px;"><div class="plotly-frame-title" style="font-family:var(--font-heading);color:var(--text);font-size:1.05rem;font-weight:600;letter-spacing:0.01em;text-align:center;">Training without logit z loss</div><div class="plotly-frame-inner" style="background-color:#f1e8df;padding: 0;border-radius:10px;"><div aria-label="Training without logit z loss. &lt;strong&gt;Figure 6:&lt;/strong&gt; Two d1024 ablations of the hero recipe from the same sweep: &lt;a href='https://wandb.ai/marin-community/marin_moe/runs/mhep-abl6711-d1024-no-zloss-20260813'&gt;without z loss&lt;/a&gt; and, as the with-z-loss reference, &lt;a href='https://wandb.ai/marin-community/marin_moe/runs/mhep-abl6711-d1024-no-qk-norm-20260813'&gt;the no-QK-norm ablation&lt;/a&gt; (the d1024 baseline run stopped at step 1,010). Left: without z loss, training loss turns upward after about step 4,000 and reaches 3.39 by step 11,000, while the reference keeps falling to about 2.1. Right: the norm of the learnable RMSNorm gain on the activation entering the &lt;code&gt;lm_head&lt;/code&gt;. The two runs track each other until about step 2,500; without z loss the gain keeps growing to 557, versus 183 with it." class="plotly-figure" data-plotly-src="/assets/openathena/assets/images/blog/marin-535b-architecture/no-zloss.json" data-plotly-src-mobile="/assets/openathena/assets/images/blog/marin-535b-architecture/no-zloss-mobile.json" role="img" style="min-height:340px;"></div></div></div><figcaption><strong>Figure 6:</strong> Two d1024 ablations of the hero recipe from the same sweep: <a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl6711-d1024-no-zloss-20260813">without z loss</a> and, as the with-z-loss reference, <a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl6711-d1024-no-qk-norm-20260813">the no-QK-norm ablation</a> (the d1024 baseline run stopped at step 1,010). Left: without z loss, training loss turns upward after about step 4,000 and reaches 3.39 by step 11,000, while the reference keeps falling to about 2.1. Right: the norm of the learnable RMSNorm gain on the activation entering the <code>lm_head</code>. The two runs track each other until about step 2,500; without z loss the gain keeps growing to 557, versus 183 with it.</figcaption></figure>
+<h2 id="building-on-prior-runs">Building on prior runs<a aria-label="Link to section: Building on prior runs" class="heading-anchor" href="#building-on-prior-runs"></a></h2>
+<p>Leading up to this run, we had done two prior MoE runs on TPU: a <a href="https://openathena.ai/blog/pretraining-speedup/">129B-A16B MoE</a> for 1T tokens (~1e23 FLOPs) and a <a href="https://openathena.ai/blog/post-training-in-the-open/">67B-A2B MoE (Snowball)</a> for 10T tokens (~1.2e23 FLOPs). Both pre-training runs landed within 1 percent of their loss target with zero loss spikes. This evidence of stability influenced the design approach for the hero run. Any design that substantially deviated from these two architectures would give up this evidence of stability, and therefore need a higher advantage in other aspects to justify it.</p>
+<figure><img alt="Train cross-entropy loss vs tokens for the 129B-A16B and Snowball runs" src="/assets/openathena/assets/images/blog/marin-535b-architecture/prior-runs-loss.png"/><figcaption><strong>Figure 7:</strong> Train cross-entropy loss at every logged step. The loss curve trajectory is characteristic of hyperball with linear LR decay. Left: 129B-A16B on 1T tokens (<a href="https://github.com/marin-community/marin/issues/4697">Issue #4697</a>). Right: 67B-A2B Snowball on 10T tokens (<a href="https://github.com/marin-community/marin/issues/6044">Issue #6044</a>), with the data-mixture shift and the 8k → 65k context extension marked. Snowball was trained on a mix with more code, which gives lower train perplexity, so its loss is not directly comparable to the 129B run.</figcaption></figure>
+<h2 id="sizing-the-model">Sizing the model<a aria-label="Link to section: Sizing the model" class="heading-anchor" href="#sizing-the-model"></a></h2>
+<p>The model size was influenced by six factors:</p>
+<ol>
+<li><strong>Deadline.</strong> We had 768 GB200s and a December deadline, which left ~25 days to get everything running on the hardware and prep the run, ~80 days of training, and 15 days of buffer.</li>
+<li><strong>Pre-train compute optimality.</strong> Prior <a href="https://github.com/marin-community/marin/issues/6074#issuecomment-4587487909">isoflop curves</a> indicated that our MoEs were compute optimal around 60 tokens per active parameter (e.g. 535B-A23B would be compute optimal at ~1.4T tokens). Overtraining by 10x incurs roughly a 2x compute efficiency penalty.</li>
+<li><strong>MFU.</strong> GB200s come in racks of 72 GPUs, generally considered healthy if at least 64 are available. Comms are much faster within a rack, so a large MFU hit is incurred if the model cannot fit on a single rack.</li>
+<li><strong>Data availability.</strong> We <a href="https://openathena.ai/blog/marin-data-pipeline-overview/">curated 23T deduplicated training tokens</a>. We can run multiple epochs on high quality tokens to increase that, and we also can downsample low quality tokens to decrease that.</li>
+<li><strong>RL.</strong> We estimated 2 to 3 weeks of compute for a first pass at RL in December.</li>
+<li><strong>Serving efficiency (deprioritized).</strong> We did not explicitly target the intelligence versus model size Pareto frontier, which could have been more strongly targeted by reducing parameter count and increasing token count, or emphasizing distillation. The focus was making the smartest model possible with the available resources, with the main users being researchers learning from the process, ourselves and the broader community in service of future models, and specific domains that show promise during RL. Inference speed still carried some weight, since RL rollouts are inference-heavy.</li>
+</ol>
+<p>A more sophisticated approach to sizing was performed by Will Held <a href="https://github.com/marin-community/marin/issues/7673">here</a>. Given where everything landed, the sweet spot roughly corresponds to "fit the biggest model possible on one rack with enough active parameters to take ~80 days."</p>
+<p>I started <a href="https://github.com/marin-community/marin/issues/7201">Issue #7201</a> to track candidate sizes, using a reference 20T token budget to simplify comparisons. Within the first 2 days of the GB200s landing in July, we had our first candidate: a 129B-A15B MoE trained on 20T tokens in 57 days. Within a week, several other candidates landed: a 360B-A23B MoE trained on 20T tokens in 82 days, a 707B-A23B MoE trained on 20T tokens in 99 days (sharded over 2 racks), and a 360B-A21B MoE with MLA trained on 20T tokens in 120 days.</p>
+<p>Based on the realized MFU of these candidates, the 360B-A23B MoE trained on 20T tokens in 82 days looked most promising. This was the biggest model I could get to fit on one rack with FSDP. My attempts at <code>jax.lax.ragged_all_to_all</code> seemed too slow to make EP work. Later, Rafal Wojdyla developed a custom fixed-capacity expert parallelism implementation (<a href="https://openathena.ai/blog/expert-parallelism/">details</a>) that made a 535B-A23B MoE trained on 20T tokens in 85 days fit. However, it also introduced substantial token dropping from its fixed-size sender and receiver buffers, which required a judgment call. Each of the 64 GPUs in a rack keeps a fixed-size pool for each of the 64 destination GPUs, so tokens can drop in 4,096 sender pools per rack, plus 384 per-expert receiver buffers.</p>
+<h2 id="derisking-ep-token-dropping">Derisking EP token dropping<a aria-label="Link to section: Derisking EP token dropping" class="heading-anchor" href="#derisking-ep-token-dropping"></a></h2>
+<p>Running with an experimental token dropping approach was in tension with our second and third goals for the run, so we needed empirical evidence that it would be worthwhile. Two factors were considered: what is the expected impact on model quality, and what is the expected variance in hero run outcome.</p>
+<p>Moving to EP, adding 50% more routed weights, and moving to normalized latent MoE together gave roughly <a href="https://openathena.ai/blog/expert-parallelism/">1.3× compute efficiency</a> (EP is what made the extra routed weights fit), as measured from a scaling ladder from 4e19 to 8e21 FLOPs. From a quality perspective, it was a clear win. But how to estimate the impact on variance?</p>
+<p>To do this, Rafal first tuned the sizing and token-capacity factors of the EP candidate, and then I ran <a href="https://github.com/marin-community/marin/issues/8062">several experiments</a>:</p>
+<ul>
+<li>What happens if we eval with token dropping on vs off?</li>
+<li>What happens if we swap to dropless mid-run?</li>
+<li>What happens if we increase context length from 4k to 65k mid-run?</li>
+<li>What happens if we scale up from one rack to four racks?</li>
+<li>What happens to token drop rates as we scale?</li>
+</ul>
+<figure><img alt="EP token drop rate vs run progress for d768 to d2048" src="/assets/openathena/assets/images/blog/marin-535b-architecture/ep-drop-rate.png"/><figcaption><strong>Figure 8:</strong> Fraction of tokens dropped by EP at every step of the FSDP versus EP ladder (4k context, capacity factor 1.33), against run progress. After warmup, the drop rate settles and creeps up slowly with scale, ending at 5.5% (d768<sup class="footnote-ref" id="fnref-8"><a href="#fn-8">8</a></sup>), 5.9% (d1024), 6.6% (d1536), and 7.1% (d2048). (<a href="https://github.com/marin-community/marin/issues/8062">Issue #8062</a>)</figcaption></figure>
+<p>Drop rates crept up slowly with scale, from 5.5% at d768 to 7.1% at d2048 (Figure 8), and scaling the d2048 run from one rack to four racks did not change that trend. Separate small-scale tests showed the model was robust to swapping from small amounts of dropping (~5%) to dropless mid-run.</p>
+<p>In the initial small-scale head-to-head, EP's eval loss looked far worse than FSDP's, enough that our scaling law would put FSDP at ~3x more compute efficient. But with token dropping turned off at eval time, EP came out ahead. Routing learns to balance over the train distribution, so a narrow eval like C++ can overload a couple experts and experience heavy dropping. However, since we can run dropless at inference, this concern was moot, and we could focus on the dropless eval number.</p>
+<p>The most compelling evidence that EP would be stable came from the experiment extending context from 4k to 65k. Token dropping jumped from 7% to 37%, yet EP's eval loss landed within 0.01 of switching to dropless FSDP, and all routing metrics stayed stable (Figure 9). I would want to avoid 37% dropping on the hero run, but the stable handling gave confidence that we had a reasonable safety buffer. I care about having a safety buffer because if something unrelated, like a loss spike or a bad data batch, spikes token dropping, I want to avoid a negative feedback loop that blows up the run.</p>
+<figure><img alt="d2048 training and dropless eval loss across the 4k to 65k context extension" src="/assets/openathena/assets/images/blog/marin-535b-architecture/ctx-extension-d2048.png"/><figcaption><strong>Figure 9:</strong> Extending the d2048 ladder run from 4k to 65k context for 10B tokens, three ways. Left: training loss (25-step mean over every logged step, with the raw steps faint); EP's training loss at 65k is measured with 37% of tokens dropped. Right: dropless Paloma macro-loss. Despite the dropping, EP lands within 0.008 of switching to dropless FSDP for the extension.</figcaption></figure>
+<p>Several decisions were made to further reduce the risk:</p>
+<ul>
+<li>Start the run at 4k context length with the maximum tokens per batch that will fit in memory (46 million tokens). Higher document counts per batch make router balancing simpler, since a large amount of routing variance comes from variance across documents.</li>
+<li>Run with ⅓ of MLP neurons in shared experts, giving a stronger dense backbone in case routing ran into issues.</li>
+<li>Keep XSA. XSA improved routing during learning rate warmup.</li>
+</ul>
+<p>In the end, the hero's drop rate continued the ladder's trend, until we were able to land a performant ragged-all-to-all kernel and navigate the transition seamlessly mid-run (Figure 10). Thanks to <a href="https://github.com/mcwitt">Matt Wittmann</a> for landing it, with some fixes that were later upstreamed to XLA, and to NVIDIA's Sevin Varoglu, author of the device-initiated ragged all-to-all kernel that the EP transport runs on, and Michael Reed for contributing optimizations.</p>
+<figure><img alt="Hero token drop rate vs the scaling-ladder rungs" src="/assets/openathena/assets/images/blog/marin-535b-architecture/hero-drop.png"/><figcaption><strong>Figure 10:</strong> Fraction of tokens dropped over the full hero run, as a 200-step mean, against the scaling-ladder rungs. Before the switch to ragged all-to-all EP at 21% of the run, the hero dropped about 3.4% of tokens, continuing the ladder's trend with scale (2.6% at d768 up to 3.2% at d2048 over 5–20% of each run). After the switch to ragged all-to-all, dropping stays near zero: about 0.01% at 4k, 0.14% at 16k and 0.03% at 65k context, where the capacity factor was also raised.</figcaption></figure>
+<h2 id="sizing-the-scaling-ladder">Sizing the scaling ladder<a aria-label="Link to section: Sizing the scaling ladder" class="heading-anchor" href="#sizing-the-scaling-ladder"></a></h2>
+<p>The purpose of the <a href="https://github.com/marin-community/marin/issues/8435#issuecomment-5344533796">scaling ladder</a> was to confirm our scaling law gave a reasonably low loss projection, catch any abnormal training dynamics, provide a forecast we can track over training, and give us a reference to compare against if we see strange dynamics on the hero run. I ran 4 rungs from 5e19 FLOPs to 9e21 FLOPs, to forecast the hero at 2.7e24 FLOPs, a 300x extrapolation, following our approach from <a href="https://openathena.ai/blog/delphi/">Delphi</a>. The largest ladder rung exactly mirrored the hero batch size in order to simulate EP, multi-rack, and data dynamics accurately.</p>
+<figure><img alt="Scaling ladder training loss and dropless eval loss with the hero projection" src="/assets/openathena/assets/images/blog/marin-535b-architecture/scaling-ladder.png"/><figcaption><strong>Figure 11:</strong> The four scaling-ladder rungs, all trained with the hero recipe at 791 tokens per active parameter. Left: train cross-entropy at every logged step; the small bump at 80% is the data-mix phase 2 boundary. Right: dropless Paloma macro-loss vs run progress for each rung. At every 5% of training, a power-law fit across the rungs (L = 1.5 + A·C^-α in compute) projects the 535B-A23B hero, ending at 2.039. The 27.7B-A1.2B rung crashed at 81%; its last points (hollow) are extrapolated. (<a href="https://github.com/marin-community/marin/issues/8435#issuecomment-5344533796">Issue #8435</a>)</figcaption></figure>
+<p>Figure 12 compares the ladder's fit with the two scaling laws we used earlier in the year. This comparison is an important sanity check on the learning dynamics to catch bugs. As expected, at smaller compute budgets the compute-optimal May recipe<sup class="footnote-ref" id="fnref-9"><a href="#fn-9">9</a></sup> wins, followed by the 13x overtrained hero recipe, followed by the 100x overtrained 67B-A2B recipe. We then see favorable scaling dynamics leading to a lower projection, providing evidence that we aren't incurring substantial numerical failures when shifting from TPU to GPU (both the May recipe and 67B-A2B were trained on TPU).</p>
+<table>
+<thead>
+<tr>
+<th>Scaling law</th>
+<th>Context</th>
+<th>Irreducible loss</th>
+<th>Overtraining</th>
+<th>Hero projection (2.6e24 FLOPs, excl. <code>lm_head</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hero ladder</td>
+<td>4k</td>
+<td>1.5 (calibrated for 4k seqlen)</td>
+<td>~13x</td>
+<td>2.04</td>
+</tr>
+<tr>
+<td>May recipe</td>
+<td>4k</td>
+<td>1.6 (initial estimate, set too high)</td>
+<td>compute-optimal</td>
+<td>2.05</td>
+</tr>
+<tr>
+<td>67B-A2B</td>
+<td>8k</td>
+<td>1.4 (calibrated for 8k seqlen)</td>
+<td>~100x</td>
+<td>2.07</td>
+</tr>
+</tbody>
+</table>
+<figure><img alt="Hero ladder scaling law compared with the May-recipe and 67B-A2B scaling laws" src="/assets/openathena/assets/images/blog/marin-535b-architecture/scaling-law-comparison.png"/><figcaption><strong>Figure 12:</strong> The hero ladder's 100% fit (L = 1.5 + A·C^-α) against the May-recipe law and the preregistered 67B-A2B law, with each law's value at the hero's compute marked. (<a href="https://github.com/marin-community/marin/issues/8435#issuecomment-5344804457">Issue #8435</a>)</figcaption></figure>
+<p>The scaling ladder runs took 2 days, which meant the hero run would have 2 fewer days of compute. An alternative approach would have been to run the scaling ladder for 10 days up to 3e23 FLOPs. My take was that the highest risk portion of the hero run was the first 5 days, with loss blowup as the learning rate ramped, so we'd get more signal from kicking off the hero run itself, rather than running another scaling rung.</p>
+<p>Another goal of the largest rung of a scaling ladder can be to pre-screen the SFT and RL process. Given how our run timelines lined up, Snowball, our earlier 67B-A2B run with a similar architecture, was filling this role. As we expand into new architectures without a Snowball-sized cousin to test with, a larger rung on the scaling ladder will be very useful.</p>
+<h2 id="component-decisions">Component decisions<a aria-label="Link to section: Component decisions" class="heading-anchor" href="#component-decisions"></a></h2>
+<p>The remaining sections cover each architecture component, roughly in the order of the notable components list. Candidate ideas came from recent large releases (Inkling's short convolutions, the sliding window sizes in gpt-oss, Gemma and Trinity), from papers (latent MoE, gated attention, XSA, hyperball), from blogs (quantile balancing), and from our own ablations. Deciding which ideas to adopt followed the stability argument above: the further an idea moved from our two prior runs' architectures, the larger the advantage it needed to show in our ablations, and every idea was then gated on realized MFU on GB200. Throughout, "compute efficiency" is the multiple of compute the baseline would need to match a variant's loss, from our scaling law L(C) = 1.6 + A·C^−0.0941; for example, 1.18× means the baseline would need 18% more compute, and 0.81× means it would need 19% less. It assumes equal throughput, so it does not include MFU differences.</p>
+<h3 id="normalized-latent-moe">Normalized latent MoE<a aria-label="Link to section: Normalized latent MoE" class="heading-anchor" href="#normalized-latent-moe"></a></h3>
+<p>Initial tests on latent MoE showed surprisingly poor performance, with a compute efficiency of 0.74–0.75 from d512 to d1024 (<a href="https://github.com/marin-community/marin/issues/6822#issuecomment-4859921214">Issue #6822</a>). Typically when some aspect of the model seems to struggle to learn, the diagnosis method I prefer is to add degrees of freedom with new parameters and observe how the model uses them. Adding a learnable scalar on the latent (a single scalar, initialized to 1, multiplying the down-projected input to the routed experts) showed it climb to about 4 over training, which counteracted the 0.25 scaling induced by initializing the two latent projections to 0.5/√<code>hidden_dim</code>.</p>
+<figure><img alt="Learned latent scalar per layer over training at d512 and d768" src="/assets/openathena/assets/images/blog/marin-535b-architecture/latent-scalar.png"/><figcaption><strong>Figure 13:</strong> A learnable scalar (init 1) on the LatentMoE latent, per layer, over the d512 and d768 test runs. Most layers climb to roughly 4, the factor that cancels the 0.5 × 0.5 init of the two latent projections; the first layer stays lower, near 3.1–3.2. (<a href="https://github.com/marin-community/marin/issues/6822">Issue #6822</a>)</figcaption></figure>
+<p>Instead of a learned scalar or updating the init, I found the strongest results from adding a learnable RMSNorm to the latent, taking inspiration from the RMSNorm positioning on MLA. Compared to hyperball with no intervention, this gave <a href="https://github.com/marin-community/marin/issues/6822">1.25× compute efficiency</a>. This made latent MoE worth including for the MFU gain from halving all-to-all communication.</p>
+<h3 id="gated-norm">Gated norm<a aria-label="Link to section: Gated norm" class="heading-anchor" href="#gated-norm"></a></h3>
+<p>Gated norm was included in our prior runs to enhance stability, following the advice of Kaiyue Wen. Given how stable those runs looked, there was strong precedence to leave it in. Qwen's <a href="https://arxiv.org/abs/2608.30320">Qwen3.8-Next architecture study</a> similarly reports that GatedNorm "markedly improves training stability," and merges it into the Gated Residual design used in Qwen3.8-Flash-Next. We put gated norm in MuonH, based on a <a href="https://github.com/marin-community/marin/issues/5750">comparison of optimizer choices for the gated norm weights</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Gated norm optimizer</th>
+<th>d512</th>
+<th>d768</th>
+<th>d1024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Adam</td>
+<td>3.7553</td>
+<td>3.3946</td>
+<td>3.1392</td>
+</tr>
+<tr>
+<td>AdamH</td>
+<td>3.7484</td>
+<td><strong>3.3835</strong></td>
+<td>3.1390</td>
+</tr>
+<tr>
+<td>Muon</td>
+<td>3.7557</td>
+<td>3.3895</td>
+<td>3.1366</td>
+</tr>
+<tr>
+<td>MuonH</td>
+<td><strong>3.7471</strong></td>
+<td>3.3841</td>
+<td><strong>3.1352</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Paloma macro loss; all other matrices use MuonH. The differences between optimizers are small (under 0.011) and don't show a consistent trend with scale, leaving open the possibility for further study at larger widths.</p>
+<h3 id="exclusive-self-attention-xsa">Exclusive self attention (XSA)<a aria-label="Link to section: Exclusive self attention (XSA)" class="heading-anchor" href="#exclusive-self-attention-xsa"></a></h3>
+<p>XSA removes the component of each token's attention output that lies along its own value vector, so attention only carries information from other tokens. In prior recipes we saw a compute efficiency gain from XSA. On the hero recipe, the change is negligible (at d768, <a href="https://github.com/marin-community/marin/issues/8227#issuecomment-5310665092">removing XSA</a> moved Paloma macro loss from 3.0208 to 3.0221), but we see substantially better router balancing early in training under an accelerated schedule, halving drop rates in the test below.</p>
+<p>My intuition is that XSA makes attention start closer to a no-op, so the router inputs change less while attention is still learning (<a href="https://github.com/marin-community/marin/issues/8227#issuecomment-5310696020">Issue #8227</a>).</p>
+<p>I estimated that the biggest risk of the pre-training run would be related to token dropping, so any feature that reduced it was strongly biased towards inclusion. XSA's runtime cost was near-zero.</p>
+<figure><img alt="Token drop rate over the first 100 steps at hero size with and without XSA" src="/assets/openathena/assets/images/blog/marin-535b-architecture/xsa-drop.png"/><figcaption><strong>Figure 14:</strong> Fraction of tokens dropped over the first 100 steps of hero-size (d6144) EP test runs. These runs used an accelerated 100-step schedule: a 1-step warmup to a peak LR about 12x the hero's, then linear decay (the hero warms up over ~3,900 steps). Without XSA, dropping stays above 50% through step 30 and averages 12.7% over steps 30–100; with XSA it falls to 21% over steps 10–30 and 5.6% over steps 30–100. The faint lines are XSA-off runs with different EP buffer settings.</figcaption></figure>
+<p>Microsoft AI used a zero init on the attention output in <a href="https://www.microsoft.ai/blog/mai-thinking-1/">MAI-Thinking-1</a> to address this same issue. However, this is not feasible with hyperball, which keeps each matrix at its initial norm, so a zero-initialized matrix would stay at zero. Adding a learned scalar initialized to zero on the attention output seemed like too big of a change to rush through before launch, as it could introduce new LR scaling effects with depth. As a general note on hyperball: in smaller-scale tests, I see that hyperball does not benefit from learned output scalars on the MLP and attention, as long as there is a learnable gain on the input RMSNorm.</p>
+<h3 id="qk-rmsnorm-with-a-fixed-13-multiplier">QK RMSNorm with a fixed 1.3 multiplier<a aria-label="Link to section: QK RMSNorm with a fixed 1.3 multiplier" class="heading-anchor" href="#qk-rmsnorm-with-a-fixed-13-multiplier"></a></h3>
+<p>We see gains from a fixed multiplier after QK norm, as opposed to a learnable per-head scalar.</p>
+<table>
+<thead>
+<tr>
+<th>Q/K treatment (d768, hero architecture)</th>
+<th>Paloma macro loss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RMS QK-norm, fixed 1.3 (hero)</td>
+<td><strong>3.0208</strong></td>
+</tr>
+<tr>
+<td>RMS QK-norm, learnable per-head gain</td>
+<td><a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl6711-d768-qk-gain-20260814-r7">3.0217</a></td>
+</tr>
+<tr>
+<td>RMS QK-norm, no multiplier</td>
+<td><a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl6711-d768-no-qk-mult-20260813">3.0261</a></td>
+</tr>
+<tr>
+<td>No QK-norm</td>
+<td><a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl6711-d768-no-qk-norm-20260813">3.0281</a></td>
+</tr>
+</tbody>
+</table>
+<p>At a larger scale (d2048, ~4e20 FLOPs, 60x overtrained), a learnable QK scale also showed no gain: <a href="https://wandb.ai/marin-community/marin_moe/runs/qb-abl-d2048-60x-baseline">fixed 1.3</a> ended at 2.6477 Paloma macro loss vs 2.6484 for <a href="https://wandb.ai/marin-community/marin_moe/runs/qb-abl-d2048-60x-qknorm">learnable</a>.</p>
+<figure><img alt="Learnable QK scale over training at d2048" src="/assets/openathena/assets/images/blog/marin-535b-architecture/qk-scale.png"/><figcaption><strong>Figure 15:</strong> The learnable per-head QK scale in the d2048 run, as an RMS over its 18 layers × 16 heads. It sharpens steadily from 1.3 to about 2.0 over training, yet the run ends no better than the fixed 1.3.</figcaption></figure>
+<p>From a risk standpoint, attention logits seem to be a point of failure. The thought is, if we are going to abruptly manually scale up the multiplier during long context extension, as is commonly done with <a href="https://arxiv.org/abs/2309.00071">YaRN</a>, then it seems plausible that it should be fixed before then. Absent a larger budget and more experimental cycles to compare long context performance, the decision leaned on the organization goal of producing a stable and predictable run. During the hero run we see clean decreases in loss with no spikes at the context transition points. We scale up the QK multiplier from 1.3 to 1.66 during context extension from 4K to 65K. For 262K, the global layers get a 1.66 base with a log-length query scale, (1 + 0.1·ln(n/65,536))², active from 65K to 262K. This form was tuned directly on the hero via short tests led by Matt Wittmann. This is a squared, floored variant of Inkling's log scaling, in the spirit of <a href="https://arxiv.org/abs/2501.19399">SSMax</a> (<a href="https://github.com/marin-community/marin/issues/8435#issuecomment-6748198431">Issue #8435</a>).</p>
+<h3 id="local-sliding-window-length">Local sliding window length<a aria-label="Link to section: Local sliding window length" class="heading-anchor" href="#local-sliding-window-length"></a></h3>
+<p>Romain Yon measured the <a href="https://github.com/marin-community/marin/issues/8017">inference cost of the attention layout</a> on GB200 with vLLM. Since SWA 2048 was only 2-4% slower than 512 on fixed long-context workloads, we decided to go with a sliding window of 2048. This gave 1.10× compute efficiency at d768 (3.0208 vs <a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl6711-d768-window-512-20260814-r6">3.0334</a>). While smaller sliding windows seem more common in recent releases (128 in gpt-oss, 512 in Inkling, 1,024 in Gemma 4), <a href="https://huggingface.co/arcee-ai/Trinity-Large-Base">Arcee Trinity Large</a> and <a href="https://huggingface.co/CohereLabs/command-a-plus-05-2026">Command A+</a> sitting at a 4,096 sliding window provided some external evidence that a larger window gives viable performance at scale.</p>
+<h3 id="gqa-41-on-local-81-on-global">GQA: 4:1 on local, 8:1 on global<a aria-label="Link to section: GQA: 4:1 on local, 8:1 on global" class="heading-anchor" href="#gqa-41-on-local-81-on-global"></a></h3>
+<p>Removing GQA entirely gives roughly 1.2× compute efficiency, but GQA is important to keep to reduce the KV cache at inference. On the hero architecture at d768, <a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl6711-d768-mha-20260814-r6">full multi-head attention</a> reached 2.9985 Paloma macro loss vs 3.0208 for 4:1 GQA (<a href="https://github.com/marin-community/marin/issues/8227#issuecomment-5310665092">1.18×</a>).</p>
+<p>Since KV heads clearly matter for quality, we kept the local layers at 4:1 GQA rather than reducing them to the 8:1 used on the global layers. The global layers attend over the full context, so their KV cache grows with sequence length and dominates inference memory at long context; that is where 8:1 pays off. The local layers' KV cache is capped by the 2,048-token window, so fewer KV heads there would save little at inference while giving up quality.</p>
+<h3 id="sconv-on-keys-attention-output-mlp-output">SConv on keys, attention output, MLP output<a aria-label="Link to section: SConv on keys, attention output, MLP output" class="heading-anchor" href="#sconv-on-keys-attention-output-mlp-output"></a></h3>
+<p>The short causal convolutions were inspired by Thinking Machines' <a href="https://thinkingmachines.ai/news/introducing-inkling/">Inkling</a>, which places them after the key and value projections and on the attention and MLP outputs. Each SConv is a learned per-channel convolution over the sequence: with kernel size 4, each output is a weighted sum of the current token and the 3 tokens before it, initialized to the identity and masked at document boundaries. We see a substantial loss improvement from this. Given that our model runs shallow (48 layers vs 60+ in many recent large MoEs), having an additional mechanism for information to flow across tokens seems particularly useful. Within attention, we apply SConv to keys and not values. It is left off values because it gives the smallest gain and blurs XSA: with a conv on values, each token's value mixes in its neighbors, so XSA's removal of the "self" direction would also remove part of the local context the conv adds.</p>
+<table>
+<thead>
+<tr>
+<th>SConv variant (<a href="https://github.com/marin-community/marin/issues/7585#issuecomment-5077672435">d1024 ablation</a>)</th>
+<th>Paloma macro loss</th>
+<th>Compute efficiency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>K, V, attn out, MLP out (kernel 4)</td>
+<td><strong>3.0378</strong></td>
+<td>1.19×</td>
+</tr>
+<tr>
+<td>All four sites, kernel 3</td>
+<td>3.0387</td>
+<td>1.18×</td>
+</tr>
+<tr>
+<td>All four sites, kernel 2</td>
+<td>3.0440</td>
+<td>1.13×</td>
+</tr>
+<tr>
+<td>All four sites, global layers only</td>
+<td>3.0482</td>
+<td>1.10×</td>
+</tr>
+<tr>
+<td>MLP out only</td>
+<td>3.0506</td>
+<td>1.08×</td>
+</tr>
+<tr>
+<td>K only, global layers only</td>
+<td>3.0531</td>
+<td>1.06×</td>
+</tr>
+<tr>
+<td>K only</td>
+<td>3.0542</td>
+<td>1.05×</td>
+</tr>
+<tr>
+<td>Attn out only</td>
+<td>3.0571</td>
+<td>1.03×</td>
+</tr>
+<tr>
+<td>V only</td>
+<td>3.0576</td>
+<td>1.03×</td>
+</tr>
+<tr>
+<td>No SConv</td>
+<td>3.0610</td>
+<td>1.00×</td>
+</tr>
+</tbody>
+</table>
+<p>On the hero architecture at d768, removing SConv entirely cost +0.028 (<a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl6711-d768-no-sconv-20260814-r6">3.0489</a> vs 3.0208), while removing only the V conv cost +0.003 (<a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl6711-d768-no-sconv-v-20260814">3.0236</a>).</p>
+<p>The convolution on keys enables 1-layer induction heads. I tested initializing the K conv to mirror <a href="https://openathena.ai/blog/pretraining-speedup/#partial-key-offset">partial key offset</a>, which enables the induction heads to form faster. However, the gains from init wash out over the course of the run, so identity init is kept.</p>
+<figure><img alt="K conv with PKO-matching init vs identity init: faster early learning that washes out" src="/assets/openathena/assets/images/blog/marin-535b-architecture/sconv-pko-init.png"/><figcaption><strong>Figure 16:</strong> A K conv on the global layers of a d1024 model, initialized to behave like <a href="https://openathena.ai/blog/pretraining-speedup/#partial-key-offset">PKO</a> (partial key offset) versus identity-initialized. Left: with the PKO-matching init, induction heads form much faster and train loss drops ahead by about 0.4 around step 150. Right: the gap closes by roughly step 1,500 and ends slightly behind (+0.003 train loss; Paloma macro loss 3.1995 vs 3.1960). (<a href="https://github.com/marin-community/marin/issues/7585#issuecomment-5077663455">Issue #7585</a>)</figcaption></figure>
+<h3 id="top-k-quantile-balancing-on-raw-logits">Top-k quantile balancing on raw logits<a aria-label="Link to section: Top-k quantile balancing on raw logits" class="heading-anchor" href="#top-k-quantile-balancing-on-raw-logits"></a></h3>
+<p>We integrated quantile balancing, from <a href="https://kexue.fm/archives/11619">Jianlin Su's blog</a>, into the recipe back in April. (See also <a href="https://openathena.ai/blog/quantile-balancing/">our post on the subject</a>.) For this hero run, to keep our implementation independent of GPU count, we use histogram binning instead of averaging per-GPU quantiles, similar to <a href="https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf">Kimi K3</a>. One key difference: Kimi K3, like DeepSeek-V3, applies the bias after the sigmoid, while we apply it to the raw logits. While the sigmoid gives the histogram a clean 0 to 1 bound, we see substantially faster balancing from logits in our experiments (Figure 17). This is particularly relevant for us due to our nonzero token dropping. Estimating the bin range live with 10,000 bins runs quickly, with no noticeable MFU hit, which removes the need for a clean bound.</p>
+<p>The histogram estimators match averaging on loss while balancing slightly better and staying independent of GPU count.</p>
+<figure><img alt="Token drop rate with the QB bias applied to raw logits vs after the sigmoid" src="/assets/openathena/assets/images/blog/marin-535b-architecture/qb-logits-vs-sigmoid.png"/><figcaption><strong>Figure 17:</strong> Fraction of tokens dropped over the d768 QB estimator runs. With the bias on raw logits, averaging and the live-range histogram balance quickly and settle near 2%. Applying the bias after the sigmoid never reaches the same balance: the Kimi K3-style histogram ends at 3.4% and averaging at 4.9%. (<a href="https://github.com/marin-community/marin/issues/8033#issuecomment-5321147755">Issue #8033</a>)</figcaption></figure>
+<p>All of the QB variants balance quickly compared to auxiliary-loss methods (<a href="https://openathena.ai/blog/quantile-balancing/">earlier post</a>); even a routing entropy of 4.76, against a maximum of 4.852, is already quite good. The last margins matter here specifically because of our token-dropping capacity factors.</p>
+<figure><img alt="Routing entropy with the QB bias applied to raw logits vs after the sigmoid" src="/assets/openathena/assets/images/blog/marin-535b-architecture/qb-entropy.png"/><figcaption><strong>Figure 18:</strong> Routing entropy for the same d768 runs: the entropy of the per-expert load distribution, averaged over layers. Higher is more balanced, and perfectly uniform load over 128 experts gives ln(128) = 4.852. With the bias on raw logits, both estimators end near 4.848; after the sigmoid, the K3-style histogram ends at 4.821 and averaging at 4.786. Early steps fall below the plotted range. (<a href="https://github.com/marin-community/marin/issues/8033">Issue #8033</a>)</figcaption></figure>
+<h3 id="expert-granularity">Expert granularity<a aria-label="Link to section: Expert granularity" class="heading-anchor" href="#expert-granularity"></a></h3>
+<p>Scaling from 4 of 192 to 8 of 384 shows 1.13–1.16× compute efficiency. Doubling again to 16 of 768 shows diminishing gains over 8 of 384, which did not justify its throughput cost, so granularity was kept at 8 of 384. 8 of 384 with 2x latent compression has a secondary benefit in this config, as it keeps the routed expert matrices square. On square matrices, Muon's orthonormalization step balances the update over both incoming channels and outgoing neurons. This avoids the imbalanced per-neuron updates, and in the extreme the neuron death, that approaches like NorMuon<sup class="footnote-ref" id="fnref-10"><a href="#fn-10">10</a></sup> and Aurora<sup class="footnote-ref" id="fnref-11"><a href="#fn-11">11</a></sup> were made to address in rectangular matrices. In an ideal world we would be able to test each of these changes under much larger scaling ladders, but given finite timelines and compute, I rely somewhat on judgment and on external validation, such as the 8 of 384 expert granularity of <a href="https://huggingface.co/moonshotai/Kimi-K2-Base">Kimi K2</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Routed experts</th>
+<th>Expert width (d768)</th>
+<th>Paloma macro loss, d768</th>
+<th>Paloma macro loss, d1024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4 of 192</td>
+<td>768</td>
+<td><a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl-d768-baseline-20260812">3.0289</a></td>
+<td><a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl-d1024-baseline-20260812">2.7810</a></td>
+</tr>
+<tr>
+<td>8 of 384 (hero)</td>
+<td>384</td>
+<td><a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl-d768-e384-t8-half-smatch-20260812">3.0091</a> (1.16×)</td>
+<td><a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl-d1024-e384-t8-half-smatch-20260812">2.7674</a> (1.13×)</td>
+</tr>
+<tr>
+<td>16 of 768</td>
+<td>192</td>
+<td><a href="https://wandb.ai/marin-community/marin_moe/runs/mhep-abl-d768-e768-t16-quarter-smatch-20260812">3.0009</a> (1.23×)</td>
+<td>not run</td>
+</tr>
+</tbody>
+</table>
+<p>Step-matched runs; compute efficiency vs 4 of 192 in parentheses.</p>
+<h3 id="rmsnorm-on-embed">RMSNorm on embed<a aria-label="Link to section: RMSNorm on embed" class="heading-anchor" href="#rmsnorm-on-embed"></a></h3>
+<p>The token embedding is kept outside hyperball, so under Adam its norm grows freely, from 177 to about 7,800 over the hero run (Figure 19). An RMSNorm after the lookup keeps its output at unit scale regardless, matching the forward pass behavior of μP<sup class="footnote-ref" id="fnref-12"><a href="#fn-12">12</a></sup>. As the norm grows, Adam's updates shrink relative to the weights, which acts as a built-in learning-rate decay on the embedding (<a href="https://github.com/marin-community/marin/issues/4569">Issue #4569</a>). In a <a href="https://github.com/marin-community/marin/issues/6442#issuecomment-4726787036">d768 ablation</a>, removing the embedding normalization cost about 19% in compute efficiency.</p>
+<figure><img alt="Hero token-embedding parameter norm and gradient norm over training" src="/assets/openathena/assets/images/blog/marin-535b-architecture/embed-norm.png"/><figcaption><strong>Figure 19:</strong> The hero run's token embedding, at every logged step. Left: the parameter norm grows from 177 to about 7,800 and flattens as the learning rate decays. Right: the gradient norm falls by about 1,000× in the first few hundred billion tokens, then drifts slowly upward over the rest of the run.</figcaption></figure>
+<h3 id="hyperball-on-lm_head">Hyperball on <code>lm_head</code><a aria-label="Link to section: Hyperball on lm_head" class="heading-anchor" href="#hyperball-on-lm_head"></a></h3>
+<p>All Adam parameters are excluded from hyperball, except for the <code>lm_head</code>. The <code>lm_head</code> was tested under AdamH, Cautious AdamW, AdamW, and plain Adam. At very small scale, Cautious AdamW performs marginally better. However, as we scale up, AdamH beats Cautious AdamW with 1.08× compute efficiency (<a href="https://github.com/marin-community/marin/issues/8350#issuecomment-5335218475">Issue #8350</a>). I note that this does not imply AdamH on the <code>lm_head</code> is strictly superior to Cautious AdamW. Everything in ML is conditional. In particular, in this case the LR recipe was previously tuned on AdamH. However, given limited compute, the 1.08× gap and prior stability evidence of AdamH were sufficient to push compute towards more pressing ablations. Pinning the <code>lm_head</code> norm does not fix the logit scale: the learnable RMSNorm gain on the final activation, trained with Adam, is free to grow and scale up the logits. This is why logit z loss remained necessary.</p>
+<h3 id="linear-lr-decay">Linear LR decay<a aria-label="Link to section: Linear LR decay" class="heading-anchor" href="#linear-lr-decay"></a></h3>
+<p>We use 1% warmup followed by linear decay to 5% of peak. Warmup is not necessary under Muon, but we kept it for initial routing stability.</p>
+<p>Linear decay beat WSD in our <a href="https://github.com/marin-community/marin/issues/7717#issuecomment-5111637376">d768 schedule sweep</a>, which I attribute to hyperball. Without hyperball, parameter norms grow over roughly the first half of training, which decays the effective learning rate even during a WSD stable phase. Hyperball fixes those norms, so the decay has to be built into the schedule itself. This is also what gives the straight-line loss curves in Figure 7.</p>
+<p>The same sweep tested a 1−√ decay, where the learning rate follows 1−√(t/T) over the run (t is the current step, T the total), dropping faster than linear early and flattening toward the end. It came out slightly ahead (3.2642 vs 3.2670), but only at 1.4× the peak learning rate. That gain was not worth launching at a higher learning rate without further testing, since a higher learning rate could cause issues during the first 3% of the run, the highest-risk point.</p>
+<h3 id="shallow-architecture">Shallow architecture<a aria-label="Link to section: Shallow architecture" class="heading-anchor" href="#shallow-architecture"></a></h3>
+<p>The hero model is 6,144 wide and 48 layers deep, a width-to-depth ratio of 128. The main reason is MFU: fewer, wider layers run more efficiently on our stack. A secondary benefit is lower risk. We did not add depth-related enhancers such as attention residuals<sup class="footnote-ref" id="fnref-13"><a href="#fn-13">13</a></sup>, mHC<sup class="footnote-ref" id="fnref-14"><a href="#fn-14">14</a></sup> or skip connections, because I could not make them run efficiently in time. Without them, there is a risk that a very deep network cannot make full use of its parameters. <a href="https://huggingface.co/CohereLabs/command-a-plus-05-2026">Command A+</a>, with 32 layers, showed that high depth is not necessary for a viable model, so from a derisking perspective a shallower network seemed like the stronger choice.</p>
+<h3 id="no-leading-dense-layers">No leading dense layers<a aria-label="Link to section: No leading dense layers" class="heading-anchor" href="#no-leading-dense-layers"></a></h3>
+<p>When we moved to quantile balancing, we removed the leading dense layers, since routing entropy in the first layers looked very healthy without them and higher sparsity can increase compute efficiency. Given the move to EP and the related risk from token dropping, there was a case for revisiting this. However, I was not able to get heterogeneous layers working cleanly with <code>jax.lax.scan</code> with a small memory profile in time to pursue it further (certainly just user error on my end).</p>
+<h2 id="preliminary-results">Preliminary results<a aria-label="Link to section: Preliminary results" class="heading-anchor" href="#preliminary-results"></a></h2>
+<p>Below are the loss curve and scaling projection results for the pre-training run. We will still need to see where the final results shake out after evals, which will be covered in a future report, but the tracking of the loss forecast looks quite promising when compared on a FLOPs vs loss basis to other recent large-scale MoEs (<a href="https://github.com/marin-community/marin/issues/8824#issue-5306395658">comparison</a>).</p>
+<figure><img alt="Hero training loss against the scaling-ladder rungs, by run progress" src="/assets/openathena/assets/images/blog/marin-535b-architecture/hero-vs-ladder-final.png"/><figcaption><strong>Figure 20:</strong> Hero training loss against the scaling ladder, by run progress, with every step plotted. At 80% the ladder moved to its phase-2 mix and its loss rose; the hero moved to a different phase-2 mix and its loss fell. The 27.7B rung crashed at 81% on a hardware failure and was not resumed. (<a href="https://github.com/marin-community/marin/issues/8435#issuecomment-6670507901">Issue #8435</a>)</figcaption></figure>
+<figure><img alt="Hero forecast and actual dropless Paloma macro loss, every eval at 4K context" src="/assets/openathena/assets/images/blog/marin-535b-architecture/hero-forecast-final.png"/><figcaption><strong>Figure 21:</strong> Forecast and actual for the full run, every eval at 4K context. The hero tracks the per-5% ladder forecast to about 65%, then pulls ahead after extending to 16K and then 65K context with an improved data mix, finishing at 1.982 against a forecast of 2.039. From the 16K switch on, the hero points are 4K re-evaluations of each checkpoint. 0.02 of the Paloma macro improvement at 93% of the run is attributed to the Penn Treebank subset of the Paloma eval, which was <a href="https://github.com/marin-community/marin/issues/9874#issuecomment-6044243150">contaminated in the training data at step 362K</a> and makes up 1/16 of the eval. (<a href="https://github.com/marin-community/marin/issues/8435#issuecomment-6670507901">Issue #8435</a>)</figcaption></figure>
+<h2 id="open-questions-and-further-considerations">Open questions and further considerations<a aria-label="Link to section: Open questions and further considerations" class="heading-anchor" href="#open-questions-and-further-considerations"></a></h2>
+<p>In LLM research there is always an infinite list of open "what ifs" to pursue, which is part of what makes the process fun. Some areas that I would be interested to explore, or see results from others on, leading up to future runs, to improve inference efficiency, scaling efficiency, learning dynamics, and long context:</p>
+<ol>
+<li><strong>Quantile balancing during data mix updates.</strong> Quantile balancing rapidly rebalances in 1–2 steps, potentially sending tokens to experts they have never seen before. It seems plausible that a more gradual mechanism could be useful in the event of data mix changes. I would be interested to quantify the impact of rapid bias updates during substantial shifts in data mix, and explore alternatives between the two extremes of freezing biases and enabling 1–2 step full rebalancing.</li>
+<li><strong>Smaller local windows early in training.</strong> It may be preferable to start the local SWA layers at a very small context, such as 128, to force the global layers to specialize in long-context retrieval. The current size of 2,048 performs best on perplexity evals for a base model trained at 4–8k context, but it is unknown how this extends to longer context. A middle ground would be to start local layers at 128 and only extend to 2,048 after role specialization is achieved.</li>
+<li><strong>Learned per-head QK multipliers.</strong> The fixed QK multiplier is manually extended during context extension. It seems conceivable that the variance across heads from a learned per-head multiplier could give stronger retrieval at long context. Collecting evidence for or against this hypothesis would be useful.</li>
+<li><strong>Final learning rate.</strong> Linear LR decay showed the strongest performance when decaying to 0, but we stopped at 0.05 to leave room for SFT and RL. Given the success of <a href="https://github.com/marin-community/marin/issues/8435#issuecomment-6676769570">checkpoint weight averaging</a>, an even higher final LR may be preferred.</li>
+<li><strong><code>lm_head</code> scaling.</strong> The <code>lm_head</code> shares the standard 0.5/√<code>hidden_dim</code> init and the empirical LR fit's width exponent (LR ∝ <code>hidden_dim</code>^−0.345) with the rest of the Adam group. No experiments thus far to steelman μP or its variants have yielded stronger results, and all scaling appears stable under the current config, but it's plausible that at very high widths a 1/<code>hidden_dim</code> output scale would be helpful. As compute allows, stress testing this at very wide widths would be useful.</li>
+<li><strong>MFU-gated features.</strong> We see strong results from a combination of KDA<sup class="footnote-ref" id="fnref-15"><a href="#fn-15">15</a></sup>, attention residuals<sup class="footnote-ref" id="fnref-13"><a href="#fn-13">13</a></sup>, MLA<sup class="footnote-ref" id="fnref-16"><a href="#fn-16">16</a></sup>, and relative position embeddings<sup class="footnote-ref" id="fnref-17"><a href="#fn-17">17</a></sup>, but gate their inclusion on acceptable realized MFU. This is a particular constraint for our org because we are training compute-bound and want to keep our hero run cycles from taking too many months. In the last two months, we see substantial gains in agents' ability to close the gap between theoretical and realized MFU (<a href="https://github.com/marin-community/marin/issues/9451">Issue #9451</a>), making these features more practical going forward.</li>
+<li><strong>FP8 and NVFP4.</strong> Given the particular risk profile of this run, we postponed FP8 and NVFP4 training, deeming the speedup not worthwhile given we were already at <a href="https://github.com/marin-community/marin/issues/8435#issuecomment-6670507901">20% and later 30% MFU</a>.</li>
+<li><strong>Over-encoding hashed embeddings.</strong> We avoid over-encoding<sup class="footnote-ref" id="fnref-18"><a href="#fn-18">18</a></sup> hashed n-gram embeddings due to realized MFU and memory considerations, though the behavior of n-grams under a changing data distribution or multi-epoching is a further complication that may be suboptimal when building our first large scale RL recipe.</li>
+<li><strong>High depth stress testing.</strong> The hero run exhibited <a href="https://github.com/marin-community/marin/issues/8818">different behaviors along depth</a> than the scaling ladder, indicating that it could be useful to stress test a narrow but deep model prior to a large scale run. This is an update we will incorporate into future hero runs, likely based on attention residuals.</li>
+<li><strong>Gated norm optimizer group.</strong> Muon performs strongly for near-square matrices. As <code>hidden_dim</code> grows, the ratio of <code>hidden_dim</code> to the low-rank 128 gated norm skews, which may start to favor Adam at large sizes.</li>
+<li><strong>Feedback from post-training and richer evals.</strong> At this stage, architecture decisions are largely made based on pre-training loss, stability considerations, and how prevalent a component is in existing models. As our future architectures become more opinionated, we will be able to lean less on that prevalence, and will need stronger feedback signals from SFT, RL, and evals that correlate with agentic RL to optimize our pre-training recipe.</li>
+<li><strong>Multi-token prediction.</strong> We avoid MTP<sup class="footnote-ref" id="fnref-19"><a href="#fn-19">19</a></sup> due to memory constraints, realized MFU, and the growing success of separate drafter modules like DSpark<sup class="footnote-ref" id="fnref-20"><a href="#fn-20">20</a></sup>.</li>
+<li><strong>Dead routed experts in initial layers.</strong> On the hero run, the routed experts in the first two layers <a href="https://github.com/marin-community/marin/issues/8818#issuecomment-5520889983">receive abnormally small gradients</a> and likely contribute little, matching what <a href="https://github.com/Mooler0410">Mooler0410</a> found in <a href="https://alltoall.notion.site/save-lower-layer-moe-experts-llal">ultra-sparse MoE training</a>, where a temporary aux loss on the first MoE layer early in training kept those experts learning. The problem may resolve in a future architecture with attention residuals, but it is something that should be tracked closely and perhaps handled with an early aux loss.</li>
+<li><strong>Decision making.</strong> Part of the goal of articulating all my thoughts on these decisions is to help myself (and others) upskill our decision making process. Hopefully I can look back in a year and see a bunch of things I'd improve, both in terms of making the best decisions given the available information, and knowing what missing information should be collected.</li>
+</ol>
+<h2 id="acknowledgements">Acknowledgements<a aria-label="Link to section: Acknowledgements" class="heading-anchor" href="#acknowledgements"></a></h2>
+<p>This work is generously supported <a href="https://openathena.ai/blog/huang-foundation-marin-535b-training-run/">by the Jen-Hsun and Lori Huang Foundation</a>, which provided the compute for this run. The Google TPU Research Cloud program enabled our earlier runs, which built confidence in the recipe.</p>
+<p>On architecture leading up to the run, I thank <a href="https://github.com/ravwojdyla">Rafal Wojdyla</a> for his clarity in pursuing EP, which delivered a substantial 1.3× compute efficiency; <a href="https://github.com/muchanem">Mark Muchane</a> for his <a href="https://github.com/marin-community/marin/pull/8368">cross-entropy kernel precision fix</a>, which may also have helped run stability; <a href="https://github.com/WhenWen">Kaiyue Wen</a> for his advice on hyperball, gated norm for stability, and architecture dynamics; and <a href="https://github.com/Helw150">Will Held</a> for being a brainstorming partner on architecture ideas. I thank the NVIDIA JAX team for their support in helping us get up and running quickly. I also thank <a href="https://cs.stanford.edu/~pliang/">Percy Liang</a> for his vision and strategy in building toward this run. Making this run possible required critical contributions across the entire Open Athena team on infra, data, partnerships, software stack, ops, mid-run MFU boosts, and team coordination, which will be highlighted in a future report.</p>
+<section class="footnotes">
+<ol>
+<li id="fn-1"><p>Elango et al., <a href="https://arxiv.org/abs/2601.18089"><em>LatentMoE: Toward Optimal Accuracy per FLOP and Parameter in Mixture of Experts</em></a>, 2026.<a class="footnote" href="#fnref-1">↩</a></p></li>
+<li id="fn-2"><p>Qiu et al., <a href="https://arxiv.org/abs/2505.06708"><em>Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free</em></a>, 2025.<a class="footnote" href="#fnref-2">↩</a></p></li>
+<li id="fn-3"><p>Keller Jordan, <a href="https://kellerjordan.github.io/posts/muon/"><em>Muon: An optimizer for hidden layers in neural networks</em></a>, 2024.<a class="footnote" href="#fnref-3">↩</a></p></li>
+<li id="fn-4"><p>Qiu et al., <a href="https://arxiv.org/abs/2601.22966"><em>A Unified View of Attention and Residual Sinks: Outlier-Driven Rescaling is Essential for Transformer Training</em></a>, 2026.<a class="footnote" href="#fnref-4">↩</a></p></li>
+<li id="fn-5"><p>Zhai, <a href="https://arxiv.org/abs/2603.09078"><em>Exclusive Self Attention</em></a>, 2026.<a class="footnote" href="#fnref-5">↩</a></p></li>
+<li id="fn-6"><p>Jianlin Su, <a href="https://kexue.fm/archives/11619"><em>Quantile Balancing</em></a>.<a class="footnote" href="#fnref-6">↩</a></p></li>
+<li id="fn-7"><p>Wen et al., <a href="https://psychedelic-sunstone-851.notion.site/Fantastic-Pretraining-Optimizers-and-Where-to-Find-Them-2-1-Hyperball-Optimization-2e924306e6f280e7a5ffee00eb40a0dd"><em>Fantastic Pretraining Optimizers and Where to Find Them — Hyperball Optimization</em></a>. MuonH and AdamH are Muon and Adam with the hyperball projection.<a class="footnote" href="#fnref-7">↩</a></p></li>
+<li id="fn-8"><p>dN denotes a model with hidden dimension N; the 535B-A23B hero is d6144.<a class="footnote" href="#fnref-8">↩</a></p></li>
+<li id="fn-9"><p>Our May 2026 MoE baseline (<a href="https://github.com/marin-community/marin/pull/6153">PR #6153</a>): 256 experts with 4 active, MuonH, partial RoPE, sliding window 2048, and no z loss, trained compute-optimal on TPU v4. Its compute-optimal fit, L(C) = 1.6 + 88.90·C^−0.0941, is the scaling law used for the compute efficiency numbers throughout this post.<a class="footnote" href="#fnref-9">↩</a></p></li>
+<li id="fn-10"><p>Li et al., <a href="https://arxiv.org/abs/2510.05491"><em>NorMuon: Making Muon more efficient and scalable</em></a>, 2025.<a class="footnote" href="#fnref-10">↩</a></p></li>
+<li id="fn-11"><p>Tilde Research, <a href="https://arxiv.org/abs/2606.27715"><em>Aurora: A Leverage-Aware Spectral Optimizer</em></a>, 2026.<a class="footnote" href="#fnref-11">↩</a></p></li>
+<li id="fn-12"><p>Yang et al., <a href="https://arxiv.org/abs/2203.03466"><em>Tensor Programs V: Tuning Large Neural Networks via Zero-Shot Hyperparameter Transfer</em></a>, 2022.<a class="footnote" href="#fnref-12">↩</a></p></li>
+<li id="fn-13"><p>Kimi Team, <a href="https://arxiv.org/abs/2603.15031"><em>Attention Residuals</em></a>, 2026. Our test: <a href="https://github.com/marin-community/marin/issues/5110">Issue #5110</a>.<a class="footnote" href="#fnref-13">↩</a></p></li>
+<li id="fn-14"><p>Xie et al., <a href="https://arxiv.org/abs/2512.24880"><em>mHC: Manifold-Constrained Hyper-Connections</em></a>, 2025.<a class="footnote" href="#fnref-14">↩</a></p></li>
+<li id="fn-15"><p>Kimi Team, <a href="https://arxiv.org/abs/2510.26692"><em>Kimi Linear: An Expressive, Efficient Attention Architecture</em></a>, 2025. KDA is Kimi Delta Attention.<a class="footnote" href="#fnref-15">↩</a></p></li>
+<li id="fn-16"><p>DeepSeek-AI, <a href="https://arxiv.org/abs/2405.04434"><em>DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model</em></a>, 2024.<a class="footnote" href="#fnref-16">↩</a></p></li>
+<li id="fn-17"><p>As used in Thinking Machines' <a href="https://thinkingmachines.ai/news/introducing-inkling/">Inkling</a>.<a class="footnote" href="#fnref-17">↩</a></p></li>
+<li id="fn-18"><p>Huang et al., <a href="https://arxiv.org/abs/2501.16975"><em>Over-Tokenized Transformer: Vocabulary is Generally Worth Scaling</em></a>, 2025.<a class="footnote" href="#fnref-18">↩</a></p></li>
+<li id="fn-19"><p>Gloeckle et al., <a href="https://arxiv.org/abs/2404.19737"><em>Better &amp; Faster Large Language Models via Multi-token Prediction</em></a>, 2024.<a class="footnote" href="#fnref-19">↩</a></p></li>
+<li id="fn-20"><p><a href="https://arxiv.org/abs/2607.05147"><em>DSpark: Confidence-Scheduled Speculative Decoding with Semi-Autoregressive Generation</em></a>, 2026.<a class="footnote" href="#fnref-20">↩</a></p></li>
+</ol>
+</section>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{dial2026_marin_535b_architecture,
+  author = {Dial, Larry},
+  title = {Architecture Decisions for Marin 535B-A23B},
+  year = {2026},
+  month = {nov},
+  howpublished = {\url{https://www.openathena.ai/blog/marin-535b-architecture/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script defer="" src="/assets/openathena/js/expandable-figures.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<script>
+(function() {
+  const content = document.querySelector('.blog-post-content');
+  const lists = document.querySelectorAll('.blog-toc-list');
+  if (!content || !lists.length) return;
+
+  const headings = Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+    .filter(function(h) { return !h.closest('.blog-post-citation'); });
+
+  // Find the minimum heading level used so it becomes the top-level TOC entry
+  var minLevel = 6;
+  headings.forEach(function(h) {
+    var level = parseInt(h.tagName[1]);
+    if (level < minLevel) minLevel = level;
+  });
+
+  function buildToc(list) {
+    headings.forEach(function(h) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+      var level = parseInt(h.tagName[1]);
+
+      if (level === minLevel) {
+        li.className = 'toc-h2';
+        li.dataset.sublist = '';
+        list.appendChild(li);
+      } else {
+        var parent = list.querySelector('li.toc-h2:last-child > ol');
+        if (!parent) {
+          parent = document.createElement('ol');
+          var lastTop = list.querySelector('li.toc-h2:last-child');
+          if (lastTop) lastTop.appendChild(parent);
+          else { li.className = 'toc-h3'; list.appendChild(li); return; }
+        }
+        li.className = 'toc-h3';
+        parent.appendChild(li);
+      }
+    });
+  }
+
+  lists.forEach(function(list) { buildToc(list); });
+
+  // Highlight active TOC entry on scroll
+  var tocLinks = document.querySelectorAll('.blog-toc-nav .blog-toc-list a');
+  if (tocLinks.length && headings.length) {
+    function updateActive() {
+      var current = null;
+      var threshold = window.innerHeight * 0.3;
+      for (var i = 0; i < headings.length; i++) {
+        if (headings[i].getBoundingClientRect().top <= threshold) current = headings[i];
+      }
+      // Find the parent top-level heading for the current heading
+      var parentH2 = null;
+      if (current) {
+        var currentLevel = parseInt(current.tagName[1]);
+        if (currentLevel === minLevel) {
+          parentH2 = current;
+        } else {
+          for (var j = Array.prototype.indexOf.call(headings, current) - 1; j >= 0; j--) {
+            if (parseInt(headings[j].tagName[1]) === minLevel) { parentH2 = headings[j]; break; }
+          }
+        }
+      }
+      var activeLink = null;
+      tocLinks.forEach(function(link) {
+        var isActive = current && link.getAttribute('href') === '#' + current.id;
+        var isParent = parentH2 && parentH2 !== current && link.getAttribute('href') === '#' + parentH2.id;
+        link.classList.toggle('active', isActive || isParent);
+        if (isActive) activeLink = link;
+      });
+
+      // Auto-scroll TOC to keep active link visible.
+      // IMPORTANT: do not use scrollIntoView — it scrolls every scrollable ancestor
+      // (including the window), which fights the user's page scroll. Adjust only
+      // the TOC's own scrollTop so the page position stays put.
+      if (activeLink && !userScrolledToc) {
+        var tocNav = document.querySelector('.blog-toc');
+        var linkRect = activeLink.getBoundingClientRect();
+        var tocRect = tocNav.getBoundingClientRect();
+        if (linkRect.bottom > tocRect.bottom || linkRect.top < tocRect.top) {
+          var target = (linkRect.top - tocRect.top) + tocNav.scrollTop
+                     - (tocRect.height - linkRect.height) / 2;
+          tocNav.scrollTop = Math.max(0, target);
+        }
+      }
+    }
+
+    // Track manual TOC scrolling
+    var userScrolledToc = false;
+    var tocEl = document.querySelector('.blog-toc');
+    var tocScrollTimer;
+    tocEl.addEventListener('scroll', function() {
+      userScrolledToc = true;
+      clearTimeout(tocScrollTimer);
+      tocScrollTimer = setTimeout(function() { userScrolledToc = false; }, 1000);
+    }, { passive: true });
+
+    window.addEventListener('scroll', updateActive, { passive: true });
+    updateActive();
+  }
+})();
+</script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script>
+(function() {
+  // Open Athena plotly theme — matches the site palette and typography.
+  var INK = '#1f1e1b';
+  var ACCENT = '#9e6d43';
+  var BODY_FONT = "'Lato', -apple-system, BlinkMacSystemFont, sans-serif";
+  var HEAD_FONT = "'Herbik', Georgia, serif";
+
+  var axisDefaults = {
+    gridcolor: 'rgba(82,81,78,0.12)',
+    zerolinecolor: 'rgba(31,30,27,0.25)',
+    linecolor: 'rgba(31,30,27,0.55)',
+    tickcolor: 'rgba(31,30,27,0.55)',
+    tickfont: { family: BODY_FONT, color: INK, size: 12 },
+    title: { font: { family: BODY_FONT, color: INK, size: 13 } },
+    ticks: 'outside',
+    automargin: true,
+  };
+
+  var OA_TEMPLATE = {
+    layout: {
+      colorway: ['#9e6d43','#2d4a3e','#7a3b2e','#4a5d8a','#6b5b3e','#8b3a62','#3d5a4f','#a86a2c'],
+      font: { family: BODY_FONT, color: INK, size: 13 },
+      title: { font: { family: HEAD_FONT, color: INK, size: 18 }, x: 0.02, xanchor: 'left', y: 0.96 },
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(235,222,200,0.55)',
+      xaxis: axisDefaults,
+      yaxis: axisDefaults,
+      legend: {
+        bgcolor: 'rgba(181,170,159,0.35)',
+        bordercolor: 'rgba(31,30,27,0.2)',
+        borderwidth: 1,
+        font: { family: BODY_FONT, color: INK, size: 12 }
+      },
+      hoverlabel: {
+        bgcolor: INK,
+        bordercolor: INK,
+        font: { family: BODY_FONT, color: '#fffdf3', size: 12 }
+      },
+      colorscale: {
+        sequential: [[0,'#ece3d5'],[0.5,'#b98a5a'],[1,'#4a2f18']],
+        sequentialminus: [[0,'#4a5d8a'],[0.5,'#b5aa9f'],[1,'#9e6d43']],
+        diverging: [[0,'#4a5d8a'],[0.5,'#ece3d5'],[1,'#9e6d43']]
+      },
+      shapedefaults: { line: { color: 'rgba(31,30,27,0.4)' } },
+      annotationdefaults: { font: { family: BODY_FONT, color: INK, size: 12 }, arrowcolor: 'rgba(31,30,27,0.5)' }
+    }
+  };
+
+  var figs = document.querySelectorAll('.plotly-figure[data-plotly-src]');
+  figs.forEach(function(el) {
+    // If a mobile-specific variant exists and the viewport is narrow, use
+    // it. Falls back to the desktop source otherwise.
+    var src = (window.innerWidth < 768 && el.dataset.plotlySrcMobile)
+      ? el.dataset.plotlySrcMobile
+      : el.dataset.plotlySrc;
+    fetch(src)
+      .then(function(r) {
+        if (!r.ok) throw new Error('Failed to load ' + src);
+        return r.json();
+      })
+      .then(function(spec) {
+        var layout = Object.assign(
+          { template: OA_TEMPLATE, autosize: true, margin: { t: 50, r: 24, b: 56, l: 64 } },
+          spec.layout || {}
+        );
+        var config = Object.assign({ responsive: true, displaylogo: false }, spec.config || {});
+        // Hide the modebar on mobile — on desktop it's hover-revealed,
+        // but touch devices lack hover so Plotly pins it always-on and
+        // it collides with the figure's own controls.
+        if (window.innerWidth < 768) config.displayModeBar = false;
+        Plotly.newPlot(el, spec.data || [], layout, config).then(function () {
+          if (spec.frames && spec.frames.length) {
+            Plotly.addFrames(el, spec.frames);
+            // Opt-in auto-play: figures set `layout.meta.autoplay = true`
+            // to have the animation roll forward from the slider's
+            // active step through the end of the frame list once the
+            // figure mounts.
+            var meta = (spec.layout && spec.layout.meta) || {};
+            if (meta.autoplay) {
+              var sliders = (spec.layout && spec.layout.sliders) || [];
+              var startIdx = (sliders[0] && sliders[0].active) || 0;
+              var names = spec.frames.slice(startIdx).map(function (f) {
+                return f.name;
+              });
+              setTimeout(function () {
+                Plotly.animate(el, names, {
+                  frame: { duration: 500, redraw: true },
+                  transition: { duration: 0 },
+                  mode: 'immediate'
+                });
+              }, 400);
+            }
+          }
+        });
+      })
+      .catch(function(err) {
+        el.innerHTML = '<p style="color:#a33">Plotly figure failed to load: ' + err.message + '</p>';
+      });
+  });
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

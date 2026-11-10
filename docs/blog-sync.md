@@ -263,3 +263,22 @@ The data-pipeline source update remains held for its unresolved baseline footnot
 preserving the existing complete copy. Contributor profiles remain excluded and
 Chinchilla's existing scope decision remains pending. This update continues the
 existing automation-owned draft PR rather than opening a duplicate.
+
+
+## November 10 material sync
+
+Added **Architecture Decisions for Marin 535B-A23B** (Larry Dial, 2026-11-09),
+after reading the full public MARIN article. It explains the completed 18T-token
+run's architecture, sizing and realized-MFU tradeoffs, EP risk tests, component
+ablations, scaling forecasts and remaining research questions. Full article text,
+21 numbered figures with their local image/interactive data assets, tables, math,
+code, references, authorship, date and original canonical are preserved at
+`/blog/2026/11/09/marin-535b-architecture/`.
+
+The additive **Mochi architecture decisions** Selected writing link is warranted
+by its substantial reusable evidence and decision-making detail. It complements
+the earlier overview with component-level ablations and stability/throughput
+tradeoffs. Existing selections retain their relative order; no native posts,
+shared layouts, or theme settings are changed. The previously held incomplete
+data-pipeline update and pending Chinchilla scope question remain unchanged.
+This continues the existing automation-owned draft PR.

@@ -1,5 +1,56 @@
 [
   {
+    "source_url": "https://openathena.ai/blog/marin-535b-architecture/",
+    "title": "Architecture Decisions for Marin 535B-A23B",
+    "date": "2026-11-09",
+    "authors": [
+      "Larry Dial"
+    ],
+    "tags": [
+      "MOCHI",
+      "MARIN"
+    ],
+    "source_content_sha256": "128235337956dd810aa26757481c692d3abcb6bb5984d54c7d77c3984b7d15ac",
+    "status": "included",
+    "reason": "Explicit public MARIN label",
+    "post": "_posts/2026-11-09-marin-535b-architecture.html",
+    "mirrored_html_sha256": "18f63130608efc15c11f716a303006fe64cddb6ca9b3a43a2e57c4f2d7fee988",
+    "assets": {
+      "assets/openathena/assets/images/blog/marin-535b-architecture/architecture.svg": "8a1e327123a72ccade74ed20a7753e05d9de06dfdd4fcc92e3a1bcc443418112",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/ctx-extension-d2048.png": "ef4798f046ccd967bc6c2f05ef56cdb39c12e2a633131333d656ec5be2aaac18",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/embed-lr-spikes-mobile.json": "49f221730568d62413ea2d3b5e94e0cdb84e74dcd15edcbf5e997c822f727d90",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/embed-lr-spikes.json": "82ccb2a8940237f8a29297f9f8876e861dcfb867d44d5670cc2aece65efe01f8",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/embed-norm.png": "26840cb3429d6ecd9b31036fa9d3a1ce58aff8b8975330c67de7e42128b95a10",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/ep-drop-rate.png": "c43b08e71df88a83874349bfe5e502ddeef9db1778ac2816e221c173708a8eea",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/hero-drop.png": "5843bfbf5f5859fe90fdd11bd2d69ea7b886dd84e54f4c64effee632deb9dfa2",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/hero-forecast-final.png": "cee463e8b016f2064521dbdfa80e468d3da12c17d9fd14e4d578b5f88335691d",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/hero-loss.png": "22d627f8b108428c6a3e00fdd10b0ddc51956bc6b5878ea9a270de4f9dd715be",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/hero-vs-ladder-final.png": "86fb9df1acc7ed66cfc79a0d74add9659fbcb84d07bc312895b4f852588c0e00",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/latent-scalar.png": "a6fca03537c4f3b62188e19102e82964be6f0c09be824f44fdcfd9503962e5d2",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/lm-head-collapse-mobile.json": "4346617f431581e6d9208d19813da6f3a5f10eb3f643d44110f8febce935c91d",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/lm-head-collapse.json": "4094f245f13d8f7232a45e1e04d8626dab9eb86d77b4cfd4acc151bfca602254",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/no-zloss-mobile.json": "c0308051f36ef067d29e34d483ac4e2cb87b2d1a433db7589da08e33d618c99d",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/no-zloss.json": "97109d27b9d9078f847df67d1ad160052f3d03968ee825d1cc01375758c62be1",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/prior-runs-loss.png": "4e5c0d1abcdbcae94e75ca1d13fe08a7482890537110d0f48c8fe37316235051",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/qb-entropy.png": "a7736f9675e07bb36332e084fc9f33bdab0411ace394bdda5481c32347e1a81a",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/qb-logits-vs-sigmoid.png": "26f508f16d5e3e2b30566040f83d827a3e8a2cb56e9222e02ac7a457a390175c",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/qk-scale.png": "85e22491fb28c76ef94dcdfda17c478e946c231041c84bdb98c86dbe63d0aec2",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/scaling-ladder.png": "f55a35b5d33b83883a1e86b3f4729b8cd87167e4792c1942a4e170645861e3bf",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/scaling-law-comparison.png": "bf9dac022e1a4be74d65aa952d6536fce1fe1a55cdc527c545e4bee6e5781d51",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/sconv-pko-init.png": "9e9d5c53f652f00dfb162186c286784f66d80c57012e5d8f6e3cf1b6a23be224",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/utility-functions-mobile.json": "aab02ab6be5f8b46d29aa66e409b2530addd9cf104cc6719b427eb04c3d01a54",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/utility-functions.json": "82c486d3137f3fa6fb1a74c52df193c8ab3b88366f73728409e8cf67316737c2",
+      "assets/openathena/assets/images/blog/marin-535b-architecture/xsa-drop.png": "0dfdfdda5d915f5f15d5ee79b68972348cc32c0e83b9dec0ca5805fd8a8a14d1",
+      "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
+      "assets/openathena/js/github-hovercards.js": "a268dcc4bbddda27c7bf7f2e6b74373b6985d113152fda6d92718019fefa1252"
+    },
+    "external_dependencies": [
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js",
+      "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css",
+      "https://cdn.plot.ly/plotly-2.35.2.min.js"
+    ]
+  },
+  {
     "source_url": "https://openathena.ai/blog/scaling-marins-open-llm-pre-training/",
     "title": "Scaling Marin's Open LLM Pre-Training",
     "date": "2026-11-04",
