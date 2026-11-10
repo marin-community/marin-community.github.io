@@ -1,0 +1,245 @@
+---
+layout: mirror
+post_kind: mirror
+title: Scaling Marin's Open LLM Pre-Training
+authors:
+- Will Held
+date: '2026-11-04'
+categories: blog
+description: At Open Athena's first community meetup, Will Held walked us through
+  Marin's pre-training process, particularly the hero training run, which wrapped
+  up this week.
+source_url: https://openathena.ai/blog/scaling-marins-open-llm-pre-training/
+canonical_url: https://www.openathena.ai/blog/scaling-marins-open-llm-pre-training/
+source_content_sha256: 8aeb6b173e62ac53bb89c31322d9799692c809a86dc2b82b8d69cb2b147e956f
+excerpt: At Open Athena's first community meetup, Will Held walked us through Marin's
+  pre-training process, particularly the hero training run, which wrapped up this
+  week.
+---
+{% raw %}
+<div class="blog-post-content project-detail-body">
+<p>Last week, Open Athena held our first community meetup, hosted by Fulcrum Science in New York City. At the event, Will Held explained what Marin has been doing on pre-training, what's about to finish, how we got here, and what we're prioritizing.</p>
+<p>As of this week, we have officially finished the main phase of pre-training Marin 535B-A23B, a mixture of experts model dubbed Mochi. Before we move on to <a href="https://openathena.ai/blog/there-is-no-posttraining-data-commons/">all the fun of post-training</a>, we wanted to provide more details about Marin’s pre-training process. So we’re sharing an edited transcript of Will’s talk below. The slide deck is available <a href="https://www.figma.com/deck/z7VpGSdL8SE3s0mSzSVvZ4/10-27-Talk?node-id=2082-841&amp;t=fJxxeLeowZbkjilD-1">here</a>.</p>
+<p>If you’d like to learn more about Marin in person, our next live event will be in San Francisco. Keep an eye on our <a href="https://discord.gg/J9CTk7pqcM">Discord</a> for more details.</p>
+<p><em>A lightly edited transcript of the talk “Scaling Marin’s Open LLM Pre-Training” follows.</em></p>
+<h2 id="why-marin-matters">Why Marin matters<a aria-label="Link to section: Why Marin matters" class="heading-anchor" href="#why-marin-matters"></a></h2>
+<p><img alt="Marin hero run loss curves against forecast" src="/assets/openathena/assets/images/blog/scaling-marins-open-llm-pre-training/image1.png"/></p>
+<p><em>Marin hero run</em></p>
+<p>I screen-grabbed this about five minutes ago from our hero run. If you know us from social media or our Discord, here's our claim to fame, with as many asterisks as I can to make us the best in the world at something: I think this is the largest live-streamed pre-training run ever. When things go weird and we correct them, you see it as a different colored line. The clean lines are our forecast; the jagged lines are us making little tweaks, mostly to kernels to make things faster, but also mild corrections to different weird optimizer dynamics. Thankfully, we've made all these tweaks with no loss spikes. We’ve had a remarkably smooth run.</p>
+<p>Why train a really big model? Newsflash: AI is really important. You might not think models are as world-changing as the companies claim, but they are certainly getting better and more useful. Unfortunately, as they've gotten better and become more commercially important, we've come to know less and less about them.</p>
+<p>When I started my PhD, we actually knew a lot about how frontier AI worked. The labs published a lot, I could come up with ideas, and study it, and play around with toy versions of models, and that was relevant to people at the frontier. As things have closed up, it's become harder to know what they’re doing at the frontier. And academia can't just go to the frontier, because these models have become way more expensive: they spend exponential amounts of capital to get linear returns on these very big models. This makes things very tricky for academics.</p>
+<p>There's a lost vision from OpenAI here. On their 2022 careers page, one principle was to be "unpretentious." I think that's a key to OpenAI's success: They were happy to do boring work rather than chase the cleverest ideas. When OpenAI was first doing big runs, many academics said, "They're just engineers scaling stuff up; they're not coming up with anything new." This is not well aligned with academic incentives. Academia rarely rewards super boring work, even if it leads to new capabilities. We care about novelty and discovery, rather than just scaling up.</p>
+<p>This is my vast simplification of the scientific process in machine learning. Generally what happens is, we take the state-of-the-art model, look at it, and find problems. I joke that it's my job to think AI is terrible, because finding problems I can fix is how I have a job. Then comes the critical middle step: we want to explain why that bad thing happens, at any level from theory to an informed guess. Only once we understand what has gone wrong should we invent a fix. Then we do this loop where we find new problems and do this over and over again.</p>
+<p>That breaks in the modern system. How do you truly study an API-only model? You can observe responses and see what's wrong, but you can't really do any explanation, so you invent in the dark. You come up with guesses for what’s wrong. Maybe your ideas are useful; maybe they're irrelevant to what's happening in frontier models. I'd argue that's a lot of what academia has had to do in the past couple of years.</p>
+<p>Notably, I don't actually think open weights solve that middle problem. You get weights, but usually you know nothing about the data, how they got to those weights, which experiments went wrong, or what they were prioritizing. Model internals let you do a lot more, but you're still missing much of what explanation traditionally requires.</p>
+<p>So we're trying to make the traditional scientific method possible again. We're not just releasing weights. We want to have data that’s reproducible, so people can run experiments on the same data we used. We want preregistered experiments, which means we have to tell you when we've done something stupid (and we do lots of stupid things). And we want to make our decision-making process as clear and transparent as possible. There are interesting research problems in every part of that: socio-technical questions about decisions, negative results we find all the time, and questions that we need the data to answer.</p>
+<p>The way I personally think about it is, there's been a gap for somebody willing to be stupid: to transparently do the dumbest thing and scale it up. People will rightfully call us dumb at times, or say it's all been done before. That's kind of the point. This creates problems for academia to dig into so they can invent smarter ideas that we'll shamelessly integrate into our next run, and build better models in the future. So when I talk about scaling today, that's the lens. We're playing the bull role, charging ahead to produce artifacts that academia can find meaningful to study. We're not trying to come up with the most unique ideas at every step of this process.</p>
+<h2 id="marins-history">Marin's history<a aria-label="Link to section: Marin's history" class="heading-anchor" href="#marins-history"></a></h2>
+<p>Marin started in 2024 as a project at Stanford, and many people still know it as part of the Stanford ecosystem. It was started by David Hall and Percy Liang, plus a host of vaguely useful graduate students, one of whom was me. We got all our compute for free from the TPU Research Cloud because we were a nice academic project.</p>
+<p>David created a genius development process called the Tootsie method. I didn't know this, but Tootsie Rolls are made by folding a little of the last batch into the next one every day. We were scrappy and compute-hungry, so we never wasted a FLOP, which meant we never started from scratch. We just kept training the model forever. These clean-looking phases weren't motivated by beautiful deep-learning science; they were motivated by wanting the model to get better without wasting earlier steps. Tootsie is a nicer name; colloquially, most people call this YOLOing a model.</p>
+<p><img alt="Marin 8B training phases" src="/assets/openathena/assets/images/blog/scaling-marins-open-llm-pre-training/image2.png"/></p>
+<p><em>Marin 8B training phases</em></p>
+<p>We trained quite a good <a href="https://marin.readthedocs.io/en/latest/reports/marin-8b-retro/">8B model</a> this way, good enough that we boldly scaled up to a <a href="https://marin.community/blog/2025/10/28/marin-32b-retro/">32-billion-parameter model</a> with basically the same methodology. There were tons of problems in the 32B run. We hit new loss spikes. We changed optimizers and architecture to try to fix things. The data mix changed all the time. We trained on the test set. There were far too many problems for David to solve as the only full-time engineer.</p>
+<p>There were, in theory, a host of vaguely useful graduate students (I'm allowed to say vaguely useful because I'm also referring to myself!), but we needed more full-time people doing meaningful work. So in late 2025 and early 2026, Marin became part of Open Athena, a nonprofit that helps scientists access the AI frontier. We got a bunch of people and great management, with real planning and roadmaps, and we started working out how to scale our models to meaningful frontier scales.</p>
+<h2 id="scaling-laws-and-recipes-delphi">Scaling laws and recipes: Delphi<a aria-label="Link to section: Scaling laws and recipes: Delphi" class="heading-anchor" href="#scaling-laws-and-recipes-delphi"></a></h2>
+<p>Here's a thought experiment. Imagine you have a year and around 2,000 accelerators. You have lots of questions: model size, number of tokens, architecture, what data to train on. Annoyingly, you often don't have any of those accelerators yet. They're coming down the line, and you need to answer as many questions as possible without the resources you'll eventually use. How do you do that?</p>
+<p>I'm Mr. Scaling Law. In academia, scaling laws are often misread defeatistly: the big models will always beat us, so we should give up. I think of them as a toolkit for answering exactly these questions. You can answer meaningful questions about large-scale research without having large-scale resources.</p>
+<p>You need a recipe that codifies how to train the model at every scale. The way we trained the 8B and 32B was not like that. We picked good hyperparameters for those particular models based on intuition and magic. To scale up, you need to write down in advance what you'll do, and how that changes as you train on more data and as the model gets bigger. Code is a lovely way to document that recipe. Some people call this hyperparameter transfer; I'll call it a recipe. It's a function that takes model size and token count, applies rules and small-scale experiments, and tells you every decision for your larger run. You care about how the recipe scales, not how any individual model turns out.</p>
+<p>This is a set of models trained with one recipe, an early one from the start of the year called <a href="https://openathena.ai/blog/delphi/">Delphi</a>. On the left is an isoFLOP plot. Each curve is the same amount of compute, trading off spending on data against spending on model size, which tells you the optimal model size and token count for a given budget. On the right are models actually trained at various compute-optimal FLOP counts. On a log-log scale they look a lot like a line, so you treat them as a line. Through a kind of empirical magic, if your recipe is good, you can predict quite accurately how good a much larger model will be from these small runs.</p>
+<p>That's scaling laws. We didn't invent them. The important part is that I don't need to run the big points while iterating on my recipe. I can run the small points, forecast, and trust within reason that the forecast is accurate. We can do most of our iteration without a large-scale run.</p>
+<p>To trust this, someone has to run large-scale runs to validate the forecasts. That's one role we play in the ecosystem, and we do it for all our models. This is the scaling ladder we ran before our big hero run. It includes counterfactuals: before changing a data mix halfway through the run, we rerun the ladder and update the forecast. On any plot we post, you'll see our prediction against the actual loss. That builds confidence in these scaling laws, so more people can run small experiments and trust the extrapolation.</p>
+<h2 id="managing-compute-iris">Managing compute: Iris<a aria-label="Link to section: Managing compute: Iris" class="heading-anchor" href="#managing-compute-iris"></a></h2>
+<p>The second problem, if you don't have enough money to buy a data center, is that you'll need to train across many regions. This map is from before we had any GPUs: all the regions where we had compute on the TPU Research Cloud. TRC is fully pre-emptible, so supply fluctuates unpredictably. We're scrappy, and we wanted to use all of it.</p>
+<p>No grad student would ever build this, but a professional software engineering organization can. Russell Power, on our infrastructure team, built an amazing tool called <a href="https://openathena.ai/blog/cluster-scheduling-with-iris/">Iris</a>, a unified multi-region cluster manager. It isn't rocket science, but it's huge for running lots of small-scale experiments.</p>
+<p>So at the start of the year we had the bottom building blocks: knowing how to run small-scale experiments, and how to run many of them on compute scattered everywhere. If someone said, "Hey, I've got some GPUs," we could pick them up and use them meaningfully right away, even in a new region, on short notice, or on a pre-emptible basis.</p>
+<h2 id="moes-and-expert-parallelism">MoEs and expert parallelism<a aria-label="Link to section: MoEs and expert parallelism" class="heading-anchor" href="#moes-and-expert-parallelism"></a></h2>
+<p>With those building blocks, you can figure out how to train better models. Every model we'd trained before was dense. That might sound old-fashioned, and at the start of the year we were. We had never trained a mixture of experts model, even though they were clearly all the rage.</p>
+<p>An MoE uses compute more efficiently by having a very large, sparse model. Many papers describe how efficient MoEs are, but very few talk about wall-clock efficiency; they usually mean theoretical FLOP efficiency. Getting an MoE that's wall-clock efficient from the start is quite hard, so we spent much of the early period learning to train MoEs that are efficient both ways. Here's a scaling ladder of our dense Delphi baseline against an <a href="https://openathena.ai/blog/pretraining-speedup/">MoE recipe crafted by Larry Dial</a>. It's majorly more efficient in theory, and also about 3.6 times more wall-clock efficient at reaching the same loss than our dense recipe.</p>
+<p>These are nice building blocks for large-scale science: you can run lots of small experiments, use lots of compute, and you're up to date with the new hotness. That made it a great time to get <a href="https://openathena.ai/blog/huang-foundation-marin-535b-training-run/">support from the Jen-Hsun and Lori Huang Foundation</a>, which very generously gave us many GPUs, and to bring on more people. We got six more people over this window, some to focus on scaling up the pre-training run and some to work out how to post-train the models we wanted to produce.</p>
+<p>Having a contract gives you nice constraints to optimize under. We got a lot of compute. Our main constraint for the hero run was roughly 11 NVL72s. And we wanted to ship something, to show our funders we're making progress toward very large-scale models. As much as I believe in those scaling plots, not everyone believes them until they see the point marked on the line.</p>
+<p>The core question when training a big model on fixed hardware is what you can fit in memory and run without it being painfully slow. For dense models, and most of our MoEs up to then, we used FSDP, short for fully sharded data parallel. Shards are stored across GPUs. In the forward pass you gather the weights for one layer, run it, and re-shard. You never need more than one layer of weights in memory at a time, so you can fit much bigger models on the same hardware.</p>
+<p>That has nothing to do with MoEs; it's a general sharding principle. What most people do instead is some form of <a href="https://openathena.ai/blog/expert-parallelism/">expert parallelism</a>: split up the experts, let them form little factions that fight each other, store full experts on different hardware, and route tokens to them.</p>
+<p>We found something weird that speaks to ecosystem effects. Almost all the great expert-parallel kernels come from Chinese open labs, and almost none are good on NVL72, which is export-controlled. They're optimizing for very different constraints. We tried basically every open-source EP kernel, and they were all much slower on NVL72 than plain FSDP. So people on our team built a custom EP communication kernel called <a href="https://storage.googleapis.com/marin-public/rav/moe-fixed-wave-a2a-384/2026.08.17/index.html">fixed pooled-wave all-to-all</a>. It did some not-especially-efficient memory things, but it was far faster than any open-source kernel.</p>
+<p>Over the hero run, Matt Wittmann kept iterating on the kernels, and the EP kernel got faster and faster. Even our roll-your-own EP massively improved performance, mostly by letting us train a much sparser, larger model on the same hardware at higher flop counts. Again, nice scaling improvements from one new kernel.</p>
+<h2 id="a-data-pipeline-for-20-trillion-tokens">A data pipeline for 20 trillion tokens<a aria-label="Link to section: A data pipeline for 20 trillion tokens" class="heading-anchor" href="#a-data-pipeline-for-20-trillion-tokens"></a></h2>
+<p>If you can fit a really big model, you create a lovely problem for your data team: you need lots of tokens. We wanted to finish around November to leave time for post-training (we're landing earlier than hoped, which is nice). That allowed about 20 trillion tokens. This is smaller than most inference-optimized frontier models from China today, but bigger than any open model effort, at least without epoching.</p>
+<p>So where do you get all this data? The good news is that people have done a lot of work in open source already. These are 152 datasets on Hugging Face that we've used at some point, meaningful training data that's relatively distinct. Twenty trillion tokens sounds like a lot, but if you spend a week just scrolling through Hugging Face, you can find it all out there. The open community has done great work.</p>
+<p>The problem is that some of this data is reasonably better than other data, and some datasets are the same dataset in a trench coat. Nemotron and Dolma, for example, have different processing pipelines but both stem from Common Crawl. There's a lot of duplication, so we can't just ingest and train on it raw.</p>
+<p>With my colleagues Rafal Wojdyla and Mark Muchane, <a href="https://openathena.ai/blog/marin-data-pipeline-overview/">we built a pipeline called Datakit</a>. It ingests basically all the good tokens on Hugging Face, at least as of when we started. It runs global de-duplication and global decontamination, clusters everything into topic buckets, quality-scores everything, and routes each document into a unique bucket. Then, because we have beautiful scaling science, we can train lots of small models to find a reasonably good data mixture.</p>
+<p>The good news is that this is data engineering, and as a society we're pretty good at data engineering.</p>
+<ul>
+<li><strong>De-duplication:</strong> We remove about 2 trillion of the roughly 25 trillion raw tokens as duplicates across datasets. Most come from within NVIDIA's own data ecosystem. NVIDIA releases a lot of data, but apparently didn't globally de-duplicate it, so we find many duplicates within it.</li>
+<li><strong>Decontamination:</strong> We remove every benchmark used during development and every benchmark we plan to test on. For now, our test set is mostly the Artificial Analysis Intelligence Index. We remove any document containing any 13-gram from those benchmarks.</li>
+<li><strong>Topic clustering:</strong> If I told someone we'd upweight a dataset because it has math in it, alongside a bunch of garbage, nobody would take me seriously. So instead of treating each source as its own dataset, we route everything to topic clusters. A math page from a broad web corpus lands in the same bucket as a corpus built for math training. I have a pretty small brain; I want to say "more math, fewer recipes, more code," rather than hope web data gets sampled the right way.</li>
+<li><strong>Quality scoring:</strong> We want a sense of which documents are good and bad. This is standard: a large model scores every example against a rubric, and we distill it into a small classifier we can run over all our data.</li>
+</ul>
+<p>You might think you should throw out bad data. I'm going to tell you to keep your bad data. Scoring gives us a distribution over quality and topic. We have a ton of council and boardroom meeting data, for example, because those bodies must post transcripts publicly, and online PDFs are full of local city council meetings. For each bucket, we know the quality and topic distribution.</p>
+<p>That means we filter by choosing weights over buckets, rather than by deleting data. We can repeat the top data 10 times, use a tiny amount of the worst, and use the median exactly once, on both the quality and topic axes. A model trained today at one size may want a different quality distribution from a model trained tomorrow on far fewer tokens. Clustering instead of filtering gives us the flexibility to express any of that as a mixture.</p>
+<p>Again, we get some nice magic: we can tune new mixtures and <a href="https://github.com/marin-community/marin/issues/9126">compare them at small scale</a> with scaling laws. This compares our original mixture with the one we switched to halfway through the run. It shows an overall loss speedup, with some bias toward math and code, which people use models for heavily.</p>
+<p><strong>Audience member:</strong> Can you speak to what goes into the rubrics? Are they shaped by your downstream evals? Judging data by training a full model and evaluating it at the end seems like it would take a lot of time.</p>
+<p><strong>Will Held:</strong> The rubrics aren't as iterative as I'd personally love. This pipeline isn't something we invented; FineWeb-Edu and others have done similar things. Most rubrics express what people think good data is. The main difference in ours is that we mostly express what bad data is, what's abysmal, because defining good data tends to bake in biases. FineWeb-Edu favors high educational value, so pop culture gets low quality scores even when it's perfectly well formatted. Our rubric is mostly, "Don't put in garbage," with a special case for code, since code can look like garbage to a model judging natural language. It's not heavily iterated.</p>
+<p>Garbage means things like SEO spam, things you'd never read. The best rule of thumb, which works its way into the rubric, is: if I read this webpage, would I learn anything at all, even something not very useful? Most pages you want to downweight are strings of unrelated words designed to game a search algorithm.</p>
+<p><strong>Adam Jonas, Fulcrum Science:</strong> Or badly scanned PDFs.</p>
+<p><strong>Will Held:</strong> Yes, garbled PDFs. Things you just wouldn't read. Junk, not in terms of topic, but in form.</p>
+<p><strong>Audience member:</strong> What about perplexity? Other large models trained on good mixtures would give low perplexity to good data and high perplexity to junk. Now that Marin is good, could you drop the heuristics and use its perplexity?</p>
+<p><strong>Will Held:</strong> So the question is whether you can use an already-trained model's perplexity over the data to filter junk. I think you could, and experimentally it wouldn't look bad. The problem I've seen with perplexity filters, admittedly weak ones like KenLM, a simple n-gram model that was widely used for filtering, is that the lowest-perplexity data is clean, coherent language but often the least interesting, because it's the most predictable text in the dataset. So it doesn't correlate well with quality.</p>
+<p>Combined with data mixing, though, it's fine. In experiments I ran in a past life, if you bucket by perplexity and train on each bucket alone, the best is usually around the 75th percentile. It's in a sweet spot: not so high-perplexity that it's junk, not so low that it's formulaic and predictable.</p>
+<p><strong>Audience member:</strong> Did you filter for AI-generated text?</p>
+<p><strong>Will Held:</strong> We did not, during pre-training, and it's certainly a growing problem. We've chatted a lot with the folks at Pangram, who classify AI content. It's something we're interested in, especially as we do new extractions of Common Crawl. New dumps are aggressively AI-generated, while most of this data is about a year old: still a lot of AI, but less aggressively so. We didn't do it for this run.</p>
+<p><strong>Audience member:</strong> With Pangram, at that scale? Those models must be pretty expensive to run.</p>
+<p><strong>Will Held:</strong> They're more talented engineers than I am. We told them how many tokens we wanted to process, and they said, "No problem." I don't think it would be their top model. We'd probably do something similar to our quality scoring: run it on a sample and distill it.</p>
+<p><strong>Adam Jonas, Fulcrum Science:</strong> Are you intentional about the percentage of synthetic data? Do you have a thesis about it?</p>
+<p><strong>Will Held:</strong> Around 25% of our data is known AI-generated, from datasets explicitly made with some strong model. In general, as long as you have a healthy share of natural data, you're probably fine. I don't think you'll see crazy model collapse.</p>
+<p>The hard part is that AI data confounds quality scorers. There's good AI data you want and abysmal AI data you don't, and you probably need separate quality classifiers for AI and human data. AI has broken our human quality heuristics too. You used to judge an email quickly: low effort, riddled with typos. Now the signal is different: this email is too clean and references too many things about me, so it can't be a person. Same here: we'll need different treatments for each.</p>
+<p>All of that is in service of making my overly simplified scientific process possible. From this run, we want to release training runs and checkpoints that anyone can investigate with full white-box access, like any other open-weights model. We want people to be able to explain why our model is great or terrible. So we want every ingredient that went into the model, and hopefully every critical decision, to be open, so people can probe it and build a causal model of why it's bad or good at something.</p>
+<p>Then <a href="https://marin.community/blog/2025/05/19/announcement/">we hope that feeds a cycle of invention</a>. None of us on the Marin team thinks we'll come up with every good research idea on the planet. We're a very small number of people, and the research community is large and brings all sorts of perspectives. I'm a big believer that the community will have far more good ideas than any single organization. So our goal is to enable those first two steps. Next time we train a model, step one should be reading and citing a bunch of papers, then training a big model on those ideas, with credit for invention going to the people who used our models in their research, rather than us claiming we've had the best ideas in the world.</p>
+<p>In that spirit, and using our scaling laws, Larry has built a very cool system called Marin Belay. The beauty of the agentic age is that nobody writes code anymore, so people can propose ideas right now on the <a href="https://github.com/marin-community/marin/issues/9451">Marin Belay GitHub issue</a>. If we thumbs-up an idea, an agent implements it, posts a branch, runs it on our infrastructure, and reports back in the issue: here's how your idea did, and here's the branch. Ideas that work well get scaled up the ladder, just like ideas we come up with internally.</p>
+<p><img alt="Marin Belay candidate recipe against the hero-run recipe" src="/assets/openathena/assets/images/blog/scaling-marins-open-llm-pre-training/image3.png"/></p>
+<p><em>On this plot, the top gray line is the recipe we launched the hero run with, and the bottom red line is the current candidate built from ideas iterated in that thread. That's the real hope of this procedure: scale a big model, people learn from it, iterate on lots of small models, and repeat the cycle to train the next, better one.</em></p>
+<p>We're still growing; I think three new engineers joined us in the past two weeks. There's a lot more we're doing internally to make this smooth and scalable, and we're excited to work with all of you and keep building resources in the open. You can find links to everything on the <a href="https://marin.community">Marin website</a>.</p>
+<h2 id="closing-qa">Closing Q&amp;A<a aria-label="Link to section: Closing Q&amp;A" class="heading-anchor" href="#closing-qa"></a></h2>
+<p><strong>Audience member:</strong> Say you're halfway through a 10-trillion-token training run, your gradient norm spikes, and the loss recovers but settles at a different level. When you see a gradient spike in your training curves, what's the first thing that comes to mind as probably not normal?</p>
+<p><strong>Will Held:</strong> We're very lucky to have a good deterministic data loader. So for a gradient spike out of nowhere, the first thing we look at is literally what we trained on in the last few steps. We haven't had that in these runs. What we've had in this run is slightly different: something growing faster than it should, rather than a hard spike. In those cases we usually investigate the architecture for the cause of the unexpected growth. But for hard spikes, the first question is: what did we train on?</p>
+<p>We actually had the inverse problem, which Larry debugged: a sudden downward loss spike. The model suddenly got much better on a dataset. Larry looked through the data and found that in that range we'd trained on a contaminated document that slipped through our decontamination filter, so the loss dropped briefly. Sudden changes like this usually come down to data quality.</p>
+<p><strong>Audience member:</strong> How small can you go with the smallest experiments?</p>
+<p><strong>Will Held:</strong> When I did all this, the smallest experiment took an hour. Larry has gotten it down to eight minutes. The smallest experiment in Marin Belay takes eight minutes on an 8x H100, so you can try a lot of ideas at that speed. You then have to scale it up the whole ladder before committing to a hero run, which takes longer, but you can test ideas at the eight-minute scale pretty well.</p>
+<p><strong>Audience member:</strong> But how big does the ladder need to be?</p>
+<p><strong>Will Held:</strong> We've always gone 300x smaller, through no scientific process. It's totally arbitrary; it's what I did the first time and we've kept doing it. You could probably go 1,000x smaller, maybe more.</p>
+<h2 id="acknowledgements">Acknowledgements<a aria-label="Link to section: Acknowledgements" class="heading-anchor" href="#acknowledgements"></a></h2>
+<p>I’d like to thank our partners and funders. For infrastructure and compute, we rely on Google, Lambda, CoreWeave, and AWS. Our funders include Fulcrum, The Jen-Hsun and Lori Huang Foundation, Ron Conway, Schmidt Sciences, the Siegel Family Endowment, the Sloan Foundation, and the Valhalla Foundation. Thanks to Fulcrum for hosting this event.</p>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{held2026_scaling_marins_open_llm_pre_training,
+  author = {Held, Will},
+  title = {Scaling Marin's Open LLM Pre-Training},
+  year = {2026},
+  month = {nov},
+  howpublished = {\url{https://www.openathena.ai/blog/scaling-marins-open-llm-pre-training/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script defer="" src="/assets/openathena/js/expandable-figures.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}

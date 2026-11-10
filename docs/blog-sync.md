@@ -141,6 +141,8 @@ It does not validate arbitrary remote
 links or execute figures; browser inspection supplements it. Source CSS and
 scripts are reviewed snapshot copies, not remotely loaded first-party code.
 The PR workflow has read-only repository permissions and no deployment job.
+It pins Ubuntu 24.04 because the locked Ruby 3.4.7 build is unavailable on the
+Ubuntu 26.04 image now used by `ubuntu-latest`.
 
 ## Classification after full-article review (2026-10-14)
 
@@ -202,3 +204,81 @@ Add only concise local links, preserve existing selections and deduplicate again
 open PRs as well as main. Include each decision's rationale in the draft PR.
 
 No cron is installed by this repository workflow.
+
+## October 29 material sync
+
+Added **Post-Training in the Open** (Ben Feuer, 2026-10-29), after reading the full
+public MARIN deep dive. It announces Snowball v0.1 and explains the open
+posttraining stack, checkpoint lineage, evaluation policy and community work.
+Its three figures, code blocks, links and authorship/date are preserved at
+`/blog/2026/10/29/post-training-in-the-open/`.
+
+The additive **Snowball post-training** Selected writing link is warranted by
+the major model release and lasting reusable posttraining/evaluation lessons.
+Existing selections and their relative order remain unchanged, as does the
+homepage hero chart from PR #40. No native post is changed.
+
+The public source also added a small figure Expand/Collapse script and styles.
+Those reviewed source snapshots are copied with their references on existing
+mirrors; existing article prose and figure data are unchanged. The script acts
+only on explicitly expandable figures and makes no network requests.
+
+The data-pipeline source currently has an unresolved `[^token-count-baseline]`
+reference and drops its former footnote. Its existing complete Marin snapshot is
+retained, with the observed source hash/reason in `source_update_held` in the
+inventory. The importer holds such incomplete updates when existing metadata and
+assets still match, and requires review if they do not. Once the public source
+is corrected the normal import resumes. A held source update is not a deletion
+or approval to remove existing text. Do not add another data-pipeline highlight.
+
+During this material sync the commons article was re-read and its classification
+hash refreshed. Its ordered words and links are unchanged; routine reimport
+incorporates the already-published upstream control-character removal while
+keeping classification, inventory and mirror consistent. This is incidental
+source synchronization, with no separate formatting-only PR, custom repair logic
+or change to the Open Athena repository/cancelled fix checkouts. Profiles remain
+excluded and Chinchilla's relevance remains pending.
+
+## November 6 material sync
+
+Added **Scaling Marin's Open LLM Pre-Training** (Will Held, 2026-11-04), after
+reading the full public MARIN/MOCHI article. It is an edited technical talk with
+audience questions, not a contributor profile or interview. It announces the
+completion of the main pretraining phase of Marin 535B-A23B (Mochi), connects the
+scaling, compute, expert-parallelism and data work, and explains community recipe
+iteration with Belay. All three figures, technical Q&A, references and citation
+code are preserved at `/blog/2026/11/04/scaling-marins-open-llm-pre-training/`.
+The dashboard figure is a historical screenshot from the talk; its progress
+percentage is not the article's publication-day completion status.
+
+The additive **Mochi pre-training overview** Selected writing link is warranted
+by that major milestone and its lasting end-to-end technical retrospective. It
+complements the existing component articles and Snowball posttraining release.
+Existing selections and their order remain, including the single data-pipeline
+selection. No native post or shared layout/theme is changed. The new citation-copy
+handler only copies the displayed public BibTeX after a user click and makes no
+network requests; existing source scripts/dependencies remain unchanged.
+
+The data-pipeline source update remains held for its unresolved baseline footnote,
+preserving the existing complete copy. Contributor profiles remain excluded and
+Chinchilla's existing scope decision remains pending. This update continues the
+existing automation-owned draft PR rather than opening a duplicate.
+
+
+## November 10 material sync
+
+Added **Architecture Decisions for Marin 535B-A23B** (Larry Dial, 2026-11-09),
+after reading the full public MARIN article. It explains the completed 18T-token
+run's architecture, sizing and realized-MFU tradeoffs, EP risk tests, component
+ablations, scaling forecasts and remaining research questions. Full article text,
+21 numbered figures with their local image/interactive data assets, tables, math,
+code, references, authorship, date and original canonical are preserved at
+`/blog/2026/11/09/marin-535b-architecture/`.
+
+The additive **Mochi architecture decisions** Selected writing link is warranted
+by its substantial reusable evidence and decision-making detail. It complements
+the earlier overview with component-level ablations and stability/throughput
+tradeoffs. Existing selections retain their relative order; no native posts,
+shared layouts, or theme settings are changed. The previously held incomplete
+data-pipeline update and pending Chinchilla scope question remain unchanged.
+This continues the existing automation-owned draft PR.

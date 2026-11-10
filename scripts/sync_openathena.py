@@ -40,6 +40,25 @@ def metadata(path):
     return yaml.safe_load(text.split('---', 2)[1]), text.split('---', 2)[2]
 
 
+def unresolved_footnotes(content):
+    plain = BeautifulSoup(str(content), 'html.parser')
+    for node in plain.select('pre, code, script, style'):
+        node.decompose()
+    return sorted(set(re.findall(r'\[\^[\w-]+\]', plain.get_text(' ', strip=True))))
+
+
+def hold_incomplete_update(record, previous, assets, missing):
+    # Retain a complete published mirror rather than propagate a broken source.
+    if not previous or previous.get('status') != 'included' or any(record[k] != previous[k] for k in ('title', 'date', 'authors')):
+        raise ValueError(f'Unresolved source footnotes require review: {record["source_url"]}: {missing}')
+    if any(assets.get(p) != h for p, h in previous['assets'].items()):
+        raise ValueError(f'Broken source also changed existing assets; review before syncing: {record["source_url"]}')
+    held = dict(previous)
+    held['source_update_held'] = dict(observed_source_content_sha256=record['source_content_sha256'], unresolved_footnotes=missing,
+                                    reason='Public source has unresolved footnotes; retain the existing complete mirror until corrected')
+    return held
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--write', action='store_true', help='Update owned mirrors/assets/inventory; review all changes in a PR')
@@ -201,6 +220,13 @@ def main():
                 raise ValueError('Source date changed; preserve original permalink before updating')
             writes[path.relative_to(ROOT)] = ('---\n' + yaml.safe_dump(front, allow_unicode=True, sort_keys=False) + '---\n{% raw %}\n' + fragment_html + '\n{% endraw %}\n').encode()
             record.update(post=path.relative_to(ROOT).as_posix(), mirrored_html_sha256=digest(fragment_html.encode()), assets=post_assets, external_dependencies=sorted(set(external)))
+            missing = unresolved_footnotes(content)
+            if missing:
+                record = hold_incomplete_update(record, previous.get(source_url), post_assets, missing)
+                if not old:
+                    raise ValueError(f'No existing mirror to preserve: {source_url}')
+                writes[path.relative_to(ROOT)] = path.read_bytes()
+                print(f'HELD source update: {source_url}: {missing}')
         inventory.append(record)
         print(f"{record['status']:9} {date} {title}")
 

@@ -1,0 +1,207 @@
+---
+layout: mirror
+post_kind: mirror
+title: Post-Training in the Open
+authors:
+- Ben Feuer
+date: '2026-10-29'
+categories: blog
+description: We’re excited to share more about our progress post-training our mixture
+  of experts models. Our latest milestone is the release of Marin 67B-A2B “Snowball”
+  v0.1, a mixture of experts model trained on ten trillion tokens. We’ve built a fully
+  open post-training stack, code, and data, and post-trained a model to GPT-OSS-level
+  quality, putting Snowball nine to fifteen months behind the open-weights frontier
+  for similarly sized models.
+source_url: https://openathena.ai/blog/post-training-in-the-open/
+canonical_url: https://www.openathena.ai/blog/post-training-in-the-open/
+source_content_sha256: 2a0b4ba2d5040e6f516132b7fcf356a416c5644aec29001bfe7d15d10c19c692
+excerpt: We’re excited to share more about our progress post-training our mixture
+  of experts models. Our latest milestone is the release of Marin 67B-A2B “Snowball”
+  v0.1, a mixture of experts model trained on ten trillion tokens. We’ve built a fully
+  open post-training stack, code, and data, and post-trained a model to GPT-OSS-level
+  quality, putting Snowball nine to fifteen months behind the open-weights frontier
+  for similarly sized models.
+---
+{% raw %}
+<div class="blog-post-content project-detail-body">
+<h2 id="summary">Summary<a aria-label="Link to section: Summary" class="heading-anchor" href="#summary"></a></h2>
+<p>Today, we’re excited to share more about our progress post-training our mixture of experts models. Our latest milestone is the release of <a href="https://huggingface.co/open-athena/Marin-Snowball-67B-A2B-v0.1">Marin 67B-A2B “Snowball” v0.1</a>, a mixture of experts (MoE) model trained on ten trillion (10T) tokens.</p>
+<ul>
+<li>In keeping with the spirit of open development, all of the information needed to reproduce Snowball is public on GitHub and Discord. In the full technical report, which we’re publishing in November, we will discuss in detail how we built a fully open post-training stack, code, and data, and post-trained a model to <a href="https://github.com/marin-community/marin/issues/10283">GPT-OSS-level quality</a>, putting Snowball nine to fifteen months behind the open weights frontier for similarly sized models, according to our <a href="https://github.com/marin-community/marin/issues/10197">eval policy</a>.</li>
+<li>Snowball is also Marin’s most successful pre-training run to date. Despite having 10x fewer flops and 16x fewer active parameters, <a href="https://claude.ai/artifact/Y5T3Y9MdZLcXCWc9JjMAxV">snowball-base beats Marin 32B on the eval card Marin 32B launched with</a>.</li>
+</ul>
+<p>In this blog post, I’m going to focus on what we learned during this process.</p>
+<h2 id="from-pre-training-to-post-training">From pre-training to post-training<a aria-label="Link to section: From pre-training to post-training" class="heading-anchor" href="#from-pre-training-to-post-training"></a></h2>
+<p>Since its creation in 2024, the Marin project has focused on pre-training, refining techniques and processes during the development of models like our <a href="https://marin.community/blog/2026/05/11/delphi/">Delphi scaling suite</a>.</p>
+<p>Earlier this year, I joined the project to help advance our understanding of post-training. Post-training, broadly speaking, is everything we do to a model after the initial autoregressive updates on our pretraining corpus, and it comes with its own challenges. Open-source reinforcement learning frameworks are immature compared to the ones used by frontier labs, and <a href="https://openathena.ai/blog/there-is-no-posttraining-data-commons/">there is very little high-quality RL data publicly available</a>. Other neolabs have worked around this problem by buying closed datasets from brokers and hiring large engineering teams to build private RL stacks in-house (sometimes releasing weaker versions of these frameworks as open-source artifacts). Marin, as an open development lab funded by a non-profit, chose another path. That path led to Snowball.</p>
+<h2 id="pre-training-snowball">Pre-training Snowball<a aria-label="Link to section: Pre-training Snowball" class="heading-anchor" href="#pre-training-snowball"></a></h2>
+<p>Snowball, our first overtrained MoE, was shaped by objectives that were often in tension: <em>theoretical training efficiency</em>, which we achieved through sparsity and a large expert bank, <em>wall-clock efficiency</em>, which involved compromises for our particular TPU hardware, <em>keeping the model stable</em> during a 10-trillion-token, heavily overtrained run, and <em>optimizing for reinforcement learning</em>, which led us to make choices to favor inference speed.</p>
+<p>Despite these compromises, Snowball was Marin’s most successful pre-training run to date. Although it has 10x fewer flops and 16x fewer active parameters, <a href="https://claude.ai/artifact/Y5T3Y9MdZLcXCWc9JjMAxV">snowball-base beats Marin 32B on the eval card Marin 32B launched with</a>.</p>
+<h2 id="post-training-snowball">Post-training Snowball<a aria-label="Link to section: Post-training Snowball" class="heading-anchor" href="#post-training-snowball"></a></h2>
+<p>Snowball was the first Marin model to receive serious attention in post-training, and we learned a lot from the process. Here are a few lessons worth highlighting.</p>
+<p><em>We built a post-training stack.</em> Using popular open-source frameworks such as <a href="https://github.com/novasky-ai/skyrl">SkyRL</a> and <a href="https://www.harborframework.com/">Harbor</a> as starting points, we developed a custom in-house stack that handles everything from SFT to RL to agentic evals, all from the <a href="https://github.com/marin-community/marin">Marin monorepo</a>.</p>
+<p><em>We created a complete open-development lineage from pre-training to post-training.</em> If pre-training is like a marathon, post-training is like a hedge maze: confusing turns, dead ends, and ambiguous signal. So we built a <a href="https://public.applets.marina.oa.dev/a/d3b5517a-c119-4fd9-999d-362183422bf3/v/6/">map</a>. Over 100 different post-trained Snowball models, each tracked in a unified lineage with its own data, code, experiments, and design decisions.</p>
+<p>This map allows us to represent the lineage of Snowball v0.1 as a DAG (directed acyclic graph) with 14 models, 15 connections, and four distinct post-training techniques: SFT (supervised fine-tuning), RLVR (reinforcement learning with verifiable rewards), FTPO (final-token preference optimization), and model merging. Under the policy, each generation is a cumulative improvement, even though most checkpoints regress on at least some eval policy benchmarks.</p>
+<figure class="figure-expandable">
+<div class="figure-expandable-frame"><img alt="Graph of Snowball v0.1’s lineage: 14 post-trained models connected by SFT, RLVR, FTPO and model-merging steps, with tournament win rates." src="/assets/openathena/assets/images/blog/post-training-in-the-open/image1.png"/></div>
+<button aria-expanded="false" class="figure-expand-button" type="button">Expand</button>
+<figcaption><strong>Figure 1:</strong> Snowball v0.1 as a graph. Snowball’s lineage, laid out in a graph, reveals the complex set of stages that lead to the checkpoint we actually released. Tournament win rate here refers to the pairwise win rate of each Snowball model against its peers, as detailed in our <a href="https://github.com/marin-community/marin/issues/10197">eval policy</a>.</figcaption>
+</figure>
+<p><em>We promoted evals to a first-class area of study.</em> Speaking of benchmarks, we established a rigorous and comprehensive public-facing <a href="https://github.com/marin-community/marin/issues/10197">eval policy</a> that allows anyone to audit the claims we make about Marin models. Under this policy, we estimate our model is <a href="https://github.com/marin-community/marin/issues/10283">GPT-OSS-level quality</a>, putting Snowball nine to fifteen months behind the open-weights frontier for similarly sized models.</p>
+<figure><img alt="Critical difference plot ranking Snowball v0.1 against peer models on all policy benchmarks, with 95% rank uncertainty bands." src="/assets/openathena/assets/images/blog/post-training-in-the-open/image2.png"/><figcaption><strong>Figure 2:</strong> Snowball v0.1 and its cohort. When ranked on all policy benchmarks against its peers, Snowball has mean rank 8.13 (compared to 8.93 for GPT-OSS). Lower ranks are better. The bars show the 95% rank uncertainty bands; the Nemenyi critical difference is 4.14 (α = 0.05).</figcaption></figure>
+<p>In addition to the standard uncontrolled comparison of benchmark scores, we proposed <a href="https://github.com/marin-community/marin/issues/10197">a new convention for FLOP-controlled comparisons</a>. In this regime, we are competitive with the best models in our class. However, we recognize that the science we are using to do this kind of comparison is immature; we present it primarily for the purposes of improving our ability to forecast eval scores in the future.</p>
+<figure><img alt="FLOP-controlled critical difference plot showing mean adjusted ranks for Snowball and peer models." src="/assets/openathena/assets/images/blog/post-training-in-the-open/image3.png"/><figcaption><strong>Figure 3:</strong> FLOP-controlled critical difference plot. In our FLOP-controlled comparison, Snowball has the lowest mean adjusted rank (5.18) but the gap between it and the second best model is not statistically significant; GPT-OSS-20B has mean adjusted rank 8.29.</figcaption></figure>
+<p>We also introduced new “meta-benchmarks” like <a href="https://applets.marina.oa.dev/a/25f504c6-c6fb-4e14-8401-07dd8e6fbfba/v/28/?run=campaign3-dare-linear-02-vs-qwen36-20261015-v1#110bf40c5dd74ff5bfd707f06c683beb">LM-Marina</a>, an agent-run Chatbot Arena, to try to discover seams our standard eval policy might miss.</p>
+<h2 id="marin-and-the-community">Marin and the community<a aria-label="Link to section: Marin and the community" class="heading-anchor" href="#marin-and-the-community"></a></h2>
+<p>As an open and collaborative public research initiative, Marin welcomes community contributions. The Snowball release is noteworthy in this regard, since it marks the first time that researchers not affiliated with Open Athena or Stanford University made substantial contributions to Marin development. We want to thank the many researchers who interacted with us on our Discord. Some of these contributors also wrote up their work on their own blogs.</p>
+<p><strong>Harshit Varma</strong> (UC Berkeley) used an <a href="https://hrshtv.github.io/blog/plateau-dropping/">SFT approach</a> called <em>Plateau Dropping</em> on Snowball, producing stronger terminal agents. <strong>Marianna Nezhurina</strong> (Juelich Supercomputing Center) taught Snowball to <a href="https://iffmd.fz-juelich.de/vW14fg9mTja-SdvRl79yvA?both">correct its mistakes</a>. And <strong>Donghyun Lee</strong> (also from UC Berkeley) contributed to the RL infrastructure and developed a <a href="https://lukedhlee.github.io/blog/2026/10/21/turning-snowball-into-a-coding-agent/">coding-agent expert</a> that was selected for merging into Snowball v0, a previous release, after it showed strong terminal-bench 2 scores under our eval policy.</p>
+<p>We want to emphasize that the experiments and conclusions of these community member authors remain their own. We highlight them primarily to note that the community has already proven highly helpful in steering the course of Marin development. By sharing our work openly, we are able to collaborate with community members to test new ideas and improve our process.</p>
+<h2 id="whats-next">What’s next<a aria-label="Link to section: What’s next" class="heading-anchor" href="#whats-next"></a></h2>
+<p>Our 535B-A23B mixture of experts model, affectionately known as “Mochi,” is <a href="https://mtracker.oa.dev/hero-run-535b">projected to finish pre-training in mid-November</a>. While we wait for Mochi to arrive, we’re working to apply the lessons learned from Snowball to prepare for Mochi post-training. The major capability gaps revealed by Snowball v0.1, including agentic skill, factuality, and complex instruction following, will form an important part of our work in 2026 and beyond.</p>
+<p>Going forward, we expect synthetic data curation to play an increasingly important role for us. We also expect strong open-weights agents to guide the development of positive feedback loops, enabling us to make our models better with less human intervention over time. That said, humans are still essential and will remain so in the future: continuing to strengthen our open development community remains a top priority.</p>
+<h2 id="try-snowball">Try Snowball<a aria-label="Link to section: Try Snowball" class="heading-anchor" href="#try-snowball"></a></h2>
+<p>If you have a Mac with at least 32GB of RAM with uvx, mlx-lm and pi installed, you can try Snowball v0.1 yourself with just two simple commands (in separate terminals):</p>
+<pre><code class="language-bash">uvx --from mlx-lm==0.32.2 mlx_lm.server \
+  --model open-athena/Marin-Snowball-67B-A2B-v0.1-MLX-4bit \
+  --trust-remote-code --max-tokens 32768 --temp 0.6 --top-p 0.95 --port 8080
+pi --model mlx-local/default_model \
+  --system-prompt "You are an AI language model named Marin, created by a non-profit called OpenAthena. You are serving in the role of an all purpose assistant. Think deeply about the user's request and respond helpfully."
+</code></pre>
+<h2 id="acknowledgements">Acknowledgements<a aria-label="Link to section: Acknowledgements" class="heading-anchor" href="#acknowledgements"></a></h2>
+<p>This work is generously supported <a href="https://openathena.ai/blog/huang-foundation-marin-535b-training-run/">by the Jen-Hsun and Lori Huang Foundation</a>, the Google TPU Research Cloud program, the Siegel Family Endowment, Fulcrum Science, Schmidt Sciences, and many others. Marin also wishes to thank Stanford University, UC Berkeley, and the Juelich Supercomputing Center for their community research contributions to Marin Snowball.</p>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{feuer2026_post_training_in_the_open,
+  author = {Feuer, Ben},
+  title = {Post-Training in the Open},
+  year = {2026},
+  month = {oct},
+  howpublished = {\url{https://www.openathena.ai/blog/post-training-in-the-open/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script defer="" src="/assets/openathena/js/expandable-figures.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}
