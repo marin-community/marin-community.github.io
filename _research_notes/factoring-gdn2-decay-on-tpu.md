@@ -1,6 +1,6 @@
 ---
 title: "Factoring Gated DeltaNet-2’s decay for TPU matrix multiplies"
-# Publication date and byline pending editorial assignment.
+date: 2026-11-14
 description: "A September Gated DeltaNet-2 prototype ran in about one-third of the Atomic Ops kernel time in single-TPU tests. We explain how it reuses decay factors across token pairs."
 ---
 

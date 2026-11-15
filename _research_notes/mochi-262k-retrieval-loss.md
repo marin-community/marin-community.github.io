@@ -1,5 +1,6 @@
 ---
 title: "Mochi’s 262K loss gap persisted after removing retrieval evidence"
+date: 2026-11-14
 description: "Log scaling lowered Mochi’s loss on a 262K retrieval test. Most of the gap remained when we removed the earlier replies from the prompt and scored the same target reply."
 ---
 
