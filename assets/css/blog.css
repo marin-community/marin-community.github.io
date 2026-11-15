@@ -201,6 +201,10 @@ button,input,select {
   font-size:.875rem;
   line-height:1.55
 }
+.research-note-tags {
+  color:var(--text-secondary);
+  font:600 .75rem/1.5 system-ui,sans-serif
+}
 .site-footer {
   max-width:1160px;
   margin:0 auto;

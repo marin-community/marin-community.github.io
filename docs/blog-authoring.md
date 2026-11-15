@@ -34,7 +34,10 @@ Submit a PR; publishing follows the existing main-branch site workflow.
 
 Copy [the Research Note template](templates/research-note.md) to
 `_research_notes/your-note-slug.md`. Set the title, publication date, and
-description. Add an `authors` list if the editor has assigned a byline.
+description. Add the note's main topic to the `tags` list. Use `engineering`
+for systems and implementation, `modeling` for model, training, or evaluation
+results, and `data` for datasets and data curation. Add an `authors` list if
+the editor has assigned a byline.
 The filename sets the public URL `/research-notes/your-note-slug/`. Keep that
 URL when editing a published note.
 
