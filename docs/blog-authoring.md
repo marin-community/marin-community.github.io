@@ -29,3 +29,21 @@ Run `bundle exec jekyll build` and `python scripts/check_blog.py` (install
 `scripts/blog-sync-requirements.txt` first). Preview the archive and article at
 desktop and mobile widths, including long tables, code, images, and section links.
 Submit a PR; publishing follows the existing main-branch site workflow.
+
+## Writing a Research Note
+
+Copy [the Research Note template](templates/research-note.md) to
+`_research_notes/your-note-slug.md`. Set the title, publication date, and
+description. Add an `authors` list if the editor has assigned a byline.
+The filename sets the public URL `/research-notes/your-note-slug/`. Keep that
+URL when editing a published note.
+
+Lead with the finding and its scope. Immediately after the lead, link the
+original Marin issue and any related logbook issue. Link the public run,
+code, or report where it supports a claim. State important limits of the
+comparison and put figures under `assets/images/research-notes/your-note-slug/`
+with descriptive alt text and captions.
+
+The shared layout adds the Research Note label and editorial disclosure.
+Run the build and content checks above and preview both the note and its
+archive card before submitting the PR.

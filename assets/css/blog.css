@@ -147,7 +147,7 @@ button,input,select {
 .post-header .eyebrow {
   margin-top:2.5rem
 }
-.source-note {
+.source-note,.research-note-disclosure {
   font-family:system-ui,sans-serif;
   font-size:.85rem;
   line-height:1.6;
@@ -155,6 +155,9 @@ button,input,select {
   padding:.6rem 1rem;
   margin:1.5rem 0 0;
   color:var(--text-secondary)
+}
+.research-note-disclosure p {
+  margin:0
 }
 .site-footer {
   max-width:1160px;
@@ -288,5 +291,5 @@ button,input,select {
   }
   .post .post-content figure,.post .post-content img:not(figure img) { padding:.6rem }
   .post .post-content { font-size:.95rem }
-  .source-note { padding:.5rem .75rem }
+  .source-note,.research-note-disclosure { padding:.5rem .75rem }
 }
