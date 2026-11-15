@@ -159,6 +159,48 @@ button,input,select {
 .research-note-disclosure p {
   margin:0
 }
+.research-notes-index {
+  max-width:46rem
+}
+.research-notes-index header {
+  margin-bottom:1.75rem
+}
+.research-notes-index h1 {
+  font-size:clamp(1.9rem,3vw,2.5rem);
+  margin:0
+}
+.research-notes-index .research-note-disclosure {
+  margin:.8rem 0 0;
+  padding:.25rem 0 .25rem .75rem
+}
+.research-notes-index section + section {
+  margin-top:1.5rem;
+  padding-top:1rem;
+  border-top:1px solid var(--rule)
+}
+.research-notes-index h2 {
+  margin:0 0 .65rem;
+  font:600 .8rem/1.5 system-ui,sans-serif;
+  color:var(--text-secondary)
+}
+.research-notes-index ul {
+  margin:0;
+  padding:0;
+  list-style:none
+}
+.research-notes-index li + li {
+  margin-top:.95rem
+}
+.research-notes-index h3 {
+  margin:0;
+  font:600 1.03rem/1.4 system-ui,sans-serif
+}
+.research-notes-index li p {
+  margin:.2rem 0 0;
+  color:var(--text-secondary);
+  font-size:.875rem;
+  line-height:1.55
+}
 .site-footer {
   max-width:1160px;
   margin:0 auto;
