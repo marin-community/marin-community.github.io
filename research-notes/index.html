@@ -1,0 +1,25 @@
+---
+layout: blog
+title: Research Notes
+description: Short, provisional accounts of Marin experiments and work in progress.
+permalink: /research-notes/
+---
+<header class="archive-header">
+  <h1>Research Notes</h1>
+  {% include research-note-disclosure.html %}
+</header>
+{% assign notes = site.research_notes | sort: 'date' | reverse %}
+{% if notes.size > 0 %}
+<div class="post-list">
+{% for note in notes %}
+  <article class="post-card">
+    <p class="post-meta"><time datetime="{{ note.date | date: '%Y-%m-%d' }}">{{ note.date | date: '%-d %B %Y' }}</time></p>
+    <h2><a href="{{ note.url | relative_url }}">{{ note.title | escape }}</a></h2>
+    {% if note.description %}<p class="post-summary">{{ note.description | escape }}</p>{% endif %}
+    {% if note.authors %}<p class="card-authors">{{ note.authors | join: ', ' | replace: '&dagger;', '†' | escape }}</p>{% endif %}
+  </article>
+{% endfor %}
+</div>
+{% else %}
+<p>No research notes have been published yet.</p>
+{% endif %}

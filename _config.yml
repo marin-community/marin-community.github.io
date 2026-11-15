@@ -5,6 +5,16 @@ title: Marin
 logo: assets/images/marin-logo.svg
 permalink: /blog/:year/:month/:day/:title/
 future: true
+collections:
+  research_notes:
+    output: true
+    permalink: /research-notes/:name/
+defaults:
+  - scope:
+      path: ""
+      type: research_notes
+    values:
+      layout: post
 plugins:
   - jekyll-seo-tag
 markdown: kramdown
