@@ -1,6 +1,7 @@
 ---
 title: "Avoiding GPU memory spikes when switching MoE layouts"
 date: 2026-11-14
+tags: [engineering]
 description: "An evaluation handoff left communication buffers live on the GPUs. Preserving the placement of the weight shards removed that allocation in the tested layout."
 ---
 

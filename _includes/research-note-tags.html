@@ -1,0 +1,7 @@
+{%- if include.tags.size > 0 -%}
+<span class="research-note-tags">
+  {%- for tag in include.tags -%}
+    {{ tag | capitalize | escape }}{% unless forloop.last %}, {% endunless %}
+  {%- endfor -%}
+</span>
+{%- endif -%}

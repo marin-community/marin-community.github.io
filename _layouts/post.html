@@ -20,7 +20,12 @@ layout: blog
     <a class="back-link" href="{{ archive_url | relative_url }}">← {{ archive_title }}</a>
     <p class="eyebrow">{{ article_label }}</p>
     <h1{% if page.title_id %} id="{{ page.title_id | escape }}"{% endif %}>{{ page.title | escape }}</h1>
-    <p class="post-meta"><time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: '%-d %B %Y' }}</time></p>
+    <p class="post-meta">
+      <time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: '%-d %B %Y' }}</time>
+      {% if page.collection == 'research_notes' and page.tags.size > 0 %}
+      <span aria-hidden="true"> · </span>{% include research-note-tags.html tags=page.tags %}
+      {% endif %}
+    </p>
     <div class="post-authors">{% for author in page.authors %}<p>{{ author }}</p>{% endfor %}</div>
     {% for note in page.author_notes %}<p class="author-note">{{ note }}</p>{% endfor %}
     {% if is_mirror %}<p class="source-note">Originally published by <a href="{{ page.source_url | escape }}">Open Athena</a>. Mirrored here with the original authorship and publication date. <a href="{{ page.canonical_url | escape }}">Read the source →</a></p>{% endif %}
