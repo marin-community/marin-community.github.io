@@ -1,6 +1,6 @@
 ---
 title: "Distributing full-matrix EMA-Gram eigensolves across TPUs"
-# date: YYYY-MM-DD
+date: 2026-11-14
 description: "A 924-update Delphi comparison led us to adopt whole-matrix eigensolve sharding, with faster training updates on a larger TPU mesh and mixed early validation loss."
 ---
 
