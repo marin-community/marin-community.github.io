@@ -1,6 +1,6 @@
 ---
 title: "Fewer tokens and longer time to target with one-eighth-power EMA-Gram"
-# date: YYYY-MM-DD
+date: 2026-11-14
 description: "In a single-seed 447M experiment, one-eighth-power EMA-Gram reached the C4 loss target with 2.9% fewer tokens than zero power and took 7.47× as much elapsed time on the TPU setups tested."
 ---
 
