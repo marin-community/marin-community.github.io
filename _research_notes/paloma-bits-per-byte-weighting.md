@@ -1,6 +1,6 @@
 ---
 title: A bits-per-byte bug flipped two Paloma code comparisons
-date:
+date: 2026-11-05
 description: Two training comparisons showed higher logged bits per byte despite lower token loss on Paloma code.
 tags:
   - engineering
