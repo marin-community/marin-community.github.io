@@ -5,7 +5,7 @@ description: "Grug models trained with expert banks shared across layers, tradin
 tags: [modeling]
 ---
 
-We trained Grug mixture-of-experts models with routed expert weights shared across several layers. At hidden width 1280, sharing removed 43.7% of the model's parameters and raised final Paloma loss from 2.89986 to 2.92965. The shared model processed 1.6% more tokens per second. Across all four tested widths, sharing reduced parameter count and increased held-out loss. [Final width-1280 comparison](https://github.com/marin-community/marin/issues/8032#issuecomment-5249559525)
+We trained Grug mixture-of-experts models with routed expert weights shared across several layers. At hidden width 1280, sharing removed 43.7% of the model's parameters and raised final Paloma loss from 2.89986 to 2.92965. That loss gap is equivalent to about 0.35 compute doublings, or 27% more compute, under the baseline scaling model. Across all four tested widths, sharing reduced parameter count and increased held-out loss. [Final width-1280 comparison](https://github.com/marin-community/marin/issues/8032#issuecomment-5249559525)
 
 [Marin experiment #8032](https://github.com/marin-community/marin/issues/8032)
 
@@ -27,4 +27,17 @@ Within each width, the control and shared model used the same training budget. A
 
 At width 1280, whole-model parameter count fell from 8.64 billion to 4.86 billion. Routed-expert parameters fell 46.15%. All 256 experts remained active in each layer over the final measurement window, and routing overflow was zero. Those measurements show that the shared architecture could train at the tested sizes.
 
-The throughput comparison was 126,778 versus 128,826 tokens per second. Applying the experiment's scaling law to account for the higher loss gave an estimated effective speed of 0.80 times the control. The estimate uses `loss(C) = 1.6 + A * C^(-0.0941)`, fitting A to the same-width control. It divides the estimated baseline time to match the treatment's loss by the treatment's observed training time. That assumes the baseline scaling curve and measured throughput continue to apply. Reaching a common quality target was not timed directly. We retained expert sharing as a compression result and stopped this architecture sweep. [Final measurements and decision](https://github.com/marin-community/marin/issues/8032#issuecomment-5249559525)
+Across these widths, the loss penalties correspond to about 0.26–0.35 compute doublings. To estimate that scale, we use the baseline power law `L(C) = 1.6 + A * C^(-0.0941)` from the [compute-optimal sweeps in #6074](https://github.com/marin-community/marin/issues/6074), fitting A to each matched untied control. At control loss L, one further doubling of training compute buys `(L - 1.6) * (1 - 2^(-0.0941))` nats per token. The gain shrinks as loss falls.
+
+| Width | Loss increase (nats/token) | Nats gained per doubling | Compute-equivalent penalty |
+| ---: | ---: | ---: | ---: |
+| 512 | 0.0382 | 0.125 | 1.22× |
+| 768 | 0.0285 | 0.105 | 1.20× |
+| 1024 | 0.0308 | 0.091 | 1.25× |
+| 1280 | 0.0298 | 0.082 | 1.27× |
+
+The last column is `((L_shared - 1.6) / (L_control - 1.6))^(1/0.0941)`. It expresses the loss gap as extra compute needed to offset the penalty if the shared family follows the same exponent and loss floor. At width 1280, the gap amounts to about 0.35 compute doublings, or 27% more compute. As a cross-check, the matched untied width-1024 and width-1280 controls improve by 0.1393 nats over a 2.98× budget increase: 0.088 nats per doubling. Interpolating that slope puts the same penalty at 1.26× compute. [Matched losses](https://github.com/marin-community/marin/issues/8032#completed-architecture-result) · [Registered compute budgets](https://github.com/marin-community/marin/blob/34cad234df/experiments/grug/moe/launch_tied_experts.py)
+
+These estimates describe position on a model family's compute-optimal scaling curve. The original fit used an earlier recipe; the [July baseline check](https://github.com/marin-community/marin/issues/6882#issuecomment-4883010409) supported reusing it as an approximation. They do not establish that training a fixed shared model longer would close the gap.
+
+The throughput comparison was 126,778 versus 128,826 tokens per second. Dividing the 1.016× measured throughput by the 1.27× compute-equivalent penalty gives an estimated effective speed of 0.80× under the same scaling assumptions. Reaching a common quality target was not timed directly. We retained expert sharing as a compression result and stopped this architecture sweep. [Final measurements and decision](https://github.com/marin-community/marin/issues/8032#issuecomment-5249559525)
