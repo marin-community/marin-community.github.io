@@ -27,7 +27,9 @@ Within each width, the control and shared model used the same training budget. A
 
 At width 1280, whole-model parameter count fell from 8.64 billion to 4.86 billion. Routed-expert parameters fell 46.15%. All 256 experts remained active in each layer over the final measurement window, and routing overflow was zero. Those measurements show that the shared architecture could train at the tested sizes.
 
-Across these widths, the loss penalties correspond to about 0.26–0.35 compute doublings. To estimate that scale, we use the baseline power law `L(C) = 1.6 + A * C^(-0.0941)` from the [compute-optimal sweeps in #6074](https://github.com/marin-community/marin/issues/6074), fitting A to each matched untied control. At control loss L, one further doubling of training compute buys `(L - 1.6) * (1 - 2^(-0.0941))` nats per token. The gain shrinks as loss falls.
+The baseline scaling fit says that each doubling of compute removes about 6.3% of the loss above a fitted 1.6-nat floor. This follows from `L(C) = 1.6 + A * C^(-0.0941)`: doubling C multiplies the excess loss by `2^(-0.0941)`, approximately 0.937. We use the fit from the [compute-optimal sweeps in #6074](https://github.com/marin-community/marin/issues/6074), fitting A to each matched untied control.
+
+At width 1280, the control loss of 2.900 is about 1.300 nats above the floor. Removing 6.3% of that excess buys about 0.082 nats per compute doubling. At width 512, the higher control loss of 3.586 leaves 1.986 nats above the floor, so the same fractional improvement buys about 0.125 nats. The absolute gain per doubling shrinks as loss falls. Across these widths, the sharing penalties correspond to about 0.26–0.35 compute doublings.
 
 | Width | Loss increase (nats/token) | Nats gained per doubling | Compute-equivalent penalty |
 | ---: | ---: | ---: | ---: |
