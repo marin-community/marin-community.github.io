@@ -1,0 +1,168 @@
+---
+layout: mirror
+post_kind: mirror
+title: Initial Pre-Training Checkpoints for Marin “Mochi” 535B-A23B
+authors:
+- David Hall
+date: '2026-11-17'
+categories: blog
+description: Marin “Mochi” 535B-A23B has finished its main phase of pre-training.
+  We’re still running evals and figuring out post-training, but we’re ready to share
+  all the checkpoints we have so far.
+source_url: https://openathena.ai/blog/marin-mochi-pretraining-checkpoints/
+canonical_url: https://www.openathena.ai/blog/marin-mochi-pretraining-checkpoints/
+source_content_sha256: 7e916f5865886f8ae23eda599d5b62a69484659f1e3b5a54740198ae914b0318
+excerpt: Marin “Mochi” 535B-A23B has finished its main phase of pre-training. We’re
+  still running evals and figuring out post-training, but we’re ready to share all
+  the checkpoints we have so far.
+---
+{% raw %}
+<div class="blog-post-content project-detail-body">
+<figure><img alt="Mochi training loss over 18.2T tokens with markers indicating released checkpoints" src="/assets/openathena/assets/images/blog/marin-mochi-pretraining-checkpoints/training-loss-checkpoints.svg"/><figcaption><strong>Figure 1:</strong> Mochi training loss over 18.2T tokens with markers indicating released checkpoints. Colors mark the 4K, 16K, 65K, and 262K context phases, and circles mark the 57 released checkpoints. The annotation marks the data mix transition near 5T tokens. The lower panel zooms in on the final context extensions.</figcaption></figure>
+<p>We’re pleased to announce that Marin “Mochi” 535B-A23B has finished its main phase of pre-training. We’re still running evals and figuring out post-training, but we’re ready to share all the checkpoints we have so far.</p>
+<p>We also have separate blog posts with more information about our <a href="https://openathena.ai/blog/scaling-marins-open-llm-pre-training/">pre-training process</a>, <a href="https://openathena.ai/blog/marin-data-pipeline-overview/">training data curation</a>, and our <a href="https://openathena.ai/blog/marin-535b-architecture/">architecture</a>. All the details can be found in our GitHub issues (<a href="https://github.com/marin-community/marin/issues/8435">#8435</a>, <a href="https://github.com/marin-community/marin/issues/8506">#8506</a>) and <a href="https://forge.coreweave.com/wandb/marin-community/marin_moe/reports/535B-A23B-18T-Token-Hero-Run-Scaling-Ladder--VmlldzoxNzc2MDM5Ng">Wandb report</a>. We’ll have much more to say in the coming days and weeks, including a proper tech report.</p>
+<p>The pre-training checkpoints are uploaded on Hugging Face: <a href="https://huggingface.co/open-athena/Marin-Mochi-535B-A23B">huggingface.co/open-athena/Marin-Mochi-535B-A23B</a>. There are 57 checkpoints total, 10 of which are from the long context extension phase.</p>
+<p><strong>A note on evaluations:</strong> During training, <a href="https://github.com/marin-community/marin/issues/9874#issuecomment-6044014049">unexpected changes in evaluation loss</a>, together with <a href="https://github.com/marin-community/marin/issues/2351#issuecomment-6300143219">concerns raised by Stanford student Michael Ryan</a>, led us to investigate benchmark contamination more closely. We discovered substantial leakage from common pre-training benchmarks that our <a href="https://openathena.ai/blog/marin-data-pipeline-overview/">decontamination procedure</a> had missed. This affects which evaluations we can fairly report to compare Mochi against other models.</p>
+<p>Releasing pre-training artifacts of large models naturally raises safety concerns. These concerns must be weighed against academia's and the public's interest in studying how large models are trained. We believe that open development also contributes to safety by enabling independent researchers to scrutinize how powerful models are built. In particular, safety researchers at independent organizations have only very limited access (if any) to pre-training artifacts from the closed frontier labs, which severely limits their ability to do valuable research.</p>
+<p>While our models are not yet at the capability frontier, we're increasingly getting requests to study our work as a proxy for what happens inside the closed frontier labs. We view this release as a way of supporting that work.</p>
+<p>It's also worth distinguishing these checkpoints from the finished models available from frontier labs. At the closed frontier, post-training now consumes enormous amounts of compute, often far exceeding pre-training itself. Much of the most concerning agentic behavior of today's frontier models can be traced to their extensive post-training. In particular, reinforcement learning has substantially improved their ability to pursue goals, use tools, and complete long-horizon tasks. Achieving these capabilities has required enormous additional investment in compute, data, and engineering. Our intermediate pre-training checkpoints have undergone none of this post-training.</p>
+<p>We therefore believe that the benefits of making these pre-training checkpoints available to researchers outweigh the risks of their release. Finally, these are intermediate pre-training checkpoints without any instruction tuning. They have not undergone safety post-training and should not be treated as ready-to-deploy assistants. They are intended for scientific study or as a basis for further training.</p>
+<p>Looking forward, we highly value making as much of our work public as possible, both the process and the artifacts. With artifacts, there may be times when it's not practical or possible to share everything: we might lack the bandwidth or storage to do so, we could have legal or safety concerns, and so on. We'll always do our best to be transparent about what we aren’t sharing and why.</p>
+<p>As we move into post-training, we'll continue to consider the benefits and risks of releasing each artifact, recognizing that the balance may change as capabilities evolve. We won't release an artifact if we conclude that the risks outweigh the benefits, and we'll do our best to explain our reasoning publicly.</p>
+<p>We’re excited that this phase of training is done, and we’re poring over the results, working towards more blog posts and a technical report. As always, please join us on our <a href="https://github.com/marin-community/marin">GitHub</a> and <a href="https://discord.gg/J9CTk7pqcM">Discord</a>. We’d love to hear what you discover.</p>
+<section aria-labelledby="cite-heading" class="blog-post-citation">
+<h2 id="cite-heading">Cite this post</h2>
+<div class="blog-post-citation-wrap">
+<pre class="blog-post-citation-bibtex" id="blog-post-citation-bibtex"><code class="nohighlight">@misc{hall2026_marin_mochi_pretraining_checkpoints,
+  author = {Hall, David},
+  title = {Initial Pre-Training Checkpoints for Marin “Mochi” 535B-A23B},
+  year = {2026},
+  month = {nov},
+  howpublished = {\url{https://www.openathena.ai/blog/marin-mochi-pretraining-checkpoints/}},
+  note = {Open Athena Blog}
+}</code></pre>
+<button aria-label="Copy BibTeX" class="blog-post-citation-copy" title="Copy BibTeX" type="button">
+<svg aria-hidden="true" class="icon-copy" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" fill-rule="evenodd"></path></svg>
+<svg aria-hidden="true" class="icon-check" fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"></path></svg>
+</button>
+</div>
+</section>
+<script>
+(function () {
+  var btn = document.querySelector('.blog-post-citation-copy');
+  var pre = document.getElementById('blog-post-citation-bibtex');
+  if (!btn || !pre) return;
+  btn.addEventListener('click', function () {
+    var text = pre.innerText;
+    var restore = function () { btn.classList.remove('is-copied'); };
+    var done = function () {
+      btn.classList.add('is-copied');
+      setTimeout(restore, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      sel.removeAllRanges();
+    }
+  });
+})();
+</script>
+</div>
+<script defer="" src="/assets/openathena/js/github-hovercards.js"></script>
+<script defer="" src="/assets/openathena/js/expandable-figures.js"></script>
+<script>
+(function() {
+  // Footnote hover previews. Skip on touch-only devices — clicking still jumps.
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+  var refs = document.querySelectorAll('sup.footnote-ref a');
+  if (!refs.length) return;
+
+  var tooltip = document.createElement('div');
+  tooltip.className = 'fn-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+
+  var showTimer, hideTimer, current;
+
+  function contentFor(targetId) {
+    var li = document.getElementById(targetId);
+    if (!li) return null;
+    var clone = li.cloneNode(true);
+    var backref = clone.querySelector('a.footnote');
+    if (backref) backref.remove();
+    return clone.innerHTML;
+  }
+
+  function position(refEl) {
+    var refRect = refEl.getBoundingClientRect();
+    var ttRect = tooltip.getBoundingClientRect();
+    var margin = 12;
+    var gap = 8;
+    var vw = document.documentElement.clientWidth;
+
+    var left = refRect.left + refRect.width / 2 - ttRect.width / 2;
+    left = Math.max(margin, Math.min(left, vw - ttRect.width - margin));
+
+    var spaceAbove = refRect.top;
+    var placeBelow = spaceAbove < ttRect.height + gap + margin;
+    var top = placeBelow
+      ? refRect.bottom + gap
+      : refRect.top - ttRect.height - gap;
+
+    tooltip.style.left = (left + window.scrollX) + 'px';
+    tooltip.style.top = (top + window.scrollY) + 'px';
+    tooltip.dataset.placement = placeBelow ? 'below' : 'above';
+  }
+
+  function show(refEl) {
+    clearTimeout(hideTimer);
+    var href = refEl.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') return;
+    var html = contentFor(href.slice(1));
+    if (!html) return;
+    current = refEl;
+    tooltip.innerHTML = html;
+    tooltip.classList.add('visible');
+    position(refEl);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([tooltip]).then(function() {
+        if (current === refEl) position(refEl);
+      }).catch(function() {});
+    }
+  }
+
+  function hide() {
+    hideTimer = setTimeout(function() {
+      tooltip.classList.remove('visible');
+      current = null;
+    }, 120);
+  }
+
+  refs.forEach(function(a) {
+    a.addEventListener('mouseenter', function() {
+      clearTimeout(showTimer);
+      showTimer = setTimeout(function() { show(a); }, 80);
+    });
+    a.addEventListener('mouseleave', function() {
+      clearTimeout(showTimer);
+      hide();
+    });
+    a.addEventListener('focus', function() { show(a); });
+    a.addEventListener('blur', hide);
+  });
+
+  tooltip.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  tooltip.addEventListener('mouseleave', hide);
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+{% endraw %}
