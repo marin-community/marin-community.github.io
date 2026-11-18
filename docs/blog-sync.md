@@ -282,3 +282,21 @@ tradeoffs. Existing selections retain their relative order; no native posts,
 shared layouts, or theme settings are changed. The previously held incomplete
 data-pipeline update and pending Chinchilla scope question remain unchanged.
 This continues the existing automation-owned draft PR.
+
+## November 18 targeted material sync
+
+Added **Initial Pre-Training Checkpoints for Marin “Mochi” 535B-A23B**
+(David Hall, November 17), preserving its complete article, training-loss SVG,
+citation code, release/evaluation caveats and original canonical. The additive
+**Mochi pre-training checkpoints** Selected writing link highlights the release
+of 57 research checkpoints, including ten long-context checkpoints.
+
+All 26 published listing entries were checked. Existing mirrors have only
+copyediting changes aside from the already-held incomplete data-pipeline update.
+Its changed title now also trips the full-sync metadata guard, so this import
+was staged separately using the existing importer on the selected published row,
+then its record and assets were added without rewriting prior records. The
+current source scripts match the existing copies byte-for-byte. Existing shared
+CSS, native articles, classifications, selections and complete data-pipeline
+snapshot remain untouched. Profiles remain excluded; Chinchilla's scope question
+remains pending. No source-content deletion is inferred from the failed batch.
