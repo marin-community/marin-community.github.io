@@ -1,18 +1,18 @@
 ---
-title: Eight experts reached lower loss sooner on Belay
+title: Eight experts reached lower loss sooner on Belay candidate 11
 date: 2026-10-24
 description: Four-expert updates were cheaper per step, but ordinary eight-expert training reached lower held-out loss sooner in all twelve paired comparisons.
 tags:
   - modeling
 ---
 
-On Belay, ordinary eight-expert pre-training reached lower held-out loss in less time than a tied drafter in all twelve paired comparisons. Belay is a mixture-of-experts model with about 1B stored parameters. The drafter trains a copy of Belay with four routed experts per token and proposes the resulting weights for the eight-expert model. In the comparison of 12,288 ordinary updates against 16,384 draft updates, the draft run took 16.1% more measured execution time at the median. [Paired measurements](https://storage.googleapis.com/marin-public/benfeuer/tied-drafter-belay/2026.10.24/measurements/crossover16k-measured-comparison.json)
+Ordinary eight-expert pre-training reached lower held-out loss in less time than a tied drafter in all twelve paired comparisons. We used a mixture-of-experts model with about 1B stored parameters, trained with candidate 11, then the leading recipe for that scale in Marin's Belay framework. The drafter trains a copy of that model with four routed experts per token and proposes the resulting weights for the eight-expert model. In the comparison of 12,288 ordinary updates against 16,384 draft updates, the draft run took 16.1% more measured execution time at the median. [Paired measurements](https://storage.googleapis.com/marin-public/benfeuer/tied-drafter-belay/2026.10.24/measurements/crossover16k-measured-comparison.json)
 
-[Marin experiment #10654](https://github.com/marin-community/marin/issues/10654) · [Archived experiment code](https://github.com/marin-community/marin/pull/10653)
+[Marin experiment #10654](https://github.com/marin-community/marin/issues/10654) · [Belay candidate 11](https://github.com/marin-community/marin/issues/9451#issuecomment-5945519263) · [Archived experiment code](https://github.com/marin-community/marin/pull/10653)
 
 ## Approach
 
-The drafter starts with a copy of Belay's weights and optimizer state. It keeps all 512 routed experts per layer, along with the shared expert. For each token, it uses the router's four highest-scoring experts instead of the usual eight and rescales their contributions to preserve the total routing weight. It trains with ordinary backpropagation. Using fewer experts per token cuts computation in both the forward and backward passes. We call the drafter *tied* because each parameter in the copy maps directly to the corresponding parameter in the full model.
+The drafter starts with a copy of the full model's weights and optimizer state. It keeps all 512 routed experts per layer, along with the shared expert. For each token, it uses the router's four highest-scoring experts instead of the usual eight and rescales their contributions to preserve the total routing weight. It trains with ordinary backpropagation. Using fewer experts per token cuts computation in both the forward and backward passes. We call the drafter *tied* because each parameter in the copy maps directly to the corresponding parameter in the full model.
 
 A block of draft updates produces one candidate checkpoint for the eight-expert model. We use eight-expert forward passes to compare the starting and candidate weights on the same reserved batch. The candidate passes if its loss drops by more than both `1e-6` nats per token and twice the range across three evaluations of the starting checkpoint.
 
