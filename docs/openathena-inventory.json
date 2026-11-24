@@ -11,11 +11,11 @@
       "MARIN",
       "MOCHI"
     ],
-    "source_content_sha256": "7e916f5865886f8ae23eda599d5b62a69484659f1e3b5a54740198ae914b0318",
+    "source_content_sha256": "fc31072b98fcc5cbbca4250bb1d226ee6b44920135f999d71b731809bc07c65f",
     "status": "included",
     "reason": "Explicit public MARIN label",
     "post": "_posts/2026-11-17-marin-mochi-pretraining-checkpoints.html",
-    "mirrored_html_sha256": "a69ea5d2cddfe7ee4755996294efedab80c840b5243de47a69c94ef61811cc6a",
+    "mirrored_html_sha256": "6e3f65355f7ff25f4eed8183830c9567a6185df1fa1a2b984e25e0f9e187d449",
     "assets": {
       "assets/openathena/assets/images/blog/marin-mochi-pretraining-checkpoints/training-loss-checkpoints.svg": "986e84e98b61fc88c6a7ad9a8c7f331d71a961b95a0db113a08475c997db9f42",
       "assets/openathena/js/expandable-figures.js": "cc86a45cdce1dc1d3e58aa38d2d3ea1a424777a1b2e268949d1fe352b736c70f",
